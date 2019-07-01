@@ -9,6 +9,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 #LTrim
 
+Global currentversion = 1.1
 ;=============== INI FILE ====================
 ININame := BuildIniName()
 
@@ -33,9 +34,10 @@ Gui, MainBuddy:Add, Button, x5 y5 w120 gGUIGaia, Gaia Loader
 Gui, MainBuddy:Add, Button, x150 y5 w120 gGUIHM, HM Loader
 Gui, MainBuddy:Add, Button, x5 y35 w120 gGUITBR13, TBR 1.38 Loader
 Gui, MainBuddy:Add, Button, x150 y35 w120 gGUITBR21, TBR 2.1 Loader
+Gui, MainBuddy:Add, Link, x90 y70, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa/Blablabla75011</a>
 
 Gui, MainBuddy:+ToolWindow
-Gui, MainBuddy:Show, Center, Loader (Press CTRL + F1 to Show/Hide)
+Gui, MainBuddy:Show, Center, Loader %currentversion% (Press CTRL + F1 to Show/Hide)
 
 MainGUI = 1
 ;=============== GAIA GUI ====================
@@ -170,7 +172,28 @@ Gui 3a:+LabelTBR21BuddyStat
 Gui, TBR21BuddyStat:Add, Edit,vTBR21data ReadOnly w600, 
 Gui, TBR21BuddyStat:Show, Hide Center, Retrieve content
 
-
+;////////////////////////////////////////// UPDATER //////////////////////////////////////////////////////////////////
+CheckInternetVar:= % IsInternetConnected()
+if CheckInternetVar=0
+{
+  ; msgbox, 262208,InternetCheck,Internet NOT connected
+}
+else
+{
+	; msgbox, 262208,InternetCheck,Internet IS connected
+	url=https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/version.txt
+	URLDownloadToVar(url){
+		obj:=ComObjCreate("WinHttp.WinHttpRequest.5.1"),obj.Open("GET",url),obj.Send()
+		return obj.status=200?obj.ResponseText:""
+	}
+	version := StrReplace(URLDownloadToVar(url), "`n", "")
+	
+	If (version != currentversion)
+	{
+		Gui, Add, Link,, Current Version : %currentversion%`nYou can download <a href="https://github.com/wawawawawawawa/WC3_Loader">WC3 Loader %version%</a>
+		Gui, Show, w200 Center, Update Available
+	}
+}
 return
 ;////////////////////////////////////////// GAIA //////////////////////////////////////////////////////////////////
 ;=============== GAIA CODE ====================
@@ -744,7 +767,16 @@ TBR21Refresh:
 			TBR21LvlNum := TBR21Curr[2]
 			StringTrimLeft, TBR21LvlNum, TBR21LvlNum, 4
 			TBR21Lvl.Push(TBR21LvlNum)
-			TBR21XP.Push(TBR21Curr[3])
+			TrueXP := TBR21Curr[3]
+			If (StrLen(TBR21Curr[3]) < 7)
+			{
+				XPNUM := 7 - StrLen(TBR21Curr[3])
+				Loop, %XPNUM%
+				{
+					TrueXP = 0%TrueXP%
+				}
+			}
+			TBR21XP.Push(TrueXP)
 			currChar := TBR21Class[A_Index]
 			if (ClassList)
 			{
@@ -799,7 +831,7 @@ TBR21Choice:
 		}
 	}
 	;;;; freaking sorting issue ;;;;;;;;
-	for i in TBR21LvlCurr
+	for i in TBR21XPCurr
 	{
 		newlvl := TBR21LvlCurr[i]
 		if (!lvllist)
@@ -848,17 +880,17 @@ TBR21Choice:
 			txtlist = %txtlist% `n%newtxt%
 		}
 	}
-	Obj := [lvllist, codelist, statlist, xplist, txtlist]
+	Obj := [xplist, codelist, statlist, lvllist, txtlist]
 	lvllist=
 	codelist=
 	statlist=
 	xplist=
 	txtlist=
 	sortingnonsense := new GroupSort(Obj, "N R")
-	TBR21ArrLvls := StrSplit(sortingnonsense.fetch("1") , "`n")
+	TBR21ArrXP := StrSplit(sortingnonsense.fetch("1") , "`n")
 	TBR21ArrCodes := StrSplit(sortingnonsense.fetch("2") , "`n")
 	TBR21ArrStat := StrSplit(sortingnonsense.fetch("3") , "`n")
-	TBR21ArrXP := StrSplit(sortingnonsense.fetch("4") , "`n")
+	TBR21ArrLvls := StrSplit(sortingnonsense.fetch("4") , "`n")
 	TBR21ArrTXT := StrSplit(sortingnonsense.fetch("5") , "`n")
 	for i in TBR21ArrLvls {
 		newlvlvar := TBR21ArrLvls[i]
@@ -947,8 +979,52 @@ LoadTBR21:
 }
 return
 
-;////////////////////////////////////////// OTHER ///////////////////////////////////////////////////////////////
-;============== FUNCTIONS =================
+;////////////////////////////////////////// UPDATER FUNCTIONS ///////////////////////////////////////////////////////////////
+;https://autohotkey.com/board/topic/80587-how-to-find-internet-connection-status/page-2
+;- Should be compatible with Win XP or higher, 32/64 bit, Unicode or ANSI, latest version.
+IsInternetConnected()
+{
+	static sz := A_IsUnicode ? 408 : 204, addrToStr := "Ws2_32\WSAAddressToString" (A_IsUnicode ? "W" : "A")
+	VarSetCapacity(wsaData, 408)
+	if DllCall("Ws2_32\WSAStartup", "UShort", 0x0202, "Ptr", &wsaData)
+	{
+		return false
+	}
+	if DllCall("Ws2_32\GetAddrInfoW", "wstr", "dns.msftncsi.com", "wstr", "http", "ptr", 0, "ptr*", results)
+	{
+		DllCall("Ws2_32\WSACleanup")
+		return false
+	}
+	ai_family   := NumGet(results+4, 0, "int")               ;- address family (ipv4 or ipv6)
+	ai_addr     := Numget(results+16, 2*A_PtrSize, "ptr")      ;- binary ip address
+	ai_addrlen  := Numget(results+16, 0, "ptr")             ;- length of ip
+	DllCall(addrToStr, "ptr", ai_addr, "uint", ai_addrlen, "ptr", 0, "str", wsaData, "uint*", 204)
+	DllCall("Ws2_32\FreeAddrInfoW", "ptr", results)
+	DllCall("Ws2_32\WSACleanup")
+
+	xxx := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+	F1:="http://www.msftncsi.com/ncsi.txt"
+	F2:="http://ipv6.msftncsi.com/ncsi.txt"
+	xxx.SetTimeouts(500,500,500,500)
+	try 
+	{
+		if (ai_family = 2 && wsaData = "131.107.255.255:80")
+		xxx.Open("GET",F1)
+		else if (ai_family = 23 && wsaData = "[fd3e:4f5a:5b81::1]:80")
+		xxx.Open("GET",F2)
+		else
+		return false
+		xxx.Send()
+		return (xxx.ResponseText = "Microsoft NCSI")           ;-ncsi.txt will contain exactly this text otherwise=0
+	} 
+	catch e 
+	{
+		return false
+	}
+	return
+}
+
+;////////////////////////////////////////// SORTING FUNCTIONS ///////////////////////////////////////////////////////////////
 ;https://autohotkey.com/board/topic/32830-func-sort-by-numbers-within-a-string/
 sortByNumberWithin(str,del)
 {
