@@ -9,9 +9,9 @@ SetBatchLines -1
 FileEncoding UTF-8
 #LTrim
 
-Global currentversion = 1.1
+Global currentversion = 1.2
 ;=============== INI FILE ====================
-ININame := BuildIniName()
+Global ININame := BuildIniName()
 
 ifNotExist, %A_ScriptDir%\%ININame%
 {
@@ -30,16 +30,28 @@ IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 ;////////////////////////////////////////// GUI //////////////////////////////////////////////////////////////////
 ;=============== MAIN GUI ====================
 Gui 99:+LabelMainBuddy
-Gui, MainBuddy:Add, Button, x5 y5 w120 gGUIGaia, Gaia Loader
-Gui, MainBuddy:Add, Button, x150 y5 w120 gGUIHM, HM Loader
-Gui, MainBuddy:Add, Button, x5 y35 w120 gGUITBR13, TBR 1.38 Loader
-Gui, MainBuddy:Add, Button, x150 y35 w120 gGUITBR21, TBR 2.1 Loader
-Gui, MainBuddy:Add, Link, x90 y70, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa/Blablabla75011</a>
+Gui, MainBuddy:Font, cBlack s10
+Gui, MainBuddy:Add, GroupBox, section r3 w265, Loaders : 
+Gui, Settings:Font, 
+Gui, MainBuddy:Add, Button, xp5 yp25 w120 gGUIGaia, Gaia Loader
+Gui, MainBuddy:Add, Button, xp130 w120 gGUIHM, HM Loader
+Gui, MainBuddy:Add, Button, xp-130 yp30 w120 gGUITBR13, TBR 1.38 Loader
+Gui, MainBuddy:Add, Button, xp130 w120 gGUITBR21, TBR 2.1 Loader
+
+Gui, MainBuddy:Font, cBlack s10
+Gui, MainBuddy:Add, GroupBox, xs r2 w265, Backup : 
+Gui, Settings:Font, 
+Gui, MainBuddy:Add, Button, xp5 yp25 w120 gCreateBackup, Create Backup
+Gui, MainBuddy:Add, Button, xp130 w120 gRestoreBackup, Restore Backup
+Gui, MainBuddy:Add, Link, xp-105 yp60, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa/Blablabla75011</a>
+Gui, MainBuddy:Add, Button, xs yp30 gUpdate, Check for new version
 
 Gui, MainBuddy:+ToolWindow
+Gui, MainBuddy:+AlwaysOnTop
 Gui, MainBuddy:Show, Center, Loader %currentversion% (Press CTRL + F1 to Show/Hide)
 
 MainGUI = 1
+CurrentGUI = Main
 ;=============== GAIA GUI ====================
 Gui 1:+LabelGaiaBuddy
 Gui, GaiaBuddy:Add, DropDownList, x5 y5 w120 vThiefchoice AltSubmit, |Thief
@@ -98,7 +110,6 @@ Gui, GaiaBuddy:+ToolWindow
 Gui, GaiaBuddy:Show, Hide Center, Gaia Buddy (Press CTRL + F1 to Show/Hide)
 
 GaiaGUI = 0
-
 ;=============== HM GUI ====================
 Gui 2:+LabelHMBuddy
 Gui, HMBuddy:Add, Text, x40 y5, Class Selection :
@@ -123,7 +134,6 @@ HMGUI = 0
 Gui 2a:+LabelHMBuddyStat
 Gui, HMBuddyStat:Add, Edit,vdata ReadOnly w600, 
 Gui, HMBuddyStat:Show, Hide Center, Retrieve content
-
 ;=============== TBR GUI 1.38 ====================
 Gui 3:+LabelTBR13Buddy
 Gui, TBR13Buddy:Add, Text, x40 y5, Class Selection :
@@ -146,7 +156,6 @@ TBR13GUI = 0
 Gui 3a:+LabelTBR13BuddyStat
 Gui, TBR13BuddyStat:Add, Edit,vTBR13data ReadOnly w600, 
 Gui, TBR13BuddyStat:Show, Hide Center, Retrieve content
-
 ;=============== TBR GUI 2.1 ====================
 Gui 3:+LabelTBR21Buddy
 Gui, TBR21Buddy:Add, Text, x40 y5, Class Selection :
@@ -172,27 +181,80 @@ Gui 3a:+LabelTBR21BuddyStat
 Gui, TBR21BuddyStat:Add, Edit,vTBR21data ReadOnly w600, 
 Gui, TBR21BuddyStat:Show, Hide Center, Retrieve content
 
+UpdateDone = 0
+GoSub, Update
+
+return
 ;////////////////////////////////////////// UPDATER //////////////////////////////////////////////////////////////////
-CheckInternetVar:= % IsInternetConnected()
-if CheckInternetVar=0
+EXE:
 {
-  ; msgbox, 262208,InternetCheck,Internet NOT connected
+	Run, https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.exe
 }
-else
+return
+Update:
 {
-	; msgbox, 262208,InternetCheck,Internet IS connected
-	url=https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/version.txt
-	URLDownloadToVar(url){
-		obj:=ComObjCreate("WinHttp.WinHttpRequest.5.1"),obj.Open("GET",url),obj.Send()
-		return obj.status=200?obj.ResponseText:""
-	}
-	version := StrReplace(URLDownloadToVar(url), "`n", "")
-	
-	If (version != currentversion)
+	Gui MainBuddy:+OwnDialogs
+	CheckInternetVar:= % IsInternetConnected()
+	if CheckInternetVar=0
 	{
-		Gui, Add, Link,, Current Version : %currentversion%`nYou can download <a href="https://github.com/wawawawawawawa/WC3_Loader">WC3 Loader %version%</a>
-		Gui, Show, w200 Center, Update Available
+	  msgbox, 262208,No Network,Internet is NOT connected !
 	}
+	else
+	{
+		url=https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/version.txt
+		URLDownloadToVar(url){
+			obj:=ComObjCreate("WinHttp.WinHttpRequest.5.1"),obj.Open("GET",url),obj.Send()
+			return obj.status=200?obj.ResponseText:""
+		}
+		version := StrReplace(URLDownloadToVar(url), "`n", "")
+		Gui, Update:Destroy
+		If (version != currentversion)
+		{
+			Gui, Update:Font, cBlue bold s10
+			Gui, Update:Add, GroupBox, w180 h150 section, Version Information :
+			Gui, Update:Font,
+			Gui, Update:Add, Text, xp5 yp25, Current Version :
+			Gui, Update:Font, bold 
+			Gui, Update:Add, Text, xp90, %currentversion%
+			Gui, Update:Font,
+			Gui, Update:Add, Text, yp25 xp-90, Latest Version : 
+			Gui, Update:Font, bold 
+			Gui, Update:Add, Text, xp90, %version%
+			Gui, Update:Font,
+			Gui, Update:Add, Button, gEXE yp30 xp-35, EXE
+			Gui, Update:Add, Link, xp-10 yp30, <a href="https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/WC3 RPG Loader.ahk">Or the AHK</a>
+			Gui, Update:Add, Text, xp-40 yp15, (Right Click -> Save Page As)
+			Gui, Update:Add, Button, xs yp30 w50 h30 gUpdateGuiClose, Back
+			
+			Gui, Update:Show, w200 Center, Update Available
+			Gui, Update:+AlwaysOnTop
+		}
+		Else
+		{
+			If (UpdateDone == 1)
+			{
+				Gui, Update:Font, cBlue bold s10
+				Gui, Update:Add, GroupBox, w180 h150 section, Version Information :
+				Gui, Update:Font, 
+				Gui, Update:Add, Text, xp5 yp25, Current Version :
+				Gui, Update:Font, bold 
+				Gui, Update:Add, Text, xp90, %currentversion%
+				Gui, Update:Font,
+				Gui, Update:Add, Text, yp25 xp-90, Latest Version : 
+				Gui, Update:Font, bold 
+				Gui, Update:Add, Text, xp90, %version%
+				Gui, Update:Font,
+				Gui, Update:Add, Button, gEXE yp30 xp-35, EXE
+				Gui, Update:Add, Link, xp-10 yp30, <a href="https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/WC3 RPG Loader.ahk">Or the AHK</a>
+				Gui, Update:Add, Text, xp-40 yp15, (Right Click -> Save Page As)
+				Gui, Update:Add, Button, xs yp30 w50 h30 gUpdateGuiClose, Back
+				
+				Gui, Update:Show, w200 Center, Up To Date
+				Gui, Update:+AlwaysOnTop
+			}
+		}
+	}
+	UpdateDone = 1
 }
 return
 ;////////////////////////////////////////// GAIA //////////////////////////////////////////////////////////////////
@@ -223,7 +285,6 @@ GaiaRefresh:
 
 		Loop, Files, *.txt
 		{
-			current = 0
 			aFileList[A_index] := SubStr(A_LoopFileName, 1, -4)
 			TheIndex := aFileList[A_index]
 			for i in GaiaArr
@@ -235,8 +296,8 @@ GaiaRefresh:
 					GaiaClass.Push(GaiaArr[i])
 				}
 			}
-			current++
 		}
+		
 		for j in GaiaArr
 		{
 			for i in GaiaClass
@@ -351,7 +412,6 @@ return
 
 ;////////////////////////////////////////// HM //////////////////////////////////////////////////////////////////
 ;=============== HM CODE ====================
-
 HMRefresh:
 {
 	; Empty Old Var
@@ -1242,13 +1302,212 @@ GUITBR21:
 	GoSub, TBR21Refresh
 }
 return
+
+MainBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+}
+return
+
+GaiaBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+}
+return
+
+HMBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+}
+return
+
+TBR13BuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+}
+return
+
+TBR21BuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+}
+return
+
+UpdateGuiClose:
+{
+	Gui, Update:Destroy
+}
+return
+
+;=============== BACKUP ====================
+RestoreBackup:
+{
+	Gui MainBuddy:+OwnDialogs
+	FileSelectFile, BackupPath,,, Choose the File to Restore, *.ini
+	
+	FileSelectFolder, RestorePath, 3,, Where do you want your Restored Saves to be? (Press Cancel to Skip)
+	GaiaRestorePath = %RestorePath%\Gaia Restored\
+	HMRestorePath = %RestorePath%\HM Restored\
+	TBR13RestorePath = %RestorePath%\TBR13 Restored\
+	TBR21RestorePath = %RestorePath%\TBR21 Restored\
+	
+	If (RestorePath)
+	{
+		IniRead, GaiaNum, %BackupPath%, Gaia, Count
+		Loop, %GaiaNum%
+		{
+			IniRead, GaiaFile, %BackupPath%, Gaia, File%A_Index%
+			IniRead, GaiaTxt, %BackupPath%, Gaia, Txt%A_Index%
+			GaiaTxt := StrReplace(GaiaTxt, "LINEBREAK" , "`n")
+			GaiaTxt := StrReplace(GaiaTxt, "TABBREAK" , "`t")
+			
+			FileCreateDir, %GaiaRestorePath%
+			FileDelete, %GaiaRestorePath%%GaiaFile%
+			FileAppend, %GaiaTxt%, %GaiaRestorePath%%GaiaFile%
+		}
+	
+		IniRead, HMNum, %BackupPath%, HM, Count
+		Loop, %HMNum%
+		{
+			IniRead, HMFile, %BackupPath%, HM, File%A_Index%
+			IniRead, HMTxt, %BackupPath%, HM, Txt%A_Index%
+			HMTxt := StrReplace(HMTxt, "LINEBREAK" , "`n")
+			HMTxt := StrReplace(HMTxt, "TABBREAK" , "`t")
+			
+			FileCreateDir, %HMRestorePath%
+			FileDelete, %HMRestorePath%%HMFile%
+			FileAppend, %HMTxt%, %HMRestorePath%%HMFile%
+		}
+	
+		IniRead, TBR13Num, %BackupPath%, TBR13, Count
+		Loop, %TBR13Num%
+		{
+			IniRead, TBR13File, %BackupPath%, TBR13, File%A_Index%
+			IniRead, TBR13Txt, %BackupPath%, TBR13, Txt%A_Index%
+			TBR13Txt := StrReplace(TBR13Txt, "LINEBREAK" , "`n")
+			TBR13Txt := StrReplace(TBR13Txt, "TABBREAK" , "`t")
+			
+			FileCreateDir, %TBR13RestorePath%
+			FileDelete, %TBR13RestorePath%%TBR13File%
+			FileAppend, %TBR13Txt%, %TBR13RestorePath%%TBR13File%
+		}
+	
+		IniRead, TBR21Num, %BackupPath%, TBR21, Count
+		Loop, %TBR21Num%
+		{
+			IniRead, TBR21File, %BackupPath%, TBR21, File%A_Index%
+			IniRead, TBR21Txt, %BackupPath%, TBR21, Txt%A_Index%
+			TBR21Txt := StrReplace(TBR21Txt, "LINEBREAK" , "`n")
+			TBR21Txt := StrReplace(TBR21Txt, "TABBREAK" , "`t")
+			
+			FileCreateDir, %TBR21RestorePath%
+			FileDelete, %TBR21RestorePath%%TBR21File%
+			FileAppend, %TBR21Txt%, %TBR21RestorePath%%TBR21File%
+		}
+	}
+}
+return
+CreateBackup:
+{
+	Gui MainBuddy:+OwnDialogs
+	IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
+	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
+	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
+	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
+	
+	FileSelectFolder, CreateBackupPath, 3,, Where do you want your Backup to be saved? (Press Cancel to Skip)
+	
+	FileDelete, %CreateBackupPath%\Backup.ini
+	FileAppend,, %CreateBackupPath%\Backup.ini
+
+	
+	If (GaiaBuddyPath)
+	{
+		name = Gaia
+		SetWorkingDir, %GaiaBuddyPath%
+		current := 0
+		Loop, Files, *.txt
+		{
+			current++
+			FileRead, currBackup, %A_LoopFileName%
+			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
+			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
+			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
+			
+			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
+			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
+		}
+		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
+	}
+	If (HMBuddyPath)
+	{
+		name = HM
+		SetWorkingDir, %HMBuddyPath%
+		current := 0
+		Loop, Files, *.txt
+		{
+			current++
+			FileRead, currBackup, %A_LoopFileName%
+			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
+			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
+			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
+			
+			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
+			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
+		}
+		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
+	}
+	If (TBR13BuddyPath)
+	{
+		name = TBR13
+		SetWorkingDir, %TBR13BuddyPath%
+		current := 0
+		Loop, Files, *.txt
+		{
+			current++
+			FileRead, currBackup, %A_LoopFileName%
+			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
+			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
+			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
+			
+			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
+			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
+		}
+		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
+	}
+	If (TBR21BuddyPath)
+	{
+		name = TBR21
+		SetWorkingDir, %TBR21BuddyPath%
+		current := 0
+		Loop, Files, *.txt
+		{
+			current++
+			FileRead, currBackup, %A_LoopFileName%
+			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
+			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
+			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
+			
+			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
+			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
+		}
+		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
+	}
+}
+return
+
 ;============== CHANGE PATH =================
 ChangeGaiaPath:
 {
 	Gui GaiaBuddy:+OwnDialogs
 	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\GaiasRetaliation
 	{
-		FileSelectFolder, GaiaBuddyPath, %A_MyDocuments%\Warcraft III\CustomMapData\GaiasRetaliation\,, Choose The Folder with Gaia Saves
+		FileSelectFolder, GaiaBuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\GaiasRetaliation\,, Choose The Folder with Gaia Saves
 	}
 	else
 	{
@@ -1264,7 +1523,7 @@ ChangeHMPath:
 	Gui HMBuddy:+OwnDialogs
 	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\Grabiti's RPG Creator
 	{
-		FileSelectFolder, HMBuddyPath, %A_MyDocuments%\Warcraft III\CustomMapData\Grabiti's RPG Creator, 3, Choose The Folder with HM Saves
+		FileSelectFolder, HMBuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\Grabiti's RPG Creator, 3, Choose The Folder with HM Saves
 	}
 	else
 	{
@@ -1280,7 +1539,7 @@ ChangeTBR13Path:
 	Gui TBR13Buddy:+OwnDialogs
 	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\TBR Saves\
 	{
-		FileSelectFolder, TBR13BuddyPath, %A_MyDocuments%\Warcraft III\CustomMapData\TBR Saves\,, Choose The Folder with TBR 1.38 Saves
+		FileSelectFolder, TBR13BuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\TBR Saves\,, Choose The Folder with TBR 1.38 Saves
 	}
 	else
 	{
@@ -1296,7 +1555,7 @@ ChangeTBR21Path:
 	Gui TBR21Buddy:+OwnDialogs
 	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\Savegames\TBR 2
 	{
-		FileSelectFolder, TBR21BuddyPath, %A_MyDocuments%\Warcraft III\CustomMapData\Savegames\TBR 2,, Choose The Folder with TBR 2.1 Saves
+		FileSelectFolder, TBR21BuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\Savegames\TBR 2\,, Choose The Folder with TBR 2.1 Saves
 	}
 	else
 	{
