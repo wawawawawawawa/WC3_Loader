@@ -1,6 +1,8 @@
 # WC3_Loader
 A small Loader for Warcraft III
 
+Check out the ![Discord](https://discord.gg/N9rjQ6r) if you have some question!
+
 You only need to download the ahk file (if you have ![autohotkey](https://www.autohotkey.com/) installed)
 
 Otherwise, just download the exe file directly
