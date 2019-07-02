@@ -9,10 +9,16 @@ SetBatchLines -1
 FileEncoding UTF-8
 #LTrim
 
-Global currentversion = 1.3
-;=============== INI FILE ====================
+;=============== GLOBAL VAR ==================
+Global currentversion = 1.4
+Global URLDownloadUpdater := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
+Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
+Global URLDownloadEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.exe"
+Global URLCurrentLoader := A_ScriptDir . "\" . A_ScriptName
+Global URLCurrentUpdater := A_ScriptDir . "\AutoUpdater.exe"
 Global ININame := BuildIniName()
 
+;=============== INI FILE ====================
 ifNotExist, %A_ScriptDir%\%ININame%
 {
 	NoPath=
@@ -185,10 +191,41 @@ UpdateDone = 0
 GoSub, Update
 
 return
+
 ;////////////////////////////////////////// UPDATER //////////////////////////////////////////////////////////////////
-EXE:
+AutoUpdate:
 {
-	Run, https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.exe
+	Gui MainBuddy:+OwnDialogs
+	SplitPath, A_ScriptName, OutFileName, OutDir, Extension, OutNameNoExt, OutDrive
+	Progress, , , Downloading AutoUpdater..., AutoUpdater.exe Download
+	Sleep, 500
+	UrlDownloadToFile, %URLDownloadUpdater%, %URLCurrentUpdater%
+	Progress, 100 , ,Download Completed. Launching..., AutoUpdater.exe Download Completed
+	Sleep, 500
+	If (Extension == "exe")
+	{
+		MsgBox, 1, Optional Download, Do you want to download the .ahk file as well?`n`nYou can see the source code by opening the .ahk file with notepad`nYou can run the .ahk file only with AutoHotkey
+		IfMsgBox, OK
+		{
+			UrlDownloadToFile, %URLDownloadAHK%, %A_ScriptDir%\%OutNameNoExt%.ahk
+		}
+		Run %URLCurrentUpdater% "%URLCurrentLoader%" "%URLDownloadEXE%"
+	}
+	Else If (Extension == "ahk")
+	{
+		MsgBox, 1, Optional Download, Do you want to download the .exe file as well?
+		IfMsgBox, OK
+		{
+			UrlDownloadToFile, %URLDownloadEXE%, %A_ScriptDir%\%OutNameNoExt%.exe
+		}
+		Run %URLCurrentUpdater% "%URLCurrentLoader%" "%URLDownloadAHK%"
+	}
+	ExitApp
+}
+return
+ManualDownload:
+{
+	Run, https://github.com/wawawawawawawa/WC3_Loader/
 }
 return
 Update:
@@ -214,7 +251,7 @@ Update:
 		If (version != currentversion)
 		{
 			Gui, Update:Font, cBlue bold s10
-			Gui, Update:Add, GroupBox, w180 h150 section, Version Information :
+			Gui, Update:Add, GroupBox, w220 h110 section, Version Information :
 			Gui, Update:Font,
 			Gui, Update:Add, Text, xp5 yp25, Current Version :
 			Gui, Update:Font, bold 
@@ -224,12 +261,11 @@ Update:
 			Gui, Update:Font, bold 
 			Gui, Update:Add, Text, xp90, %version%
 			Gui, Update:Font,
-			Gui, Update:Add, Button, gEXE yp30 xp-35, EXE
-			Gui, Update:Add, Link, xp-10 yp30, <a href="https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/WC3 RPG Loader.ahk">Or the AHK</a>
-			Gui, Update:Add, Text, xp-40 yp15, (Right Click -> Save Page As)
-			Gui, Update:Add, Button, xs yp30 w50 h30 gUpdateGuiClose, Back
+			Gui, Update:Add, Button, gAutoUpdate xp30 yp30 , Automatic Install
+			Gui, Update:Add, Button, gManualDownload xp-120 , Manual Download
+			Gui, Update:Add, Button, xs yp40 w50 h30 gUpdateGuiClose, Back
 			
-			Gui, Update:Show, w200 Center, Update Available
+			Gui, Update:Show, Center, Update Available
 			Gui, Update:+AlwaysOnTop
 		}
 		Else
@@ -237,7 +273,7 @@ Update:
 			If (UpdateDone == 1)
 			{
 				Gui, Update:Font, cBlue bold s10
-				Gui, Update:Add, GroupBox, w180 h150 section, Version Information :
+				Gui, Update:Add, GroupBox, w220 h110 section, Version Information :
 				Gui, Update:Font, 
 				Gui, Update:Add, Text, xp5 yp25, Current Version :
 				Gui, Update:Font, bold 
@@ -247,12 +283,12 @@ Update:
 				Gui, Update:Font, bold 
 				Gui, Update:Add, Text, xp90, %version%
 				Gui, Update:Font,
-				Gui, Update:Add, Button, gEXE yp30 xp-35, EXE
-				Gui, Update:Add, Link, xp-10 yp30, <a href="https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/WC3 RPG Loader.ahk">Or the AHK</a>
-				Gui, Update:Add, Text, xp-40 yp15, (Right Click -> Save Page As)
-				Gui, Update:Add, Button, xs yp30 w50 h30 gUpdateGuiClose, Back
+				Gui, Update:Add, Button, vGreyedUpdate gAutoUpdate xp30 yp30 , Automatic Install
+				Gui, Update:Add, Button, gManualDownload xp-120 , Manual Download
+				GuiControl, Update:Disable, GreyedUpdate
+				Gui, Update:Add, Button, xs yp40 w50 h30 gUpdateGuiClose, Back
 				
-				Gui, Update:Show, w200 Center, Up To Date
+				Gui, Update:Show, Center, Up To Date
 				Gui, Update:+AlwaysOnTop
 			}
 		}
