@@ -1,4 +1,4 @@
-# WC3_Loader : Loader for Warcraft III
+# WC3 RPG Loader : Automatic Loading for Warcraft III
 
 Check out the [Discord](https://discord.gg/N9rjQ6r) if you have some question!
 
