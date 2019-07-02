@@ -9,7 +9,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 #LTrim
 
-Global currentversion = 1.2
+Global currentversion = 1.3
 ;=============== INI FILE ====================
 Global ININame := BuildIniName()
 
@@ -195,9 +195,12 @@ Update:
 {
 	Gui MainBuddy:+OwnDialogs
 	CheckInternetVar:= % IsInternetConnected()
-	if CheckInternetVar=0
+	if (CheckInternetVar == 0)
 	{
-	  msgbox, 262208,No Network,Internet is NOT connected !
+		If (UpdateDone == 1)
+		{
+			msgbox, 262208,No Network,Internet is NOT connected !
+		}
 	}
 	else
 	{
@@ -266,7 +269,7 @@ GaiaRefresh:
 	SetWorkingDir, %GaiaBuddyPath%
 	
 	Gaiacurrentclass=
-	ReplacedStr=
+	GaiaReplacedStr=
 		
 	GaiaArr := ["Cleric", "Magician", "Ranger", "Squire", "Thief", "Mystic", "Assassin", "Bard", "Berserker", "Bishop", "Crusader", "Druid", "Hunter", "Monk", "Necromancer", "Sorcerer", "Hexblade", "Psion", "Valkyrie", "Vault"]
 	GaiaFile := {}
@@ -281,18 +284,18 @@ GaiaRefresh:
 	
 	If (GaiaBuddyPath)
 	{
-		aFileList := {}
+		GaiaFileList := {}
 
 		Loop, Files, *.txt
 		{
-			aFileList[A_index] := SubStr(A_LoopFileName, 1, -4)
-			TheIndex := aFileList[A_index]
+			GaiaFileList[A_index] := SubStr(A_LoopFileName, 1, -4)
+			TheIndex := GaiaFileList[A_index]
 			for i in GaiaArr
 			{
 				if (InStr(TheIndex, GaiaArr[i]) != 0)
 				{
-					name:=TheIndex
-					GaiaFile.Push(name)
+					Gaianame:=TheIndex
+					GaiaFile.Push(Gaianame)
 					GaiaClass.Push(GaiaArr[i])
 				}
 			}
@@ -302,26 +305,26 @@ GaiaRefresh:
 		{
 			for i in GaiaClass
 			{
-				current := GaiaFile[i]
+				Gaiacurrent := GaiaFile[i]
 				if (GaiaClass[i] = GaiaArr[j])
 				{
-					class := GaiaArr[j]
+					classGaia := GaiaArr[j]
 					if (!Gaiacurrentclass)
 					{
-						Gaiacurrentclass = %current%
+						Gaiacurrentclass = %Gaiacurrent%
 					}
 					else {
-						Gaiacurrentclass = %current%|%Gaiacurrentclass%
+						Gaiacurrentclass = %Gaiacurrent%|%Gaiacurrentclass%
 					}
 				}
 			}
 			if (Gaiacurrentclass)
 			{
-				ReplacedStr := sortByNumberWithin(Gaiacurrentclass,"|")
-				ReplacedStr := StrReplace(ReplacedStr, "|" , " | ")
-				ReplacedStr=| %ReplacedStr%
-				GuiControl, GaiaBuddy:, %class%choice, %ReplacedStr%
-				GuiControl, GaiaBuddy:Choose, %class%choice, 1
+				GaiaReplacedStr := sortByNumberWithin(Gaiacurrentclass,"|")
+				GaiaReplacedStr := StrReplace(GaiaReplacedStr, "|" , " | ")
+				GaiaReplacedStr=| %GaiaReplacedStr%
+				GuiControl, GaiaBuddy:, %classGaia%choice, %GaiaReplacedStr%
+				GuiControl, GaiaBuddy:Choose, %classGaia%choice, 1
 			}
 			Gaiacurrentclass=
 		}
@@ -333,44 +336,44 @@ LoadGaia:
 {
 	IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
 	SetWorkingDir, %GaiaBuddyPath%
-	SaveName :=  SubStr(A_GuiControl, 1, -2)
-	SaveName = %SaveName%choice
-	GuiControlGet, CurrentFile ,, %SaveName%, Text
-	CurrentFile=%CurrentFile%
-	CurrentFile = %CurrentFile%.txt
-	CurrentPath = %GaiaBuddyPath%\%CurrentFile%
-	if FileExist(CurrentPath)
+	GaiaSaveName :=  SubStr(A_GuiControl, 1, -2)
+	GaiaSaveName = %GaiaSaveName%choice
+	GuiControlGet, GaiaCurrentFile ,, %GaiaSaveName%, Text
+	GaiaCurrentFile=%GaiaCurrentFile%
+	GaiaCurrentFile = %GaiaCurrentFile%.txt
+	GaiaCurrentPath = %GaiaBuddyPath%\%GaiaCurrentFile%
+	if FileExist(GaiaCurrentPath)
 	{		
 		SetTitleMatchMode, 1
 		If WinExist("Warcraft III")
 		{
-			FileReadLine, code, %CurrentFile%, 3
-			code=%code% 
-			StringTrimLeft, code, code, 25 
-			StringTrimRight, code, code, 7
+			FileReadLine, Gaiacode, %GaiaCurrentFile%, 3
+			Gaiacode=%Gaiacode% 
+			StringTrimLeft, Gaiacode, Gaiacode, 25 
+			StringTrimRight, Gaiacode, Gaiacode, 7
 			
-			FileReadLine, lvl, %CurrentFile%, 4
-			lvl=%lvl%
-			StringTrimLeft, lvl, lvl, 39
-			StringTrimRight, lvl, lvl, 6
+			FileReadLine, Gaialvl, %CurrentFile%, 4
+			Gaialvl=%Gaialvl%
+			StringTrimLeft, Gaialvl, Gaialvl, 39
+			StringTrimRight, Gaialvl, Gaialvl, 6
 			
 			WinActivate, Warcraft III
-			Clipboard := "Loading : " . lvl
+			Clipboard := "Loading : " . Gaialvl
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 200
-			Clipboard := "-load " . code
+			Clipboard := "-load " . Gaiacode
 			ClipWait,200
 			Send {esc}{Enter}^v{Enter} 
 		}
 		else
 		{
-			MsgBox, 4096, No Warcraft III, You need to open Warcraft III before loading !
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
 		}
 	}
 	else
 	{
-		MsgBox, 4096, Invalid Save File, No Save Found !
+		MsgBox, 262208, Invalid Save File, No Save Found !
 	}
 }
 return
@@ -378,34 +381,34 @@ LoadGaiaVault:
 {
 	IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
 	SetWorkingDir, %GaiaBuddyPath%
-	CurrentPath = %GaiaBuddyPath%\Vault.txt
-	if FileExist(CurrentPath)
+	GaiaCurrentPath = %GaiaBuddyPath%\Vault.txt
+	if FileExist(GaiaCurrentPath)
 	{	
 		SetTitleMatchMode, 1
 		If WinExist("Warcraft III")
 		{
 			WinActivate, Warcraft III
-			FileReadLine, code, Vault.txt, 3
-			StringTrimLeft, code, code, 20
-			StringTrimRight, code, code, 7
+			FileReadLine, Gaiacode, Vault.txt, 3
+			StringTrimLeft, Gaiacode, Gaiacode, 20
+			StringTrimRight, Gaiacode, Gaiacode, 7
 			Sleep 200
 			Clipboard := "Loading : Vault"
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 200
-			Clipboard := code
+			Clipboard := Gaiacode
 			ClipWait,200
 			Send {esc}{Enter}^v{Enter}
 		}
 		else
 		{
-			MsgBox, 4096, No Warcraft III, You need to open Warcraft III before loading !
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
 		}
 		SetTitleMatchMode, 2
 	}
 	else
 	{
-		MsgBox, 4096, Invalid Save File, No Vault Found !
+		MsgBox, 262208, Invalid Save File, No Vault Found !
 	}
 }
 return
@@ -431,72 +434,72 @@ HMRefresh:
 	{
 		Loop, Files, *.txt
 		{
-			start = 0
+			HMstart = 0
 			Loop, 
 			{
-				FileReadLine, fileline, %A_LoopFileName%, A_Index
+				FileReadLine, HMfileline, %A_LoopFileName%, A_Index
 				If (A_Index = 4)
 				{
-					currCode = %fileline%
-					StringTrimLeft, currCode, currCode, 22
-					StringTrimRight, currCode, currCode, 3
-					HMCodes.Push(currCode)
+					HMcurrCode = %HMfileline%
+					StringTrimLeft, HMcurrCode, HMcurrCode, 22
+					StringTrimRight, HMcurrCode, HMcurrCode, 3
+					HMCodes.Push(HMcurrCode)
 				}
-				if InStr(fileline, "Chat Message")
+				if InStr(HMfileline, "Chat Message")
 				{
-					start = 0
-					full = | FileName: %A_LoopFileName% %full% | Code: %currCode%
-					HMStats.Push(full)
-					GuiControl, HMBuddy:, hmclasschoice, %ClassOption%
+					HMstart = 0
+					HMfull = | FileName: %A_LoopFileName% %HMfull% | Code: %HMcurrCode%
+					HMStats.Push(HMfull)
+					GuiControl, HMBuddy:, hmclasschoice, %HMClassOption%
 					GuiControl, HMBuddy:Choose, hmclasschoice, 1
-					full=
+					HMfull=
 					Break
 				}
-				if (start = 1)
+				if (HMstart = 1)
 				{
-					currentline = %fileline%
-					StringTrimLeft, currentline, currentline, 15
-					StringTrimRight, currentline, currentline, 3
-					currentline := StrReplace(currentline, "|" , " ")
-					full = %full% | %currentline%
-					if InStr(currentline, "Char:")
+					HMcurrentline = %HMfileline%
+					StringTrimLeft, HMcurrentline, HMcurrentline, 15
+					StringTrimRight, HMcurrentline, HMcurrentline, 3
+					HMcurrentline := StrReplace(HMcurrentline, "|" , " ")
+					HMfull = %HMfull% | %HMcurrentline%
+					if InStr(HMcurrentline, "Char:")
 					{
-						currChar = %fileline%
-						StringTrimLeft, currChar, currChar, 21
-						StringTrimRight, currChar, currChar, 3
-						HMClass.Push(currChar)
-						if (ClassOption)
+						HMcurrChar = %HMfileline%
+						StringTrimLeft, HMcurrChar, HMcurrChar, 21
+						StringTrimRight, HMcurrChar, HMcurrChar, 3
+						HMClass.Push(HMcurrChar)
+						if (HMClassOption)
 						{
-							if InStr(ClassOption, currChar)
+							if InStr(HMClassOption, HMcurrChar)
 							{
 								
 							}
 							else
 							{
-								ClassOption = %ClassOption% | %currChar%
+								HMClassOption = %HMClassOption% | %HMcurrChar%
 							}
 						}
 						else
 						{
-							ClassOption = | %currChar%
+							HMClassOption = | %HMcurrChar%
 						}
 					}
-					if InStr(currentline, "Lv:")
+					if InStr(HMcurrentline, "Lv:")
 					{
-						currLvl = %fileline%
-						StringTrimLeft, currLvl, currLvl, 19
-						StringTrimRight, currLvl, currLvl, 3
-						HMClasses.Push(currChar " Lvl " currLvl)
-						HMLvl.Push(currLvl)
+						HMcurrLvl = %HMfileline%
+						StringTrimLeft, HMcurrLvl, HMcurrLvl, 19
+						StringTrimRight, HMcurrLvl, HMcurrLvl, 3
+						HMClasses.Push(HMcurrChar " Lvl " HMcurrLvl)
+						HMLvl.Push(HMcurrLvl)
 					}
 				}
-				if InStr(fileline, "Data Stats")
+				if InStr(HMfileline, "Data Stats")
 				{
-					start = 1
+					HMstart = 1
 				}
 			}
 		}
-		ClassOption=
+		HMClassOption=
 	}
 }
 return
@@ -506,80 +509,80 @@ HMChoice:
 	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
 	SetWorkingDir, %HMBuddyPath%
 	GuiControlGet, HMCurrentClass,, hmclasschoice, 
-	CurrentStat := []
-	CurrentCodes := []
-	CurrentLvls := []
+	HMCurrentStat := []
+	HMCurrentCodes := []
+	HMCurrentLvls := []
 	for i in HMClass
 	{
-		curr := HMClasses[i]
+		HMcurr := HMClasses[i]
 		HMCurrentClass=%HMCurrentClass%
-		If InStr(curr, HMCurrentClass)
+		If InStr(HMcurr, HMCurrentClass)
 		{
-			CurrStats := HMStats[i]
-			CurrentStat.Push(CurrStats)
-			CurrCodes := HMCodes[i]
-			CurrentCodes.Push(CurrCodes)
-			CurrLvls := HMLvl[i]
-			CurrentLvls.Push(CurrLvls)
+			HMCurrStats := HMStats[i]
+			HMCurrentStat.Push(HMCurrStats)
+			HMCurrCodes := HMCodes[i]
+			HMCurrentCodes.Push(HMCurrCodes)
+			HMCurrLvls := HMLvl[i]
+			HMCurrentLvls.Push(HMCurrLvls)
 		}
 	}
 	;;;; freaking sorting issue ;;;;;;;;
-	for i in CurrentLvls
+	for i in HMCurrentLvls
 	{
-		newlvl := CurrentLvls[i]
-		if (!lvllist)
+		HMnewlvl := HMCurrentLvls[i]
+		if (!HMlvllist)
 		{
-			lvllist = %newlvl%
+			HMlvllist = %HMnewlvl%
 		}
 		else
 		{
-			lvllist = %lvllist% `n%newlvl%
+			HMlvllist = %HMlvllist% `n%HMnewlvl%
 		}
-		newcode := CurrentCodes[i]
-		if (!codelist)
+		HMnewcode := HMCurrentCodes[i]
+		if (!HMcodelist)
 		{
-			codelist = %newcode%
-		}
-		else
-		{
-			codelist = %codelist% `n%newcode%
-		}
-		newstat := CurrentStat[i]
-		if (!statlist)
-		{
-			statlist = %newstat%
+			HMcodelist = %HMnewcode%
 		}
 		else
 		{
-			statlist = %statlist% `n%newstat%
+			HMcodelist = %HMcodelist% `n%HMnewcode%
+		}
+		HMnewstat := HMCurrentStat[i]
+		if (!HMstatlist)
+		{
+			HMstatlist = %HMnewstat%
+		}
+		else
+		{
+			HMstatlist = %HMstatlist% `n%HMnewstat%
 		}
 	}
-	Obj := [lvllist, codelist, statlist]
-	lvllist=
-	sortingnonsense := new GroupSort(Obj, "N R")
-	HMArrLvls := StrSplit(sortingnonsense.fetch("1") , "`n")
-	HMArrCodes := StrSplit(sortingnonsense.fetch("2") , "`n")
-	HMArrStat := StrSplit(sortingnonsense.fetch("3") , "`n")
+	HMObj := [HMlvllist, HMcodelist, HMstatlist]
+	HMlvllist=
+	HMsortingnonsense := new GroupSort(HMObj, "N R")
+	HMArrLvls := StrSplit(HMsortingnonsense.fetch("1") , "`n")
+	HMArrCodes := StrSplit(HMsortingnonsense.fetch("2") , "`n")
+	HMArrStat := StrSplit(HMsortingnonsense.fetch("3") , "`n")
 	for i in HMArrLvls {
-		newlvlvar := HMArrLvls[i]
-		if (!lvllist)
+		HMnewlvlvar := HMArrLvls[i]
+		if (!HMlvllist)
 		{
-			lvllist = | Level: %newlvlvar%
+			HMlvllist = | Level: %HMnewlvlvar%
 		}
 		else
 		{
-			lvllist = %lvllist% | Level: %newlvlvar%
+			HMlvllist = %HMlvllist% | Level: %HMnewlvlvar%
 		}
 	}
-	DefaultStat := HMArrStat[1]
-	CurrentCode := HMArrCodes[1]
-	GuiControl, HMBuddy:, hmclasslist, %lvllist%
+	HMDefaultStat := HMArrStat[1]
+	HMCurrentCode := HMArrCodes[1]
+	GuiControl, HMBuddy:, hmclasslist, %HMlvllist%
 	GuiControl, HMBuddy:Choose, hmclasslist, 1
-	GuiControl, HMBuddy:, hmclassinfo, %DefaultStat%
+	GuiControl, HMBuddy:, hmclassinfo, %HMDefaultStat%
 	GuiControl, HMBuddy:Choose, hmclassinfo, 1
-	lvllist=
-	codelist=
-	statlist=
+	HMlvllist=
+	HMcodelist=
+	HMstatlist=
 }
 return
 
@@ -587,10 +590,10 @@ HMCharChoice:
 {
 	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
 	SetWorkingDir, %HMBuddyPath%
-	GuiControlGet, CurrentCharNum,, hmclasslist,
-	ChosenStat := HMArrStat[CurrentCharNum]
-	CurrentCode := HMArrCodes[CurrentCharNum]
-	GuiControl, HMBuddy:, hmclassinfo, %ChosenStat%
+	GuiControlGet, HMCurrentCharNum,, hmclasslist,
+	HMChosenStat := HMArrStat[HMCurrentCharNum]
+	HMCurrentCode := HMArrCodes[HMCurrentCharNum]
+	GuiControl, HMBuddy:, hmclassinfo, %HMChosenStat%
 	GuiControl, HMBuddy:Choose, hmclassinfo, 1
 }
 return
@@ -599,13 +602,13 @@ HMStatChoice:
 {
 	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
 	SetWorkingDir, %HMBuddyPath%
-	GuiControlGet, CurrentStatNum,, hmclassinfo,
-	GuiControlGet, CurrentCharNum,, hmclasslist,
-	ChosenStat := HMArrStat[CurrentCharNum]
-	StringTrimLeft, ChosenStat, ChosenStat, 2
-	ArrStat2 := StrSplit(ChosenStat , " | ")
-	GetStat := ArrStat2[CurrentStatNum]
-	GuiControl, HMBuddyStat:, data, %GetStat%
+	GuiControlGet, HMCurrentStatNum,, hmclassinfo,
+	GuiControlGet, HMCurrentCharNum,, hmclasslist,
+	HMChosenStat := HMArrStat[HMCurrentCharNum]
+	StringTrimLeft, HMChosenStat, HMChosenStat, 2
+	HMArrStat2 := StrSplit(HMChosenStat , " | ")
+	HMGetStat := HMArrStat2[HMCurrentStatNum]
+	GuiControl, HMBuddyStat:, data, %HMGetStat%
 	Gui, HMBuddyStat:Show
 	Gui, HMBuddyStat:+AlwaysOnTop
 }
@@ -615,11 +618,11 @@ LoadHM:
 {
 	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
 	SetWorkingDir, %HMBuddyPath%
-	GuiControlGet, CurrentCharNum,, hmclasslist,
-	GuiControlGet, CurrentClassName,, hmclasschoice,
-	if (CurrentClassName && CurrentCharNum)
+	GuiControlGet, HMCurrentCharNum,, hmclasslist,
+	GuiControlGet, HMCurrentClassName,, hmclasschoice,
+	if (HMCurrentClassName && HMCurrentCharNum)
 	{
-		Clipboard := "Loading : " . CurrentClassName . " Level " . HMArrLvls[CurrentCharNum]
+		Clipboard := "Loading : " . HMCurrentClassName . " Level " . HMArrLvls[HMCurrentCharNum]
 		SetTitleMatchMode, 1
 		If WinExist("Warcraft III")
 		{
@@ -646,13 +649,13 @@ LoadHM:
 		}
 		else
 		{
-			MsgBox, 4096, No Warcraft III, You need to open Warcraft III before loading !
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
 		}
 		SetTitleMatchMode, 2
 	}
 	else
 	{
-		MsgBox, 4096, Invalid Save File, You need to choose a Save !
+		MsgBox, 262208, Invalid Save File, You need to choose a Save !
 	}
 }
 return
@@ -669,25 +672,25 @@ TBR13Refresh:
 	
 	TBR13Char := []
 	TBR13CharTXT := []
-	CharList=
+	TBR13CharList=
 	
 	If (TBR13BuddyPath)
 	{
 		Loop, Files, *.txt
 		{
 			TBR13CharTXT.Push(A_LoopFileName)
-			FileReadLine, fileline, %A_LoopFileName%, 11
-			StringTrimLeft, fileline, fileline, 9
-			TBR13Char.Push(fileline)
-			if (!CharList)
+			FileReadLine, TBR13fileline, %A_LoopFileName%, 11
+			StringTrimLeft, TBR13fileline, TBR13fileline, 9
+			TBR13Char.Push(TBR13fileline)
+			if (!TBR13CharList)
 			{
-				CharList= | %fileline%
+				TBR13CharList= | %TBR13fileline%
 			}
 			else
 			{
-				CharList= %CharList% | %fileline%
+				TBR13CharList= %TBR13CharList% | %TBR13fileline%
 			}
-			GuiControl, TBR13Buddy:, tbr13classchoice, %CharList%
+			GuiControl, TBR13Buddy:, tbr13classchoice, %TBR13CharList%
 			GuiControl, TBR13Buddy:Choose, tbr13classchoice, 1
 		}
 	}
@@ -697,35 +700,35 @@ TBR13Choice:
 {
 	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 	SetWorkingDir, %TBR13BuddyPath%
-	GuiControlGet, CurrentCharNum,, tbr13classchoice,
+	GuiControlGet, TBR13CurrentCharNum,, tbr13classchoice,
 	TBR13CharStat := []
-	CurrTXT := TBR13CharTXT[CurrentCharNum]
-	StatList=
+	TBR13CurrTXT := TBR13CharTXT[TBR13CurrentCharNum]
+	TBR13StatList=
 	Loop, 
 	{
-		FileReadLine, fileline, %CurrTXT%, A_Index
+		FileReadLine, TBR13fileline, %TBR13CurrTXT%, A_Index
 		If (A_Index > 10 && A_Index < 17)
 		{
-			StringTrimLeft, fileline, fileline, 2
+			StringTrimLeft, TBR13fileline, TBR13fileline, 2
 			
-			If (!StatList)
+			If (!TBR13StatList)
 			{
-				StatList = FileName: %CurrTXT%
-				TBR13CharStat.Push(StatList)
-				StatList = | FileName: %CurrTXT% | %fileline%
+				TBR13StatList = FileName: %TBR13CurrTXT%
+				TBR13CharStat.Push(TBR13StatList)
+				TBR13StatList = | FileName: %TBR13CurrTXT% | %TBR13fileline%
 			}
 			else
 			{
-				StatList = %StatList% | %fileline%
+				TBR13StatList = %TBR13StatList% | %TBR13fileline%
 			}
-			TBR13CharStat.Push(fileline)
+			TBR13CharStat.Push(TBR13fileline)
 		}
 		If (A_Index > 16)
 		{
 			Break
 		}
 	}
-	GuiControl, TBR13Buddy:, tbr13classinfo, %StatList%
+	GuiControl, TBR13Buddy:, tbr13classinfo, %TBR13StatList%
 	GuiControl, TBR13Buddy:Choose, tbr13classinfo, 1
 }
 return
@@ -733,10 +736,10 @@ TBR13StatChoice:
 {
 	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 	SetWorkingDir, %TBR13BuddyPath%
-	GuiControlGet, CurrentStatNum,, tbr13classinfo,
-	GuiControlGet, CurrentCharNum,, tbr13classchoice,
-	ChosenStat := TBR13CharStat[CurrentStatNum]
-	GuiControl, TBR13BuddyStat:, TBR13data, %ChosenStat%
+	GuiControlGet, TBR13CurrentStatNum,, tbr13classinfo,
+	GuiControlGet, TBR13CurrentCharNum,, tbr13classchoice,
+	TBR13ChosenStat := TBR13CharStat[TBR13CurrentStatNum]
+	GuiControl, TBR13BuddyStat:, TBR13data, %TBR13ChosenStat%
 	Gui, TBR13BuddyStat:Show
 	Gui, TBR13BuddyStat:+AlwaysOnTop
 }
@@ -745,19 +748,19 @@ LoadTBR13:
 {
 	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 	SetWorkingDir, %TBR13BuddyPath%
-	GuiControlGet, CurrentCharNum,, tbr13classchoice,
-	if (CurrentCharNum && TBR13CharStat)
+	GuiControlGet, TBR13CurrentCharNum,, tbr13classchoice,
+	if (TBR13CurrentCharNum && TBR13CharStat)
 	{
-		CurrTXT := TBR13CharTXT[CurrentCharNum]
-		CurrCode := TBR13CharStat[6]
-		StringTrimLeft, CurrCode, CurrCode, 6
-		CurrBank := TBR13CharStat[7]
-		StringTrimLeft, CurrBank, CurrBank, 6
-		CurrClass := TBR13CharStat[2]
-		StringTrimLeft, CurrClass, CurrClass, 7
-		CurrLvl := TBR13CharStat[3]
-		StringTrimLeft, CurrLvl, CurrLvl, 7
-		Clipboard := "Loading : " . CurrClass . " Level " . CurrLvl
+		TBR13CurrTXT := TBR13CharTXT[TBR13CurrentCharNum]
+		TBR13CurrCode := TBR13CharStat[6]
+		StringTrimLeft, TBR13CurrCode, TBR13CurrCode, 6
+		TBR13CurrBank := TBR13CharStat[7]
+		StringTrimLeft, TBR13CurrBank, TBR13CurrBank, 6
+		TBR13CurrClass := TBR13CharStat[2]
+		StringTrimLeft, TBR13CurrClass, TBR13CurrClass, 7
+		TBR13CurrLvl := TBR13CharStat[3]
+		StringTrimLeft, TBR13CurrLvl, TBR13CurrLvl, 7
+		Clipboard := "Loading : " . TBR13CurrClass . " Level " . TBR13CurrLvl
 		SetTitleMatchMode, 1
 		If WinExist("Warcraft III")
 		{
@@ -765,24 +768,24 @@ LoadTBR13:
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 200
-			Clipboard := CurrCode
+			Clipboard := TBR13CurrCode
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 1000
-			Clipboard := CurrBank
+			Clipboard := TBR13CurrBank
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 1000
 		}
 		else
 		{
-			MsgBox, 4096, No Warcraft III, You need to open Warcraft III before loading !
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
 		}
 		SetTitleMatchMode, 2
 	}
 	else
 	{
-		MsgBox, 4096, Invalid Save File, You need to choose a Save !
+		MsgBox, 262208, Invalid Save File, You need to choose a Save !
 	}
 }
 return
@@ -803,7 +806,7 @@ TBR21Refresh:
 	TBR21XP := []
 	TBR21Code := []
 	TBR21CharTXT := []
-	ClassList=
+	TBR21ClassList=
 	
 	If (TBR21BuddyPath)
 	{
@@ -812,14 +815,14 @@ TBR21Refresh:
 			TBR21CharTXT.Push(A_LoopFileName)
 			Loop, 10
 			{
-				FileReadLine, fileline, %A_LoopFileName%, A_Index
-				If InStr(fileline, "-load")
+				FileReadLine, TBR21fileline, %A_LoopFileName%, A_Index
+				If InStr(TBR21fileline, "-load")
 				{
-					fileline := StrReplace(fileline, "`t" , "")
+					TBR21fileline := StrReplace(TBR21fileline, "`t" , "")
 					break
 				}
 			}
-			TBR21Code.Push(fileline)
+			TBR21Code.Push(TBR21fileline)
 			TBR21FileName := A_LoopFileName
 			StringTrimRight, TBR21FileName, TBR21FileName, 4
 			TBR21Curr := StrSplit(TBR21FileName , "; ")
@@ -827,34 +830,34 @@ TBR21Refresh:
 			TBR21LvlNum := TBR21Curr[2]
 			StringTrimLeft, TBR21LvlNum, TBR21LvlNum, 4
 			TBR21Lvl.Push(TBR21LvlNum)
-			TrueXP := TBR21Curr[3]
+			TBR21TrueXP := TBR21Curr[3]
 			If (StrLen(TBR21Curr[3]) < 7)
 			{
-				XPNUM := 7 - StrLen(TBR21Curr[3])
-				Loop, %XPNUM%
+				TBR21XPNUM := 7 - StrLen(TBR21Curr[3])
+				Loop, %TBR21XPNUM%
 				{
-					TrueXP = 0%TrueXP%
+					TBR21TrueXP = 0%TBR21TrueXP%
 				}
 			}
-			TBR21XP.Push(TrueXP)
-			currChar := TBR21Class[A_Index]
-			if (ClassList)
+			TBR21XP.Push(TBR21TrueXP)
+			TBR21currChar := TBR21Class[A_Index]
+			if (TBR21ClassList)
 			{
-				if InStr(ClassList, currChar)
+				if InStr(TBR21ClassList, TBR21currChar)
 				{
 					
 				}
 				else
 				{
-					ClassList = %ClassList%|%currChar%
+					TBR21ClassList = %TBR21ClassList%|%TBR21currChar%
 				}
 			}
 			else
 			{
-				ClassList = |%currChar%
+				TBR21ClassList = |%TBR21currChar%
 			}
 		}
-		GuiControl, TBR21Buddy:, tbr21classchoice, %ClassList%
+		GuiControl, TBR21Buddy:, tbr21classchoice, %TBR21ClassList%
 		GuiControl, TBR21Buddy:Choose, tbr21classchoice, 1
 	}
 }
@@ -863,7 +866,7 @@ TBR21Choice:
 {
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 	SetWorkingDir, %TBR21BuddyPath%
-	GuiControlGet, CurrentClass,, tbr21classchoice, 
+	GuiControlGet, TBR21CurrentClass,, tbr21classchoice, 
 	TBR21LvlCurr := []
 	TBR21XPCurr := []
 	TBR21CodeCurr := []
@@ -871,20 +874,20 @@ TBR21Choice:
 	TBR21StatCurr := []
 	for i in TBR21Class
 	{
-		curr := TBR21Class[i]
-		If(curr = CurrentClass)
+		TBR21curr := TBR21Class[i]
+		If(TBR21curr = TBR21CurrentClass)
 		{
-			CurrTXT := TBR21CharTXT[i]
-			CurrLvl := TBR21Lvl[i]
-			CurrXP := TBR21XP[i]
-			CurrCode := TBR21Code[i]
+			TBR21CurrTXT := TBR21CharTXT[i]
+			TBR21CurrLvl := TBR21Lvl[i]
+			TBR21CurrXP := TBR21XP[i]
+			TBR21CurrCode := TBR21Code[i]
 			
-			CurrentStat = | FileName: %CurrTXT% | Level: %CurrLvl% | XP: %CurrXP% | Code: %CurrCode%
+			TBR21CurrentStat = | FileName: %TBR21CurrTXT% | Level: %TBR21CurrLvl% | XP: %TBR21CurrXP% | Code: %TBR21CurrCode%
 			TBR21CharTXTCurr.Push(TBR21CharTXT[i])
 			TBR21LvlCurr.Push(TBR21Lvl[i])
 			TBR21XPCurr.Push(TBR21XP[i])
 			TBR21CodeCurr.Push(TBR21Code[i])
-			TBR21StatCurr.Push(CurrentStat)
+			TBR21StatCurr.Push(TBR21CurrentStat)
 		}
 		else
 		{
@@ -893,94 +896,94 @@ TBR21Choice:
 	;;;; freaking sorting issue ;;;;;;;;
 	for i in TBR21XPCurr
 	{
-		newlvl := TBR21LvlCurr[i]
-		if (!lvllist)
+		TBR21newlvl := TBR21LvlCurr[i]
+		if (!TBR21lvllist)
 		{
-			lvllist = %newlvl%
+			TBR21lvllist = %TBR21newlvl%
 		}
 		else
 		{
-			lvllist = %lvllist% `n%newlvl%
+			TBR21lvllist = %TBR21lvllist% `n%TBR21newlvl%
 		}
-		newcode := TBR21CodeCurr[i]
-		if (!codelist)
+		TBR21newcode := TBR21CodeCurr[i]
+		if (!TBR21codelist)
 		{
-			codelist = %newcode%
-		}
-		else
-		{
-			codelist = %codelist% `n%newcode%
-		}
-		newstat := TBR21StatCurr[i]
-		if (!statlist)
-		{
-			statlist = %newstat%
+			TBR21codelist = %TBR21newcode%
 		}
 		else
 		{
-			statlist = %statlist% `n%newstat%
+			TBR21codelist = %TBR21codelist% `n%TBR21newcode%
+		}
+		TBR21newstat := TBR21StatCurr[i]
+		if (!TBR21statlist)
+		{
+			TBR21statlist = %TBR21newstat%
+		}
+		else
+		{
+			TBR21statlist = %TBR21statlist% `n%TBR21newstat%
 		}
 		
-		newxp := TBR21XPCurr[i]
-		if (!xplist)
+		TBR21newxp := TBR21XPCurr[i]
+		if (!TBR21xplist)
 		{
-			xplist = %newxp%
+			TBR21xplist = %TBR21newxp%
 		}
 		else
 		{
-			xplist = %xplist% `n%newxp%
+			TBR21xplist = %TBR21xplist% `n%TBR21newxp%
 		}
-		newtxt := TBR21CharTXTCurr[i]
-		if (!statlist)
+		TBR21newtxt := TBR21CharTXTCurr[i]
+		if (!TBR21statlist)
 		{
-			txtlist = %newtxt%
+			TBR21txtlist = %TBR21newtxt%
 		}
 		else
 		{
-			txtlist = %txtlist% `n%newtxt%
+			TBR21txtlist = %TBR21txtlist% `n%TBR21newtxt%
 		}
 	}
-	Obj := [xplist, codelist, statlist, lvllist, txtlist]
-	lvllist=
-	codelist=
-	statlist=
-	xplist=
-	txtlist=
-	sortingnonsense := new GroupSort(Obj, "N R")
-	TBR21ArrXP := StrSplit(sortingnonsense.fetch("1") , "`n")
-	TBR21ArrCodes := StrSplit(sortingnonsense.fetch("2") , "`n")
-	TBR21ArrStat := StrSplit(sortingnonsense.fetch("3") , "`n")
-	TBR21ArrLvls := StrSplit(sortingnonsense.fetch("4") , "`n")
-	TBR21ArrTXT := StrSplit(sortingnonsense.fetch("5") , "`n")
+	TBR21Obj := [TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
+	TBR21lvllist=
+	TBR21codelist=
+	TBR21statlist=
+	TBR21xplist=
+	TBR21txtlist=
+	TBR21sortingnonsense := new GroupSort(TBR21Obj, "N R")
+	TBR21ArrXP := StrSplit(TBR21sortingnonsense.fetch("1") , "`n")
+	TBR21ArrCodes := StrSplit(TBR21sortingnonsense.fetch("2") , "`n")
+	TBR21ArrStat := StrSplit(TBR21sortingnonsense.fetch("3") , "`n")
+	TBR21ArrLvls := StrSplit(TBR21sortingnonsense.fetch("4") , "`n")
+	TBR21ArrTXT := StrSplit(TBR21sortingnonsense.fetch("5") , "`n")
 	for i in TBR21ArrLvls {
-		newlvlvar := TBR21ArrLvls[i]
-		newxpvar := TBR21ArrXP[i]
-		if (!lvllist)
+		TBR21newlvlvar := TBR21ArrLvls[i]
+		TBR21newxpvar := TBR21ArrXP[i]
+		if (!TBR21lvllist)
 		{
-			lvllist = | Level: %newlvlvar% - XP: %newxpvar%
+			TBR21lvllist = | Level: %TBR21newlvlvar% - XP: %TBR21newxpvar%
 		}
 		else
 		{
-			lvllist = %lvllist% | Level: %newlvlvar% - XP: %newxpvar%
+			TBR21lvllist = %TBR21lvllist% | Level: %TBR21newlvlvar% - XP: %TBR21newxpvar%
 		}
 	}
-	DefaultStat := TBR21ArrStat[1]
-	CurrentCode := TBR21ArrCodes[1]
-	GuiControl, TBR21Buddy:, tbr21classlist, %lvllist%
+	TBR21DefaultStat := TBR21ArrStat[1]
+	TBR21CurrentCode := TBR21ArrCodes[1]
+	GuiControl, TBR21Buddy:, tbr21classlist, %TBR21lvllist%
 	GuiControl, TBR21Buddy:Choose, tbr21classlist, 1
-	GuiControl, TBR21Buddy:, tbr21classinfo, %DefaultStat%
+	GuiControl, TBR21Buddy:, tbr21classinfo, %TBR21DefaultStat%
 	GuiControl, TBR21Buddy:Choose, tbr21classinfo, 1
-	lvllist=
+	TBR21lvllist=
 }
 return
 TBR21CharChoice:
 {
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 	SetWorkingDir, %TBR21BuddyPath%
-	GuiControlGet, CurrentCharNum,, tbr21classlist, 
-	ChosenStat := TBR21ArrStat[CurrentCharNum]
-	CurrentCode := TBR21ArrCodes[CurrentCharNum]
-	GuiControl, TBR21Buddy:, tbr21classinfo, %ChosenStat%
+	GuiControlGet, TBR21CurrentCharNum,, tbr21classlist, 
+	TBR21ChosenStat := TBR21ArrStat[TBR21CurrentCharNum]
+	TBR21CurrentCode := TBR21ArrCodes[TBR21CurrentCharNum]
+	GuiControl, TBR21Buddy:, tbr21classinfo, %TBR21ChosenStat%
 	GuiControl, TBR21Buddy:Choose, tbr21classinfo, 1
 }
 return
@@ -988,13 +991,13 @@ TBR21StatChoice:
 {
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 	SetWorkingDir, %TBR21BuddyPath%
-	GuiControlGet, CurrentStatNum,, tbr21classinfo,
-	GuiControlGet, CurrentCharNum,, tbr21classlist,
-	ChosenStat := TBR21ArrStat[CurrentCharNum]
-	StringTrimLeft, ChosenStat, ChosenStat, 2
-	ArrStat2 := StrSplit(ChosenStat , " | ")
-	GetStat := ArrStat2[CurrentStatNum]
-	GuiControl, TBR21BuddyStat:, TBR21data, %GetStat%
+	GuiControlGet, TBR21CurrentStatNum,, tbr21classinfo,
+	GuiControlGet, TBR21CurrentCharNum,, tbr21classlist,
+	TBR21ChosenStat := TBR21ArrStat[TBR21CurrentCharNum]
+	StringTrimLeft, TBR21ChosenStat, TBR21ChosenStat, 2
+	TBR21ArrStat2 := StrSplit(TBR21ChosenStat , " | ")
+	TBR21GetStat := TBR21ArrStat2[TBR21CurrentStatNum]
+	GuiControl, TBR21BuddyStat:, TBR21data, %TBR21GetStat%
 	Gui, TBR21BuddyStat:Show
 	Gui, TBR21BuddyStat:+AlwaysOnTop
 }
@@ -1003,17 +1006,17 @@ LoadTBR21:
 {
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 	SetWorkingDir, %TBR21BuddyPath%
-	GuiControlGet, CurrentChar,, tbr21classchoice,
-	GuiControlGet, CurrentCharNum,, tbr21classlist,
+	GuiControlGet, TBR21CurrentChar,, tbr21classchoice,
+	GuiControlGet, TBR21CurrentCharNum,, tbr21classlist,
 	
-	if (CurrentChar && CurrentCharNum)
+	if (TBR21CurrentChar && TBR21CurrentCharNum)
 	{
-		CurrCode := TBR21ArrCodes[CurrentCharNum]
-		CurrLvl := TBR21ArrLvls[CurrentCharNum]
-		CurrClass := CurrentChar
-		CurrXP := TBR21ArrXP[CurrentCharNum]
+		TBR21CurrCode := TBR21ArrCodes[TBR21CurrentCharNum]
+		TBR21CurrLvl := TBR21ArrLvls[TBR21CurrentCharNum]
+		TBR21CurrClass := TBR21CurrentChar
+		TBR21CurrXP := TBR21ArrXP[TBR21CurrentCharNum]
 		
-		Clipboard := "Loading : " . CurrClass . " - Level " . CurrLvl . " - XP " . CurrXP
+		Clipboard := "Loading : " . TBR21CurrClass . " - Level " . TBR21CurrLvl . " - XP " . TBR21CurrXP
 		SetTitleMatchMode,1
 		If WinExist("Warcraft III")
 		{
@@ -1028,13 +1031,13 @@ LoadTBR21:
 		}
 		else
 		{
-			MsgBox, 4096, No Warcraft III, You need to open Warcraft III before loading !
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
 		}
 		SetTitleMatchMode, 2
 	}
 	else
 	{
-		MsgBox, 4096, Invalid Save File, You need to choose a Save !
+		MsgBox, 262208, Invalid Save File, You need to choose a Save !
 	}
 }
 return
@@ -1357,7 +1360,8 @@ RestoreBackup:
 	TBR21RestorePath = %RestorePath%\TBR21 Restored\
 	
 	If (RestorePath)
-	{
+	{		
+		name = Gaia
 		IniRead, GaiaNum, %BackupPath%, Gaia, Count
 		Loop, %GaiaNum%
 		{
@@ -1369,8 +1373,13 @@ RestoreBackup:
 			FileCreateDir, %GaiaRestorePath%
 			FileDelete, %GaiaRestorePath%%GaiaFile%
 			FileAppend, %GaiaTxt%, %GaiaRestorePath%%GaiaFile%
+			
+			Gaiaperc := (A_Index / %name%Num) * 100
+			Progress, %Gaiaperc%, %GaiaFile%, Restoring %name% Backup..., %name% Backup
 		}
+		Progress, Off
 	
+		name = HM
 		IniRead, HMNum, %BackupPath%, HM, Count
 		Loop, %HMNum%
 		{
@@ -1382,8 +1391,13 @@ RestoreBackup:
 			FileCreateDir, %HMRestorePath%
 			FileDelete, %HMRestorePath%%HMFile%
 			FileAppend, %HMTxt%, %HMRestorePath%%HMFile%
+			
+			HMperc := (A_Index / %name%Num) * 100
+			Progress, %HMperc%, %HMFile%, Restoring %name% Backup..., %name% Backup
 		}
+		Progress, Off
 	
+		name = TBR13
 		IniRead, TBR13Num, %BackupPath%, TBR13, Count
 		Loop, %TBR13Num%
 		{
@@ -1395,8 +1409,13 @@ RestoreBackup:
 			FileCreateDir, %TBR13RestorePath%
 			FileDelete, %TBR13RestorePath%%TBR13File%
 			FileAppend, %TBR13Txt%, %TBR13RestorePath%%TBR13File%
+			
+			TBR13perc := (A_Index / %name%Num) * 100
+			Progress, %TBR13perc%, %TBR13File%, Restoring %name% Backup..., %name% Backup
 		}
-	
+		Progress, Off
+		
+		name = TBR21
 		IniRead, TBR21Num, %BackupPath%, TBR21, Count
 		Loop, %TBR21Num%
 		{
@@ -1408,7 +1427,12 @@ RestoreBackup:
 			FileCreateDir, %TBR21RestorePath%
 			FileDelete, %TBR21RestorePath%%TBR21File%
 			FileAppend, %TBR21Txt%, %TBR21RestorePath%%TBR21File%
+			
+			TBR21perc := (A_Index / %name%Num) * 100
+			Progress, %TBR21perc%, %TBR21File%, Restoring %name% Backup..., %name% Backup
 		}
+		Progress, Off
+		MsgBox, 262208, Restoration Done, Backup Restored at %RestorePath%\
 	}
 }
 return
@@ -1419,84 +1443,130 @@ CreateBackup:
 	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
 	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
+	CreateBackupPath=
 	
 	FileSelectFolder, CreateBackupPath, 3,, Where do you want your Backup to be saved? (Press Cancel to Skip)
 	
-	FileDelete, %CreateBackupPath%\Backup.ini
-	FileAppend,, %CreateBackupPath%\Backup.ini
-
-	
-	If (GaiaBuddyPath)
+	If (CreateBackupPath)
 	{
-		name = Gaia
-		SetWorkingDir, %GaiaBuddyPath%
-		current := 0
-		Loop, Files, *.txt
+		FileDelete, %CreateBackupPath%\Backup.ini
+		FileAppend,, %CreateBackupPath%\Backup.ini
+		
+		If (GaiaBuddyPath)
 		{
-			current++
-			FileRead, currBackup, %A_LoopFileName%
-			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
-			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
-			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
-			
-			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
-			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
+			name = Gaia
+			SetWorkingDir, %GaiaBuddyPath%
+			Gaiacurrent := 0
+			Gaiamax := 0
+			Loop, Files, *.txt
+			{
+				Gaiamax++
+			}
+			Loop, Files, *.txt
+			{
+				Gaiacurrent++
+				FileRead, GaiacurrBackup, %A_LoopFileName%
+				GaiacurrBackup := StrReplace(GaiacurrBackup, "`r`n" , "LINEBREAK")
+				GaiacurrBackup := StrReplace(GaiacurrBackup, "`t" , "TABBREAK")
+				GaiacurrBackup := StrReplace(GaiacurrBackup, "`n" , "LINEBREAK")
+				GaiacurrBackup := StrReplace(GaiacurrBackup, "`r" , "LINEBREAK")
+				
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%Gaiacurrent%
+				IniWrite, %GaiacurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%Gaiacurrent%
+				
+				Gaiaperc := (A_Index / Gaiamax) * 100
+				Progress, %Gaiaperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %Gaiacurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
 		}
-		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
-	}
-	If (HMBuddyPath)
-	{
-		name = HM
-		SetWorkingDir, %HMBuddyPath%
-		current := 0
-		Loop, Files, *.txt
+		If (HMBuddyPath)
+		{		
+			name = HM
+			SetWorkingDir, %HMBuddyPath%
+			HMcurrent := 0
+			HMmax := 0
+			Loop, Files, *.txt
+			{
+				HMmax++
+			}
+			Loop, Files, *.txt
+			{
+				HMcurrent++
+				FileRead, HMcurrBackup, %A_LoopFileName%
+				HMcurrBackup := StrReplace(HMcurrBackup, "`r`n" , "LINEBREAK")
+				HMcurrBackup := StrReplace(HMcurrBackup, "`t" , "TABBREAK")
+				HMcurrBackup := StrReplace(HMcurrBackup, "`n" , "LINEBREAK")
+				HMcurrBackup := StrReplace(HMcurrBackup, "`r" , "LINEBREAK")
+				
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%HMcurrent%
+				IniWrite, %HMcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%HMcurrent%
+				
+				HMperc := (A_Index / HMmax) * 100
+				Progress, %HMperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %HMcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
+		}
+		If (TBR13BuddyPath)
 		{
-			current++
-			FileRead, currBackup, %A_LoopFileName%
-			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
-			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
-			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
+			name = TBR13
+			SetWorkingDir, %TBR13BuddyPath%
+			TBR13current := 0
+			TBR13max := 0
+			Loop, Files, *.txt
+			{
+				TBR13max++
+			}
 			
-			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
-			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
+			Loop, Files, *.txt
+			{
+				TBR13current++
+				FileRead, TBR13currBackup, %A_LoopFileName%
+				TBR13currBackup := StrReplace(TBR13currBackup, "`r`n" , "LINEBREAK")
+				TBR13currBackup := StrReplace(TBR13currBackup, "`t" , "TABBREAK")
+				TBR13currBackup := StrReplace(TBR13currBackup, "`n" , "LINEBREAK")
+				TBR13currBackup := StrReplace(TBR13currBackup, "`r" , "LINEBREAK")
+				
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TBR13current%
+				IniWrite, %TBR13currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TBR13current%
+				
+				TBR13perc := (A_Index / TBR13max) * 100
+				Progress, %TBR13perc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %TBR13current%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
 		}
-		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
-	}
-	If (TBR13BuddyPath)
-	{
-		name = TBR13
-		SetWorkingDir, %TBR13BuddyPath%
-		current := 0
-		Loop, Files, *.txt
+		If (TBR21BuddyPath)
 		{
-			current++
-			FileRead, currBackup, %A_LoopFileName%
-			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
-			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
-			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
+			name = TBR21
+			SetWorkingDir, %TBR21BuddyPath%
+			TBR21current := 0
+			TBR21max := 0
+			Loop, Files, *.txt
+			{
+				TBR21max++
+			}
 			
-			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
-			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
+			Loop, Files, *.txt
+			{
+				TBR21current++
+				FileRead, TBR21currBackup, %A_LoopFileName%
+				TBR21currBackup := StrReplace(TBR21currBackup, "`r`n" , "LINEBREAK")
+				TBR21currBackup := StrReplace(TBR21currBackup, "`t" , "TABBREAK")
+				TBR21currBackup := StrReplace(TBR21currBackup, "`n" , "LINEBREAK")
+				TBR21currBackup := StrReplace(TBR21currBackup, "`r" , "LINEBREAK")
+				
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TBR21current%
+				IniWrite, %TBR21currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TBR21current%
+				
+				TBR21perc := (A_Index / TBR21max) * 100
+				Progress, %TBR21perc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %TBR21current%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
 		}
-		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
-	}
-	If (TBR21BuddyPath)
-	{
-		name = TBR21
-		SetWorkingDir, %TBR21BuddyPath%
-		current := 0
-		Loop, Files, *.txt
-		{
-			current++
-			FileRead, currBackup, %A_LoopFileName%
-			currBackup := StrReplace(currBackup, "`r`n" , "LINEBREAK")
-			currBackup := StrReplace(currBackup, "`t" , "TABBREAK")
-			currBackup := StrReplace(currBackup, "`n" , "LINEBREAK")
-			
-			IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%current%
-			IniWrite, %currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%current%
-		}
-		IniWrite, %current%, %CreateBackupPath%\Backup.ini, %name%, Count
+		MsgBox, 262208, Backup Done, Backup Saved at %CreateBackupPath%\Backup.ini
 	}
 }
 return
