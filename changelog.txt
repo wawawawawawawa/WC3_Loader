@@ -8,3 +8,4 @@
       the AutoUpdater.exe shows 3/68 on totalvirus (same ones than from the backup version)...
       the AutoUpdater.ahk shows 0/68 though (and only 10 lines of code :p), 
       so check the code there, or just never click on "Automatic Install" button
+1.5 : Added TeveF RPG
