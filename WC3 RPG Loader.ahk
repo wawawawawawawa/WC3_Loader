@@ -1155,6 +1155,7 @@ TEVERefresh:
 						TEVEcurrentline = %TEVEfileline%
 						StringTrimLeft, TEVEcurrentline, TEVEcurrentline, 15
 						StringTrimRight, TEVEcurrentline, TEVEcurrentline, 3
+						TEVEcurrentline := StrReplace(TEVEcurrentline, "|" , " ")
 						If InStr(TEVEcurrentline, "-load ")
 						{
 							TEVECodes1.Push(TEVEcurrentline)
