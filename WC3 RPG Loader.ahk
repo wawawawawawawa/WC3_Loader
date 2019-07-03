@@ -10,7 +10,7 @@ FileEncoding UTF-8
 #LTrim
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.4"
+Global currentversion := "1.5"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -28,26 +28,29 @@ ifNotExist, %A_ScriptDir%\%ININame%
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, GaiaPath
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR13Path
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR21Path
+	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
 }
 
 IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
 IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
 IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
+IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
 
 ;////////////////////////////////////////// GUI //////////////////////////////////////////////////////////////////
 ;=============== MAIN GUI ====================
 Gui 99:+LabelMainBuddy
 Gui, MainBuddy:Font, cBlack s10
-Gui, MainBuddy:Add, GroupBox, section r3 w265, Loaders : 
+Gui, MainBuddy:Add, GroupBox, section h120 w265, Loaders : 
 Gui, Settings:Font, 
 Gui, MainBuddy:Add, Button, xp5 yp25 w120 gGUIGaia, Gaia Loader
 Gui, MainBuddy:Add, Button, xp130 w120 gGUIHM, HM Loader
 Gui, MainBuddy:Add, Button, xp-130 yp30 w120 gGUITBR13, TBR 1.38 Loader
 Gui, MainBuddy:Add, Button, xp130 w120 gGUITBR21, TBR 2.1 Loader
+Gui, MainBuddy:Add, Button, xp-130 yp30 w120 gGUITEVE, TeveF Loader
 
 Gui, MainBuddy:Font, cBlack s10
-Gui, MainBuddy:Add, GroupBox, xs r2 w265, Backup : 
+Gui, MainBuddy:Add, GroupBox, xs h60 w265, Backup : 
 Gui, Settings:Font, 
 Gui, MainBuddy:Add, Button, xp5 yp25 w120 gCreateBackup, Create Backup
 Gui, MainBuddy:Add, Button, xp130 w120 gRestoreBackup, Restore Backup
@@ -165,7 +168,7 @@ Gui 3a:+LabelTBR13BuddyStat
 Gui, TBR13BuddyStat:Add, Edit,vTBR13data ReadOnly w600, 
 Gui, TBR13BuddyStat:Show, Hide Center, Retrieve content
 ;=============== TBR GUI 2.1 ====================
-Gui 3:+LabelTBR21Buddy
+Gui 4:+LabelTBR21Buddy
 Gui, TBR21Buddy:Add, Text, x40 y5, Class Selection :
 Gui, TBR21Buddy:Add, Text, x205 y5, Characters Available :
 Gui, TBR21Buddy:Add, Text, x500 y5, Character Information :
@@ -185,10 +188,35 @@ Gui, TBR21Buddy:Show, Hide Center, TBR 2.1 Buddy (Press CTRL + F1 to Show/Hide)
 
 TBR21GUI = 0
 
-Gui 3a:+LabelTBR21BuddyStat
+Gui 4a:+LabelTBR21BuddyStat
 Gui, TBR21BuddyStat:Add, Edit,vTBR21data ReadOnly w600, 
 Gui, TBR21BuddyStat:Show, Hide Center, Retrieve content
+;=============== TEVE GUI ====================
+Gui 5:+LabelTEVEBuddy
+Gui, TEVEBuddy:Add, Text, x40 y5, Class Selection :
+Gui, TEVEBuddy:Add, Text, x205 y5, Characters Available :
+Gui, TEVEBuddy:Add, Text, x500 y5, Character Information :
+Gui, TEVEBuddy:Add, ListBox, x5 y20 w150 h300 vteveclasschoice gTEVEChoice , 
+Gui, TEVEBuddy:Add, ListBox, x160 y20 w200 h300 vteveclasslist gTEVECharChoice AltSubmit, 
+Gui, TEVEBuddy:Add, ListBox, x365 y20 w400 h300 vteveclassinfo gTEVEStatChoice AltSubmit, 
 
+Gui, TEVEBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
+Gui, TEVEBuddy:Add, Button, x275 y320 w130 h40 gTEVERefresh, Refresh
+Gui, TEVEBuddy:Add, Button, x636 y320 w130 h40 gLoadTEVE, Load
+
+Gui, TEVEBuddy:Add, Button, x5 y370 h40 gChangeTEVEPath, Change Save Folder
+Gui, TEVEBuddy:Add, Edit, x155 y370 w300 h40 vTEVEPathText ReadOnly, %TEVEBuddyPath%
+
+Gui, TEVEBuddy:+ToolWindow
+Gui, TEVEBuddy:Show, Hide Center, TeveF Buddy (Press CTRL + F1 to Show/Hide)
+
+TEVEGUI = 0
+
+Gui 5a:+LabelTEVEBuddyStat
+Gui, TEVEBuddyStat:Add, Edit,vTEVEdata ReadOnly w600, 
+Gui, TEVEBuddyStat:Show, Hide Center, Retrieve content
+
+;=============== Startup ====================
 UpdateDone = 0
 GoSub, Update
 
@@ -399,7 +427,7 @@ LoadGaia:
 			StringTrimLeft, Gaiacode, Gaiacode, 25 
 			StringTrimRight, Gaiacode, Gaiacode, 7
 			
-			FileReadLine, Gaialvl, %CurrentFile%, 4
+			FileReadLine, Gaialvl, %GaiaCurrentFile%, 4
 			Gaialvl=%Gaialvl%
 			StringTrimLeft, Gaialvl, Gaialvl, 39
 			StringTrimRight, Gaialvl, Gaialvl, 6
@@ -482,7 +510,7 @@ HMRefresh:
 		Loop, Files, *.txt
 		{
 			HMstart = 0
-			Loop, 
+			Loop, 50
 			{
 				FileReadLine, HMfileline, %A_LoopFileName%, A_Index
 				If (A_Index = 4)
@@ -679,7 +707,7 @@ LoadHM:
 			Sleep 200
 			Send {esc}{enter}-load{enter}
 			Sleep 1500
-			Clipboard := CurrentCode
+			Clipboard := HMCurrentCode
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 1500
@@ -981,7 +1009,7 @@ TBR21Choice:
 			TBR21xplist = %TBR21xplist% `n%TBR21newxp%
 		}
 		TBR21newtxt := TBR21CharTXTCurr[i]
-		if (!TBR21statlist)
+		if (!TBR21txtlist)
 		{
 			TBR21txtlist = %TBR21newtxt%
 		}
@@ -1071,7 +1099,253 @@ LoadTBR21:
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 200
-			Clipboard := CurrCode
+			Clipboard := TBR21CurrCode
+			ClipWait, 200
+			Send {esc}{Enter}^v{Enter}
+			Sleep 200
+		}
+		else
+		{
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
+		}
+		SetTitleMatchMode, 2
+	}
+	else
+	{
+		MsgBox, 262208, Invalid Save File, You need to choose a Save !
+	}
+}
+return
+
+;////////////////////////////////////////// TeveF //////////////////////////////////////////////////////////////////
+;=============== TeveF ====================
+TEVERefresh:
+{
+	; Empty Old Var
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+	SetWorkingDir, %TEVEBuddyPath%
+	GuiControl, TEVEBuddy:, teveclassinfo, |
+	GuiControl, TEVEBuddy:, teveclasslist, |
+	GuiControl, TEVEBuddy:, teveclasschoice, |
+	
+	TEVEClasses := []
+	TEVEFilePath := []
+	TEVEFileName := []
+	TEVEStats := []
+	TEVECodes1 := []
+	TEVECodes2 := []
+	TEVEClassList=
+	
+	If (TEVEBuddyPath)
+	{
+		Loop, Files, *, D
+		{
+			TEVECurrClass := A_LoopFileName
+			TEVEClassList = %TEVEClassList%|%A_LoopFileName%
+			Loop, Files, %A_LoopFileLongPath%\*.txt
+			{
+				TEVEFilePath.Push(A_LoopFileLongPath)
+				TEVEFileName.Push(A_LoopFileName)
+				TEVEClasses.Push(TEVECurrClass)
+				Loop, 35
+				{
+					FileReadLine, TEVEfileline, %A_LoopFileLongPath%, A_Index
+					If InStr(TEVEfileline, "call Preload(")
+					{
+						TEVEcurrentline = %TEVEfileline%
+						StringTrimLeft, TEVEcurrentline, TEVEcurrentline, 15
+						StringTrimRight, TEVEcurrentline, TEVEcurrentline, 3
+						If InStr(TEVEcurrentline, "-load ")
+						{
+							TEVECodes1.Push(TEVEcurrentline)
+						}
+						If InStr(TEVEcurrentline, "-load2 ")
+						{
+							TEVECodes2.Push(TEVEcurrentline)
+						}
+						If (TEVEcurrentline != "        ")
+						{
+							TEVEfull = %TEVEfull% | %TEVEcurrentline%
+						}
+						Else
+						{
+							TEVEfull = | FileName: %A_LoopFileName% %TEVEfull%
+							TEVEStats.Push(TEVEfull)
+							TEVEfull=
+							Break
+						}
+					}
+				}
+			}
+		}
+		GuiControl, TEVEBuddy:, teveclasschoice, %TEVEClassList%
+		GuiControl, TEVEBuddy:Choose, teveclasschoice, 1
+	}
+}
+return
+TEVEChoice:
+{
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+	SetWorkingDir, %TEVEBuddyPath%
+	GuiControlGet, TEVECurrentClass,, teveclasschoice, 
+	
+	TEVEStatCurr := []
+	TEVECurrName=
+	TEVECurrPath=
+	TEVELvlCurr := []
+	TEVECurrentCode1 := []
+	TEVECurrentCode2 := []
+	
+	for i in TEVEClasses
+	{
+		TEVEcurr := TEVEClasses[i]
+		TEVECurrentClass=%TEVECurrentClass%
+		If InStr(TEVEcurr, TEVECurrentClass)
+		{
+			TEVECurrStats := TEVEStats[i]
+			TEVEStatCurr.Push(TEVECurrStats)
+			TEVECurrName := TEVEFileName[i]
+			TEVELvlCurr.Push(SubStr(TEVECurrName, 5 , 3))
+			TEVECurrCode1 := TEVECodes1[i]
+			TEVECurrentCode1.Push(TEVECurrCode1)
+			TEVECurrCode2 := TEVECodes2[i]
+			TEVECurrentCode2.Push(TEVECurrCode2)
+		}
+	}
+	
+	;;;; freaking sorting issue ;;;;;;;;
+	for i in TEVELvlCurr
+	{
+		TEVEnewlvl := TEVELvlCurr[i]
+		if (!TEVElvllist)
+		{
+			TEVElvllist = %TEVEnewlvl%
+		}
+		else
+		{
+			TEVElvllist = %TEVElvllist% `n%TEVEnewlvl%
+		}
+		TEVEnewstat := TEVEStatCurr[i]
+		if (!TEVEstatlist)
+		{
+			TEVEstatlist = %TEVEnewstat%
+		}
+		else
+		{
+			TEVEstatlist = %TEVEstatlist% `n%TEVEnewstat%
+		}
+		TEVEnewcode1 := TEVECurrentCode1[i]
+		if (!TEVEcode1list)
+		{
+			TEVEcode1list = %TEVEnewcode1%
+		}
+		else
+		{
+			TEVEcode1list = %TEVEcode1list% `n%TEVEnewcode1%
+		}
+		TEVEnewcode2 := TEVECurrentCode2[i]
+		if (!TEVEcode2list)
+		{
+			TEVEcode2list = %TEVEnewcode2%
+		}
+		else
+		{
+			TEVEcode2list = %TEVEcode2list% `n%TEVEnewcode2%
+		}
+	}
+	TEVEObj := [TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
+	TEVElvllist=
+	TEVEstatlist=
+	TEVEcode1list=
+	TEVEcode2list=
+	TEVEsortingnonsense := new GroupSort(TEVEObj, "N R")
+	TEVEArrLvls := StrSplit(TEVEsortingnonsense.fetch("1") , "`n")
+	TEVEArrStat := StrSplit(TEVEsortingnonsense.fetch("2") , "`n")
+	TEVEArrCode1 := StrSplit(TEVEsortingnonsense.fetch("3") , "`n")
+	TEVEArrCode2 := StrSplit(TEVEsortingnonsense.fetch("4") , "`n")
+	for i in TEVEArrLvls 
+	{
+		TEVEnewlvlvar := TEVEArrLvls[i]
+		if (!TEVElvllist)
+		{
+			TEVElvllist = | Lv.%TEVEnewlvlvar%
+		}
+		else
+		{
+			TEVElvllist = %TEVElvllist% | Lv.%TEVEnewlvlvar%
+		}
+	}
+	
+	
+	TEVEDefaultStat := TEVEArrStat[1]
+	TEVECurrentCode1 := TEVEArrCode1[1]
+	TEVECurrentCode2 := TEVEArrCode2[1]
+	GuiControl, TEVEBuddy:, teveclasslist, %TEVElvllist%
+	GuiControl, TEVEBuddy:Choose, teveclasslist, 1
+	GuiControl, TEVEBuddy:, teveclassinfo, %TEVEDefaultStat%
+	GuiControl, TEVEBuddy:Choose, teveclassinfo, 1
+	TEVElvllist=
+	TEVEstatlist=
+	TEVEcode1list=
+	TEVEcode2list=
+}
+return
+TEVECharChoice:
+{
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+	SetWorkingDir, %TEVEBuddyPath%
+	GuiControlGet, TEVECurrentCharNum,, teveclasslist, 
+	TEVEChosenStat := TEVEArrStat[TEVECurrentCharNum]
+	TEVECurrentCode1 := TEVEArrCode1[TEVECurrentCharNum]
+	TEVECurrentCode2 := TEVEArrCode2[TEVECurrentCharNum]
+	GuiControl, TEVEBuddy:, teveclassinfo, %TEVEChosenStat%
+	GuiControl, TEVEBuddy:Choose, teveclassinfo, 1
+}
+return
+TEVEStatChoice:
+{
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+	SetWorkingDir, %TEVEBuddyPath%
+	GuiControlGet, TEVECurrentStatNum,, teveclassinfo,
+	GuiControlGet, TEVECurrentCharNum,, teveclasslist,
+	TEVEChosenStat := TEVEArrStat[TEVECurrentCharNum]
+	StringTrimLeft, TEVEChosenStat, TEVEChosenStat, 2
+	TEVEArrStat2 := StrSplit(TEVEChosenStat , " | ")
+	TEVEGetStat := TEVEArrStat2[TEVECurrentStatNum]
+	GuiControl, TEVEBuddyStat:, TEVEdata, %TEVEGetStat%
+	Gui, TEVEBuddyStat:Show
+	Gui, TEVEBuddyStat:+AlwaysOnTop
+}
+return
+LoadTEVE:
+{
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+	SetWorkingDir, %TEVEBuddyPath%
+	GuiControlGet, TEVECurrentChar,, teveclasschoice,
+	GuiControlGet, TEVECurrentCharNum,, teveclasslist,
+	
+	if (TEVECurrentChar && TEVECurrentCharNum)
+	{
+		TEVECurrCode1 := TEVEArrCode1[TEVECurrentCharNum]
+		TEVECurrCode2 := TEVEArrCode2[TEVECurrentCharNum]
+		TEVECurrLvl := TEVEArrLvls[TEVECurrentCharNum]
+		TEVECurrClass := TEVECurrentChar
+		
+		Clipboard := "Loading : " . TEVECurrClass . " - Level " . TEVECurrLvl
+		SetTitleMatchMode,1
+		If WinExist("Warcraft III")
+		{
+			WinActivate, Warcraft III
+			ClipWait, 200
+			Send {esc}{Enter}^v{Enter}
+			Sleep 200
+			Clipboard := TEVECurrCode1
+			ClipWait, 200
+			Send {esc}{Enter}^v{Enter}
+			Sleep 200
+			Send {esc}{Enter}Loading Items :{Enter}
+			Sleep 200
+			Clipboard := TEVECurrCode2
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 200
@@ -1353,6 +1627,20 @@ GUITBR21:
 }
 return
 
+GUITEVE:
+{
+	CurrentGUI = TEVE
+	Gui, %CurrentGUI%Buddy:Show
+	Gui, %CurrentGUI%Buddy:+AlwaysOnTop
+	%CurrentGUI%GUI = 1
+	Gui, MainBuddy:Show, Hide
+	MainGUI = 0
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame%, Settings, TEVEPath
+	SetWorkingDir, %TEVEBuddyPath%
+	GoSub, TEVERefresh
+}
+return
+
 MainBuddyGuiClose:
 {
 	%CurrentGUI%GUI = 0
@@ -1388,6 +1676,13 @@ TBR21BuddyGuiClose:
 }
 return
 
+TEVEBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+}
+return
+
 UpdateGuiClose:
 {
 	Gui, Update:Destroy
@@ -1401,10 +1696,11 @@ RestoreBackup:
 	FileSelectFile, BackupPath,,, Choose the File to Restore, *.ini
 	
 	FileSelectFolder, RestorePath, 3,, Where do you want your Restored Saves to be? (Press Cancel to Skip)
-	GaiaRestorePath = %RestorePath%\Gaia Restored\
-	HMRestorePath = %RestorePath%\HM Restored\
-	TBR13RestorePath = %RestorePath%\TBR13 Restored\
-	TBR21RestorePath = %RestorePath%\TBR21 Restored\
+	GaiaRestorePath = %RestorePath%\Gaia Restored
+	HMRestorePath = %RestorePath%\HM Restored
+	TBR13RestorePath = %RestorePath%\TBR13 Restored
+	TBR21RestorePath = %RestorePath%\TBR21 Restored
+	TEVERestorePath = %RestorePath%\TEVE Restored
 	
 	If (RestorePath)
 	{		
@@ -1414,12 +1710,13 @@ RestoreBackup:
 		{
 			IniRead, GaiaFile, %BackupPath%, Gaia, File%A_Index%
 			IniRead, GaiaTxt, %BackupPath%, Gaia, Txt%A_Index%
+			IniRead, GaiaSubPath, %BackupPath%, Gaia, SubPath%A_Index%
 			GaiaTxt := StrReplace(GaiaTxt, "LINEBREAK" , "`n")
 			GaiaTxt := StrReplace(GaiaTxt, "TABBREAK" , "`t")
 			
-			FileCreateDir, %GaiaRestorePath%
-			FileDelete, %GaiaRestorePath%%GaiaFile%
-			FileAppend, %GaiaTxt%, %GaiaRestorePath%%GaiaFile%
+			FileCreateDir, %GaiaRestorePath%%GaiaSubPath%
+			FileDelete, %GaiaRestorePath%%GaiaSubPath%\%GaiaFile%
+			FileAppend, %GaiaTxt%, %GaiaRestorePath%%GaiaSubPath%\%GaiaFile%
 			
 			Gaiaperc := (A_Index / %name%Num) * 100
 			Progress, %Gaiaperc%, %GaiaFile%, Restoring %name% Backup..., %name% Backup
@@ -1432,12 +1729,13 @@ RestoreBackup:
 		{
 			IniRead, HMFile, %BackupPath%, HM, File%A_Index%
 			IniRead, HMTxt, %BackupPath%, HM, Txt%A_Index%
+			IniRead, HMSubPath, %BackupPath%, HM, SubPath%A_Index%
 			HMTxt := StrReplace(HMTxt, "LINEBREAK" , "`n")
 			HMTxt := StrReplace(HMTxt, "TABBREAK" , "`t")
 			
-			FileCreateDir, %HMRestorePath%
-			FileDelete, %HMRestorePath%%HMFile%
-			FileAppend, %HMTxt%, %HMRestorePath%%HMFile%
+			FileCreateDir, %HMRestorePath%%HMSubPath%
+			FileDelete, %HMRestorePath%%HMSubPath%\%HMFile%
+			FileAppend, %HMTxt%, %HMRestorePath%%HMSubPath%\%HMFile%
 			
 			HMperc := (A_Index / %name%Num) * 100
 			Progress, %HMperc%, %HMFile%, Restoring %name% Backup..., %name% Backup
@@ -1450,12 +1748,13 @@ RestoreBackup:
 		{
 			IniRead, TBR13File, %BackupPath%, TBR13, File%A_Index%
 			IniRead, TBR13Txt, %BackupPath%, TBR13, Txt%A_Index%
+			IniRead, TBR13SubPath, %BackupPath%, TBR13, SubPath%A_Index%
 			TBR13Txt := StrReplace(TBR13Txt, "LINEBREAK" , "`n")
 			TBR13Txt := StrReplace(TBR13Txt, "TABBREAK" , "`t")
 			
-			FileCreateDir, %TBR13RestorePath%
-			FileDelete, %TBR13RestorePath%%TBR13File%
-			FileAppend, %TBR13Txt%, %TBR13RestorePath%%TBR13File%
+			FileCreateDir, %TBR13RestorePath%%TBR13SubPath%
+			FileDelete, %TBR13RestorePath%%TBR13SubPath%\%TBR13File%
+			FileAppend, %TBR13Txt%, %TBR13RestorePath%%TBR13SubPath%\%TBR13File%
 			
 			TBR13perc := (A_Index / %name%Num) * 100
 			Progress, %TBR13perc%, %TBR13File%, Restoring %name% Backup..., %name% Backup
@@ -1468,17 +1767,39 @@ RestoreBackup:
 		{
 			IniRead, TBR21File, %BackupPath%, TBR21, File%A_Index%
 			IniRead, TBR21Txt, %BackupPath%, TBR21, Txt%A_Index%
+			IniRead, TBR21SubPath, %BackupPath%, TBR21, SubPath%A_Index%
 			TBR21Txt := StrReplace(TBR21Txt, "LINEBREAK" , "`n")
 			TBR21Txt := StrReplace(TBR21Txt, "TABBREAK" , "`t")
 			
-			FileCreateDir, %TBR21RestorePath%
-			FileDelete, %TBR21RestorePath%%TBR21File%
-			FileAppend, %TBR21Txt%, %TBR21RestorePath%%TBR21File%
+			FileCreateDir, %TBR21RestorePath%%TBR21SubPath%
+			FileDelete, %TBR21RestorePath%%TBR21SubPath%\%TBR21File%
+			FileAppend, %TBR21Txt%, %TBR21RestorePath%%TBR21SubPath%\%TBR21File%
 			
 			TBR21perc := (A_Index / %name%Num) * 100
 			Progress, %TBR21perc%, %TBR21File%, Restoring %name% Backup..., %name% Backup
 		}
 		Progress, Off
+		
+		name = TEVE
+		IniRead, TEVENum, %BackupPath%, TEVE, Count
+		
+		Loop, %TEVENum%
+		{
+			IniRead, TEVEFile, %BackupPath%, TEVE, File%A_Index%
+			IniRead, TEVETxt, %BackupPath%, TEVE, Txt%A_Index%
+			IniRead, TEVESubPath, %BackupPath%, TEVE, SubPath%A_Index%
+			TEVETxt := StrReplace(TEVETxt, "LINEBREAK" , "`n")
+			TEVETxt := StrReplace(TEVETxt, "TABBREAK" , "`t")
+			
+			FileCreateDir, %TEVERestorePath%%TEVESubPath%
+			FileDelete, %TEVERestorePath%%TEVESubPath%\%TEVEFile%
+			FileAppend, %TEVETxt%, %TEVERestorePath%%TEVESubPath%\%TEVEFile%
+			
+			TEVEperc := (A_Index / %name%Num) * 100
+			Progress, %TEVEperc%, %TEVEFile%, Restoring %name% Backup..., %name% Backup
+		}
+		Progress, Off
+		
 		MsgBox, 262208, Restoration Done, Backup Restored at %RestorePath%\
 	}
 }
@@ -1505,19 +1826,23 @@ CreateBackup:
 			SetWorkingDir, %GaiaBuddyPath%
 			Gaiacurrent := 0
 			Gaiamax := 0
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				Gaiamax++
 			}
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				Gaiacurrent++
-				FileRead, GaiacurrBackup, %A_LoopFileName%
+				FileRead, GaiacurrBackup, %A_LoopFileLongPath%
 				GaiacurrBackup := StrReplace(GaiacurrBackup, "`r`n" , "LINEBREAK")
 				GaiacurrBackup := StrReplace(GaiacurrBackup, "`t" , "TABBREAK")
 				GaiacurrBackup := StrReplace(GaiacurrBackup, "`n" , "LINEBREAK")
 				GaiacurrBackup := StrReplace(GaiacurrBackup, "`r" , "LINEBREAK")
 				
+				GaiacurrSubPath := StrReplace(A_LoopFileLongPath, GaiaBuddyPath, "")
+				GaiacurrSubPath := StrReplace(GaiacurrSubPath, A_LoopFileName, "")
+				
+				IniWrite, %GaiacurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%Gaiacurrent%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%Gaiacurrent%
 				IniWrite, %GaiacurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%Gaiacurrent%
 				
@@ -1533,19 +1858,23 @@ CreateBackup:
 			SetWorkingDir, %HMBuddyPath%
 			HMcurrent := 0
 			HMmax := 0
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				HMmax++
 			}
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				HMcurrent++
-				FileRead, HMcurrBackup, %A_LoopFileName%
+				FileRead, HMcurrBackup, %A_LoopFileLongPath%
 				HMcurrBackup := StrReplace(HMcurrBackup, "`r`n" , "LINEBREAK")
 				HMcurrBackup := StrReplace(HMcurrBackup, "`t" , "TABBREAK")
 				HMcurrBackup := StrReplace(HMcurrBackup, "`n" , "LINEBREAK")
 				HMcurrBackup := StrReplace(HMcurrBackup, "`r" , "LINEBREAK")
 				
+				HMcurrSubPath := StrReplace(A_LoopFileLongPath, HMBuddyPath, "")
+				HMcurrSubPath := StrReplace(HMcurrSubPath, A_LoopFileName, "")
+				
+				IniWrite, %HMcurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%HMcurrent%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%HMcurrent%
 				IniWrite, %HMcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%HMcurrent%
 				
@@ -1561,20 +1890,24 @@ CreateBackup:
 			SetWorkingDir, %TBR13BuddyPath%
 			TBR13current := 0
 			TBR13max := 0
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				TBR13max++
 			}
 			
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				TBR13current++
-				FileRead, TBR13currBackup, %A_LoopFileName%
+				FileRead, TBR13currBackup, %A_LoopFileLongPath%
 				TBR13currBackup := StrReplace(TBR13currBackup, "`r`n" , "LINEBREAK")
 				TBR13currBackup := StrReplace(TBR13currBackup, "`t" , "TABBREAK")
 				TBR13currBackup := StrReplace(TBR13currBackup, "`n" , "LINEBREAK")
 				TBR13currBackup := StrReplace(TBR13currBackup, "`r" , "LINEBREAK")
 				
+				TBR13currSubPath := StrReplace(A_LoopFileLongPath, TBR13BuddyPath, "")
+				TBR13currSubPath := StrReplace(TBR13currSubPath, A_LoopFileName, "")
+				
+				IniWrite, %TBR13currSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TBR13current%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TBR13current%
 				IniWrite, %TBR13currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TBR13current%
 				
@@ -1590,20 +1923,24 @@ CreateBackup:
 			SetWorkingDir, %TBR21BuddyPath%
 			TBR21current := 0
 			TBR21max := 0
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				TBR21max++
 			}
 			
-			Loop, Files, *.txt
+			Loop, Files, *.txt, D F R
 			{
 				TBR21current++
-				FileRead, TBR21currBackup, %A_LoopFileName%
+				FileRead, TBR21currBackup, %A_LoopFileLongPath%
 				TBR21currBackup := StrReplace(TBR21currBackup, "`r`n" , "LINEBREAK")
 				TBR21currBackup := StrReplace(TBR21currBackup, "`t" , "TABBREAK")
 				TBR21currBackup := StrReplace(TBR21currBackup, "`n" , "LINEBREAK")
 				TBR21currBackup := StrReplace(TBR21currBackup, "`r" , "LINEBREAK")
 				
+				TBR21currSubPath := StrReplace(A_LoopFileLongPath, TBR21BuddyPath, "")
+				TBR21currSubPath := StrReplace(TBR21currSubPath, A_LoopFileName, "")
+				
+				IniWrite, %TBR21currSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TBR21current%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TBR21current%
 				IniWrite, %TBR21currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TBR21current%
 				
@@ -1611,6 +1948,39 @@ CreateBackup:
 				Progress, %TBR21perc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
 			IniWrite, %TBR21current%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
+		}
+		If (TEVEBuddyPath)
+		{
+			name = TEVE
+			SetWorkingDir, %TEVEBuddyPath%
+			TEVEcurrent := 0
+			TEVEmax := 0
+			Loop, Files, *.txt, D F R
+			{
+				TEVEmax++
+			}
+			
+			Loop, Files, *.txt, D F R
+			{
+				TEVEcurrent++
+				FileRead, TEVEcurrBackup, %A_LoopFileLongPath%
+				TEVEcurrBackup := StrReplace(TEVEcurrBackup, "`r`n" , "LINEBREAK")
+				TEVEcurrBackup := StrReplace(TEVEcurrBackup, "`t" , "TABBREAK")
+				TEVEcurrBackup := StrReplace(TEVEcurrBackup, "`n" , "LINEBREAK")
+				TEVEcurrBackup := StrReplace(TEVEcurrBackup, "`r" , "LINEBREAK")
+				
+				TEVEcurrSubPath := StrReplace(A_LoopFileLongPath, TEVEBuddyPath, "")
+				TEVEcurrSubPath := StrReplace(TEVEcurrSubPath, A_LoopFileName, "")
+				
+				IniWrite, %TEVEcurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TEVEcurrent%
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TEVEcurrent%
+				IniWrite, %TEVEcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TEVEcurrent%
+				
+				TEVEperc := (A_Index / TEVEmax) * 100
+				Progress, %TEVEperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %TEVEcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
 			Progress, Off
 		}
 		MsgBox, 262208, Backup Done, Backup Saved at %CreateBackupPath%\Backup.ini
@@ -1680,6 +2050,22 @@ ChangeTBR21Path:
 	}
 	IniWrite, %TBR21BuddyPath%, %A_ScriptDir%\%ININame%, Settings, TBR21Path
 	GuiControl, TBR21Buddy:, TBR21PathText, %TBR21BuddyPath%
+}
+return
+
+ChangeTEVEPath:
+{
+	Gui TEVEBuddy:+OwnDialogs
+	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\TeveF_R4\
+	{
+		FileSelectFolder, TEVEBuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\TeveF_R4\,, Choose The Folder with TeveF Saves
+	}
+	else
+	{
+		FileSelectFolder, TEVEBuddyPath,,, Choose The Folder with TeveF Saves
+	}
+	IniWrite, %TEVEBuddyPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
+	GuiControl, TEVEBuddy:, TEVEPathText, %TEVEBuddyPath%
 }
 return
 
