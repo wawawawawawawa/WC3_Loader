@@ -1,0 +1,9 @@
+1.0 : Created the Loader
+1.1 : Added Version Updater
+1.2 : Added Backup Tool
+      the exe now returns 2/68 on totalvirus... ah well, creating a backup is considered "stealing"...
+      at least the .ahk is still 0/68 :)
+1.3 : Added Progress Bar and some bugfixes
+1.4 : Added AutoInstaller
+      the autoupdater.exe shows 3/68 on totalvirus (same ones than from the backup version)...
+      the ahk version is still 0/68 (and only 10 lines of code :p), so check the code there, or just never click on "Automatic Install" button
