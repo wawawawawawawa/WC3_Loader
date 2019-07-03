@@ -10,12 +10,14 @@ FileEncoding UTF-8
 #LTrim
 
 ;=============== GLOBAL VAR ==================
-Global currentversion = 1.4
-Global URLDownloadUpdater := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
+Global currentversion := "1.4"
+Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
+Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
 Global URLDownloadEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.exe"
 Global URLCurrentLoader := A_ScriptDir . "\" . A_ScriptName
-Global URLCurrentUpdater := A_ScriptDir . "\AutoUpdater.exe"
+Global URLCurrentUpdaterAHK := A_ScriptDir . "\AutoUpdater.ahk"
+Global URLCurrentUpdaterEXE := A_ScriptDir . "\AutoUpdater.exe"
 Global ININame := BuildIniName()
 
 ;=============== INI FILE ====================
@@ -197,28 +199,37 @@ AutoUpdate:
 {
 	Gui MainBuddy:+OwnDialogs
 	SplitPath, A_ScriptName, OutFileName, OutDir, Extension, OutNameNoExt, OutDrive
-	Progress, , , Downloading AutoUpdater..., AutoUpdater.exe Download
-	Sleep, 500
-	UrlDownloadToFile, %URLDownloadUpdater%, %URLCurrentUpdater%
-	Progress, 100 , ,Download Completed. Launching..., AutoUpdater.exe Download Completed
-	Sleep, 500
 	If (Extension == "exe")
 	{
-		MsgBox, 1, Optional Download, Do you want to download the .ahk file as well?`n`nYou can see the source code by opening the .ahk file with notepad`nYou can run the .ahk file only with AutoHotkey
-		IfMsgBox, OK
+		MsgBox, 4, Optional Download, Do you want to download the .ahk file as well?`n`nYou can see the source code by opening the .ahk file with notepad`nYou can execute the .ahk file only if AutoHotkey is installed.
+		IfMsgBox, Yes
 		{
 			UrlDownloadToFile, %URLDownloadAHK%, %A_ScriptDir%\%OutNameNoExt%.ahk
 		}
-		Run %URLCurrentUpdater% "%URLCurrentLoader%" "%URLDownloadEXE%"
+		
+		Progress, , , Downloading AutoUpdater..., AutoUpdater.exe Download
+		Sleep, 500
+		UrlDownloadToFile, %URLDownloadUpdaterEXE%, %URLCurrentUpdaterEXE%
+		Progress, 100 , ,Download Completed. Launching..., AutoUpdater.exe Download Completed
+		Sleep, 500
+		
+		Run %URLCurrentUpdaterEXE% "%URLCurrentLoader%" "%URLDownloadEXE%"
 	}
 	Else If (Extension == "ahk")
 	{
-		MsgBox, 1, Optional Download, Do you want to download the .exe file as well?
-		IfMsgBox, OK
+		MsgBox, 4, Optional Download, Do you want to download the .exe file as well?
+		IfMsgBox, Yes
 		{
 			UrlDownloadToFile, %URLDownloadEXE%, %A_ScriptDir%\%OutNameNoExt%.exe
 		}
-		Run %URLCurrentUpdater% "%URLCurrentLoader%" "%URLDownloadAHK%"
+		
+		Progress, , , Downloading AutoUpdater..., AutoUpdater.ahk Download
+		Sleep, 500
+		UrlDownloadToFile, %URLDownloadUpdaterAHK%, %URLCurrentUpdaterAHK%
+		Progress, 100 , ,Download Completed. Launching..., AutoUpdater.ahk Download Completed
+		Sleep, 500
+		
+		Run %URLCurrentUpdaterAHK% "%URLCurrentLoader%" "%URLDownloadAHK%"
 	}
 	ExitApp
 }
