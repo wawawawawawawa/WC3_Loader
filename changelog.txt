@@ -10,7 +10,8 @@
 1.3 : Added Progress Bar and some bugfixes
 
 1.4 : Added AutoInstaller
-      The AutoUpdater.exe shows 3/68 on totalvirus (same ones than from the backup version)...
+      The AutoUpdater.exe shows 3/68 on totalvirus 
+      (same ones than from the backup version)...
       The AutoUpdater.ahk shows 0/68 though (and only 10 lines of code :p)
       You can check the code on the ahk, or just never use the .exe version :)
       
