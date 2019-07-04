@@ -1,24 +1,23 @@
 #SingleInstance force
-#InstallKeybdHook
 SetTitleMatchMode, 2
 #NoEnv
 SendMode Input
 SetBatchLines -1
 #MaxThreadsPerHotkey 2
-#UseHook
 FileEncoding UTF-8
-#LTrim
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.5"
+Global currentversion := "1.6"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
 Global URLDownloadEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.exe"
+Global URLDownloadTrayIcon := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ico"
 Global URLCurrentLoader := A_ScriptDir . "\" . A_ScriptName
 Global URLCurrentUpdaterAHK := A_ScriptDir . "\AutoUpdater.ahk"
 Global URLCurrentUpdaterEXE := A_ScriptDir . "\AutoUpdater.exe"
 Global ININame := BuildIniName()
+Global TrayIcon := "0"
 
 ;=============== INI FILE ====================
 ifNotExist, %A_ScriptDir%\%ININame%
@@ -30,7 +29,6 @@ ifNotExist, %A_ScriptDir%\%ININame%
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR21Path
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
 }
-
 IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
 IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
 IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
@@ -48,7 +46,6 @@ Gui, MainBuddy:Add, Button, xp130 w120 gGUIHM, HM Loader
 Gui, MainBuddy:Add, Button, xp-130 yp30 w120 gGUITBR13, TBR 1.38 Loader
 Gui, MainBuddy:Add, Button, xp130 w120 gGUITBR21, TBR 2.1 Loader
 Gui, MainBuddy:Add, Button, xp-130 yp30 w120 gGUITEVE, TeveF Loader
-
 Gui, MainBuddy:Font, cBlack s10
 Gui, MainBuddy:Add, GroupBox, xs h60 w265, Backup : 
 Gui, Settings:Font, 
@@ -56,13 +53,27 @@ Gui, MainBuddy:Add, Button, xp5 yp25 w120 gCreateBackup, Create Backup
 Gui, MainBuddy:Add, Button, xp130 w120 gRestoreBackup, Restore Backup
 Gui, MainBuddy:Add, Link, xp-105 yp60, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa/Blablabla75011</a>
 Gui, MainBuddy:Add, Button, xs yp30 gUpdate, Check for new version
-
-Gui, MainBuddy:+ToolWindow
 Gui, MainBuddy:+AlwaysOnTop
 Gui, MainBuddy:Show, Center, Loader %currentversion% (Press CTRL + F1 to Show/Hide)
 
 MainGUI = 1
 CurrentGUI = Main
+;=============== UPDATE GUI ====================
+Gui 98:+LabelUpdate
+Gui, Update:Font, cBlue bold s10
+Gui, Update:Add, GroupBox, w220 h110 section, Version Information :
+Gui, Update:Font,
+Gui, Update:Add, Text, xp5 yp25, Current Version :
+Gui, Update:Font, bold 
+Gui, Update:Add, Text, xp90, %currentversion%
+Gui, Update:Font,
+Gui, Update:Add, Text, yp25 xp-90, Latest Version : 
+Gui, Update:Font, bold 
+Gui, Update:Add, Text, xp90 vLoaderLastVer, Not Updated
+Gui, Update:Font,
+Gui, Update:Add, Button, gAutoUpdate xp30 yp30 vGreyedButton, Automatic Install
+Gui, Update:Add, Button, gManualDownload xp-120 , Manual Download
+Gui, Update:Add, Button, xs yp40 w50 h30 gUpdateGuiClose, Back
 ;=============== GAIA GUI ====================
 Gui 1:+LabelGaiaBuddy
 Gui, GaiaBuddy:Add, DropDownList, x5 y5 w120 vThiefchoice AltSubmit, |Thief
@@ -71,53 +82,43 @@ Gui, GaiaBuddy:Add, DropDownList, x160 y5 w120 vBardchoice AltSubmit, |Bard
 Gui, GaiaBuddy:Add, Button, x280 y4 w10 vBardgo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x315 y5 w120 vAssassinchoice AltSubmit, |Assassin
 Gui, GaiaBuddy:Add, Button, x435 y4 w10 vAssassingo gLoadGaia, Go
-
 Gui, GaiaBuddy:Add, DropDownList, x5 y35 w120 vClericchoice AltSubmit, |Cleric
 Gui, GaiaBuddy:Add, Button, x125 y34 w10 vClericgo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x160 y35 w120 vBishopchoice AltSubmit, |Bishop
 Gui, GaiaBuddy:Add, Button, x280 y34 w10 vBishopgo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x315 y35 w120 vMonkchoice AltSubmit, |Monk
 Gui, GaiaBuddy:Add, Button, x435 y34 w10 vMonkgo gLoadGaia, Go
-
 Gui, GaiaBuddy:Add, DropDownList, x5 y65 w120 vMagicianchoice AltSubmit, |Magician
 Gui, GaiaBuddy:Add, Button, x125 y64 w10 vMagiciango gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x160 y65 w120 vSorcererchoice AltSubmit, |Sorcerer
 Gui, GaiaBuddy:Add, Button, x280 y64 w10 vSorcerergo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x315 y65 w120 vNecromancerchoice AltSubmit, |Necromancer
 Gui, GaiaBuddy:Add, Button, x435 y64 w10 vNecromancergo gLoadGaia, Go
-
 Gui, GaiaBuddy:Add, DropDownList, x5 y95 w120 vSquirechoice AltSubmit, |Squire
 Gui, GaiaBuddy:Add, Button, x125 y94 w10 vSquirego gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x160 y95 w120 vCrusaderchoice AltSubmit, |Crusader
 Gui, GaiaBuddy:Add, Button, x280 y94 w10 vCrusadergo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x315 y95 w120 vBerserkerchoice AltSubmit, |Berserker
 Gui, GaiaBuddy:Add, Button, x435 y94 w10 vBerserkergo gLoadGaia, Go
-
 Gui, GaiaBuddy:Add, DropDownList, x5 y125 w120 vRangerchoice AltSubmit, |Ranger
 Gui, GaiaBuddy:Add, Button, x125 y124 w10 vRangergo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x160 y125 w120 vDruidchoice AltSubmit, |Druid
 Gui, GaiaBuddy:Add, Button, x280 y124 w10 vDruidgo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x315 y125 w120 vHunterchoice AltSubmit, |Hunter
 Gui, GaiaBuddy:Add, Button, x435 y124 w10 vHuntergo gLoadGaia, Go
-
 Gui, GaiaBuddy:Add, DropDownList, x5 y155 w120 vMysticchoice AltSubmit, |Mystic
 Gui, GaiaBuddy:Add, Button, x125 y154 w10 vMysticgo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x160 y155 w120 vPsionchoice AltSubmit, |Psion
 Gui, GaiaBuddy:Add, Button, x280 y154 w10 vPsiongo gLoadGaia, Go
 Gui, GaiaBuddy:Add, DropDownList, x315 y155 w120 vHexbladechoice AltSubmit, |Hexblade
 Gui, GaiaBuddy:Add, Button, x435 y154 w10 vHexbladego gLoadGaia, Go
-
 Gui, GaiaBuddy:Add, DropDownList, x160 y185 w120 vValkyriechoice AltSubmit, |Valkyrie
 Gui, GaiaBuddy:Add, Button, x280 y184 w10 vValkyriego gLoadGaia, Go
-
 Gui, GaiaBuddy:Add, Button, x5 y215 w50 h40 gBack, Back
 Gui, GaiaBuddy:Add, Button, x140 y215 w130 h40 gGaiaRefresh, Refresh
 Gui, GaiaBuddy:Add, Button, x330 y215 w130 h40 gLoadGaiaVault, Vault
-
 Gui, GaiaBuddy:Add, Button, x5 y265 h40 gChangeGaiaPath, Change Save Folder
 Gui, GaiaBuddy:Add, Edit, x155 y265 w300 h40 vGaiaPathText ReadOnly, %GaiaBuddyPath%
-
-Gui, GaiaBuddy:+ToolWindow
 Gui, GaiaBuddy:Show, Hide Center, Gaia Buddy (Press CTRL + F1 to Show/Hide)
 
 GaiaGUI = 0
@@ -129,15 +130,11 @@ Gui, HMBuddy:Add, Text, x500 y5, Character Information :
 Gui, HMBuddy:Add, ListBox, x5 y20 w150 h300 vhmclasschoice gHMChoice , 
 Gui, HMBuddy:Add, ListBox, x160 y20 w200 h300 vhmclasslist gHMCharChoice AltSubmit, 
 Gui, HMBuddy:Add, ListBox, x365 y20 w400 h300 vhmclassinfo gHMStatChoice AltSubmit, 
-
 Gui, HMBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, HMBuddy:Add, Button, x300 y320 w130 h40 gHMRefresh, Refresh
 Gui, HMBuddy:Add, Button, x630 y320 w130 h40 gLoadHM, Load
-
 Gui, HMBuddy:Add, Button, x5 y370 h40 gChangeHMPath, Change Save Folder
 Gui, HMBuddy:Add, Edit, x155 y370 w300 h40 vHMPathText ReadOnly, %HMBuddyPath%
-
-Gui, HMBuddy:+ToolWindow
 Gui, HMBuddy:Show, Hide Center, HM Buddy (Press CTRL + F1 to Show/Hide)
 
 HMGUI = 0
@@ -151,15 +148,11 @@ Gui, TBR13Buddy:Add, Text, x40 y5, Class Selection :
 Gui, TBR13Buddy:Add, Text, x300 y5, Character Information :
 Gui, TBR13Buddy:Add, ListBox, x5 y20 w150 h300 vtbr13classchoice gTBR13Choice AltSubmit, 
 Gui, TBR13Buddy:Add, ListBox, x160 y20 w400 h300 vtbr13classinfo gTBR13StatChoice AltSubmit, 
-
 Gui, TBR13Buddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, TBR13Buddy:Add, Button, x159 y320 w130 h40 gTBR13Refresh, Refresh
 Gui, TBR13Buddy:Add, Button, x431 y320 w130 h40 gLoadTBR13, Load
-
 Gui, TBR13Buddy:Add, Button, x5 y370 h40 gChangeTBR13Path, Change Save Folder
 Gui, TBR13Buddy:Add, Edit, x155 y370 w300 h40 vTBR13PathText ReadOnly, %TBR13BuddyPath%
-
-Gui, TBR13Buddy:+ToolWindow
 Gui, TBR13Buddy:Show, Hide Center, TBR 1.38 Buddy (Press CTRL + F1 to Show/Hide)
 
 TBR13GUI = 0
@@ -175,15 +168,11 @@ Gui, TBR21Buddy:Add, Text, x500 y5, Character Information :
 Gui, TBR21Buddy:Add, ListBox, x5 y20 w150 h300 vtbr21classchoice gTBR21Choice , 
 Gui, TBR21Buddy:Add, ListBox, x160 y20 w200 h300 vtbr21classlist gTBR21CharChoice AltSubmit, 
 Gui, TBR21Buddy:Add, ListBox, x365 y20 w400 h300 vtbr21classinfo gTBR21StatChoice AltSubmit, 
-
 Gui, TBR21Buddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, TBR21Buddy:Add, Button, x275 y320 w130 h40 gTBR21Refresh, Refresh
 Gui, TBR21Buddy:Add, Button, x636 y320 w130 h40 gLoadTBR21, Load
-
 Gui, TBR21Buddy:Add, Button, x5 y370 h40 gChangeTBR21Path, Change Save Folder
 Gui, TBR21Buddy:Add, Edit, x155 y370 w300 h40 vTBR21PathText ReadOnly, %TBR21BuddyPath%
-
-Gui, TBR21Buddy:+ToolWindow
 Gui, TBR21Buddy:Show, Hide Center, TBR 2.1 Buddy (Press CTRL + F1 to Show/Hide)
 
 TBR21GUI = 0
@@ -199,15 +188,11 @@ Gui, TEVEBuddy:Add, Text, x500 y5, Character Information :
 Gui, TEVEBuddy:Add, ListBox, x5 y20 w150 h300 vteveclasschoice gTEVEChoice , 
 Gui, TEVEBuddy:Add, ListBox, x160 y20 w200 h300 vteveclasslist gTEVECharChoice AltSubmit, 
 Gui, TEVEBuddy:Add, ListBox, x365 y20 w400 h300 vteveclassinfo gTEVEStatChoice AltSubmit, 
-
 Gui, TEVEBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, TEVEBuddy:Add, Button, x275 y320 w130 h40 gTEVERefresh, Refresh
 Gui, TEVEBuddy:Add, Button, x636 y320 w130 h40 gLoadTEVE, Load
-
 Gui, TEVEBuddy:Add, Button, x5 y370 h40 gChangeTEVEPath, Change Save Folder
 Gui, TEVEBuddy:Add, Edit, x155 y370 w300 h40 vTEVEPathText ReadOnly, %TEVEBuddyPath%
-
-Gui, TEVEBuddy:+ToolWindow
 Gui, TEVEBuddy:Show, Hide Center, TeveF Buddy (Press CTRL + F1 to Show/Hide)
 
 TEVEGUI = 0
@@ -217,6 +202,11 @@ Gui, TEVEBuddyStat:Add, Edit,vTEVEdata ReadOnly w600,
 Gui, TEVEBuddyStat:Show, Hide Center, Retrieve content
 
 ;=============== Startup ====================
+If FileExist("WC3 RPG Loader.ico")
+{
+	Menu, Tray, Icon , WC3 RPG Loader.ico
+	TrayIcon := "1"
+}
 UpdateDone = 0
 GoSub, Update
 
@@ -227,6 +217,15 @@ AutoUpdate:
 {
 	Gui MainBuddy:+OwnDialogs
 	SplitPath, A_ScriptName, OutFileName, OutDir, Extension, OutNameNoExt, OutDrive
+	
+	If (TrayIcon == "0")
+	{
+		MsgBox, 4, Optional Download, Do you want to a new shiny tray icon as well?
+		IfMsgBox, Yes
+		{
+			UrlDownloadToFile, %URLDownloadTrayIcon%, %A_ScriptDir%\%OutNameNoExt%.ico
+		}
+	}
 	If (Extension == "exe")
 	{
 		MsgBox, 4, Optional Download, Do you want to download the .ahk file as well?`n`nYou can see the source code by opening the .ahk file with notepad`nYou can execute the .ahk file only if AutoHotkey is installed.
@@ -262,11 +261,13 @@ AutoUpdate:
 	ExitApp
 }
 return
+
 ManualDownload:
 {
 	Run, https://github.com/wawawawawawawa/WC3_Loader/
 }
 return
+
 Update:
 {
 	Gui MainBuddy:+OwnDialogs
@@ -286,24 +287,10 @@ Update:
 			return obj.status=200?obj.ResponseText:""
 		}
 		version := StrReplace(URLDownloadToVar(url), "`n", "")
-		Gui, Update:Destroy
+		GuiControl, Update:, LoaderLastVer, %version%
 		If (version != currentversion)
 		{
-			Gui, Update:Font, cBlue bold s10
-			Gui, Update:Add, GroupBox, w220 h110 section, Version Information :
-			Gui, Update:Font,
-			Gui, Update:Add, Text, xp5 yp25, Current Version :
-			Gui, Update:Font, bold 
-			Gui, Update:Add, Text, xp90, %currentversion%
-			Gui, Update:Font,
-			Gui, Update:Add, Text, yp25 xp-90, Latest Version : 
-			Gui, Update:Font, bold 
-			Gui, Update:Add, Text, xp90, %version%
-			Gui, Update:Font,
-			Gui, Update:Add, Button, gAutoUpdate xp30 yp30 , Automatic Install
-			Gui, Update:Add, Button, gManualDownload xp-120 , Manual Download
-			Gui, Update:Add, Button, xs yp40 w50 h30 gUpdateGuiClose, Back
-			
+			GuiControl, Update:Enable, GreyedButton
 			Gui, Update:Show, Center, Update Available
 			Gui, Update:+AlwaysOnTop
 		}
@@ -311,22 +298,7 @@ Update:
 		{
 			If (UpdateDone == 1)
 			{
-				Gui, Update:Font, cBlue bold s10
-				Gui, Update:Add, GroupBox, w220 h110 section, Version Information :
-				Gui, Update:Font, 
-				Gui, Update:Add, Text, xp5 yp25, Current Version :
-				Gui, Update:Font, bold 
-				Gui, Update:Add, Text, xp90, %currentversion%
-				Gui, Update:Font,
-				Gui, Update:Add, Text, yp25 xp-90, Latest Version : 
-				Gui, Update:Font, bold 
-				Gui, Update:Add, Text, xp90, %version%
-				Gui, Update:Font,
-				Gui, Update:Add, Button, vGreyedUpdate gAutoUpdate xp30 yp30 , Automatic Install
-				Gui, Update:Add, Button, gManualDownload xp-120 , Manual Download
-				GuiControl, Update:Disable, GreyedUpdate
-				Gui, Update:Add, Button, xs yp40 w50 h30 gUpdateGuiClose, Back
-				
+				GuiControl, Update:Disable, GreyedButton				
 				Gui, Update:Show, Center, Up To Date
 				Gui, Update:+AlwaysOnTop
 			}
@@ -335,6 +307,7 @@ Update:
 	UpdateDone = 1
 }
 return
+
 ;////////////////////////////////////////// GAIA //////////////////////////////////////////////////////////////////
 ;=============== GAIA CODE ====================
 GaiaRefresh:
@@ -956,16 +929,12 @@ TBR21Choice:
 			TBR21CurrLvl := TBR21Lvl[i]
 			TBR21CurrXP := TBR21XP[i]
 			TBR21CurrCode := TBR21Code[i]
-			
 			TBR21CurrentStat = | FileName: %TBR21CurrTXT% | Level: %TBR21CurrLvl% | XP: %TBR21CurrXP% | Code: %TBR21CurrCode%
 			TBR21CharTXTCurr.Push(TBR21CharTXT[i])
 			TBR21LvlCurr.Push(TBR21Lvl[i])
 			TBR21XPCurr.Push(TBR21XP[i])
 			TBR21CodeCurr.Push(TBR21Code[i])
 			TBR21StatCurr.Push(TBR21CurrentStat)
-		}
-		else
-		{
 		}
 	}
 	;;;; freaking sorting issue ;;;;;;;;
@@ -1090,7 +1059,6 @@ LoadTBR21:
 		TBR21CurrLvl := TBR21ArrLvls[TBR21CurrentCharNum]
 		TBR21CurrClass := TBR21CurrentChar
 		TBR21CurrXP := TBR21ArrXP[TBR21CurrentCharNum]
-		
 		Clipboard := "Loading : " . TBR21CurrClass . " - Level " . TBR21CurrLvl . " - XP " . TBR21CurrXP
 		SetTitleMatchMode,1
 		If WinExist("Warcraft III")
@@ -1127,7 +1095,6 @@ TEVERefresh:
 	GuiControl, TEVEBuddy:, teveclassinfo, |
 	GuiControl, TEVEBuddy:, teveclasslist, |
 	GuiControl, TEVEBuddy:, teveclasschoice, |
-	
 	TEVEClasses := []
 	TEVEFilePath := []
 	TEVEFileName := []
@@ -1189,7 +1156,6 @@ TEVEChoice:
 	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
 	SetWorkingDir, %TEVEBuddyPath%
 	GuiControlGet, TEVECurrentClass,, teveclasschoice, 
-	
 	TEVEStatCurr := []
 	TEVECurrName=
 	TEVECurrPath=
@@ -1277,7 +1243,6 @@ TEVEChoice:
 		}
 	}
 	
-	
 	TEVEDefaultStat := TEVEArrStat[1]
 	TEVECurrentCode1 := TEVEArrCode1[1]
 	TEVECurrentCode2 := TEVEArrCode2[1]
@@ -1331,7 +1296,6 @@ LoadTEVE:
 		TEVECurrCode2 := TEVEArrCode2[TEVECurrentCharNum]
 		TEVECurrLvl := TEVEArrLvls[TEVECurrentCharNum]
 		TEVECurrClass := TEVECurrentChar
-		
 		Clipboard := "Loading : " . TEVECurrClass . " - Level " . TEVECurrLvl
 		SetTitleMatchMode,1
 		If WinExist("Warcraft III")
@@ -1441,13 +1405,7 @@ sortByNumberWithin(str,del)
   return astr
 }
 
-/*
-###############################################################################
-GroupSort v0.1 by Avi Aryan : Sorts multiple related lists together taking any of those lists as a base
-###############################################################################
-SEE EXAMPLES AT - https://github.com/avi-aryan/Avis-Autohotkey-Repo/blob/master/Example_files/GroupSort-examples.ahk
-MY SCRIPTS - http://avi-aryan.github.io/Autohotkey.html
-*/
+;https://autohotkey.com/board/topic/95429-groupsort-sort-arrange-multiple-inter-related-lists-together/
 class GroupSort
 {
 	;------------------------------------------
@@ -1686,7 +1644,7 @@ return
 
 UpdateGuiClose:
 {
-	Gui, Update:Destroy
+	Gui, Update:Show, Hide
 }
 return
 
@@ -1694,9 +1652,11 @@ return
 RestoreBackup:
 {
 	Gui MainBuddy:+OwnDialogs
-	FileSelectFile, BackupPath,,, Choose the File to Restore, *.ini
-	
-	FileSelectFolder, RestorePath, 3,, Where do you want your Restored Saves to be? (Press Cancel to Skip)
+	FileSelectFile, BackupPath,,, Choose the Backup.ini to Restore, *.ini
+	If (BackupPath)
+	{
+		FileSelectFolder, RestorePath, 3,, Where do you want your Restored Saves to be? (Press Cancel to Skip)
+	}
 	GaiaRestorePath = %RestorePath%\Gaia Restored
 	HMRestorePath = %RestorePath%\HM Restored
 	TBR13RestorePath = %RestorePath%\TBR13 Restored
@@ -1714,11 +1674,9 @@ RestoreBackup:
 			IniRead, GaiaSubPath, %BackupPath%, Gaia, SubPath%A_Index%
 			GaiaTxt := StrReplace(GaiaTxt, "LINEBREAK" , "`n")
 			GaiaTxt := StrReplace(GaiaTxt, "TABBREAK" , "`t")
-			
 			FileCreateDir, %GaiaRestorePath%%GaiaSubPath%
 			FileDelete, %GaiaRestorePath%%GaiaSubPath%\%GaiaFile%
 			FileAppend, %GaiaTxt%, %GaiaRestorePath%%GaiaSubPath%\%GaiaFile%
-			
 			Gaiaperc := (A_Index / %name%Num) * 100
 			Progress, %Gaiaperc%, %GaiaFile%, Restoring %name% Backup..., %name% Backup
 		}
@@ -1733,11 +1691,9 @@ RestoreBackup:
 			IniRead, HMSubPath, %BackupPath%, HM, SubPath%A_Index%
 			HMTxt := StrReplace(HMTxt, "LINEBREAK" , "`n")
 			HMTxt := StrReplace(HMTxt, "TABBREAK" , "`t")
-			
 			FileCreateDir, %HMRestorePath%%HMSubPath%
 			FileDelete, %HMRestorePath%%HMSubPath%\%HMFile%
 			FileAppend, %HMTxt%, %HMRestorePath%%HMSubPath%\%HMFile%
-			
 			HMperc := (A_Index / %name%Num) * 100
 			Progress, %HMperc%, %HMFile%, Restoring %name% Backup..., %name% Backup
 		}
@@ -1752,11 +1708,9 @@ RestoreBackup:
 			IniRead, TBR13SubPath, %BackupPath%, TBR13, SubPath%A_Index%
 			TBR13Txt := StrReplace(TBR13Txt, "LINEBREAK" , "`n")
 			TBR13Txt := StrReplace(TBR13Txt, "TABBREAK" , "`t")
-			
 			FileCreateDir, %TBR13RestorePath%%TBR13SubPath%
 			FileDelete, %TBR13RestorePath%%TBR13SubPath%\%TBR13File%
 			FileAppend, %TBR13Txt%, %TBR13RestorePath%%TBR13SubPath%\%TBR13File%
-			
 			TBR13perc := (A_Index / %name%Num) * 100
 			Progress, %TBR13perc%, %TBR13File%, Restoring %name% Backup..., %name% Backup
 		}
@@ -1771,11 +1725,9 @@ RestoreBackup:
 			IniRead, TBR21SubPath, %BackupPath%, TBR21, SubPath%A_Index%
 			TBR21Txt := StrReplace(TBR21Txt, "LINEBREAK" , "`n")
 			TBR21Txt := StrReplace(TBR21Txt, "TABBREAK" , "`t")
-			
 			FileCreateDir, %TBR21RestorePath%%TBR21SubPath%
 			FileDelete, %TBR21RestorePath%%TBR21SubPath%\%TBR21File%
 			FileAppend, %TBR21Txt%, %TBR21RestorePath%%TBR21SubPath%\%TBR21File%
-			
 			TBR21perc := (A_Index / %name%Num) * 100
 			Progress, %TBR21perc%, %TBR21File%, Restoring %name% Backup..., %name% Backup
 		}
@@ -1791,11 +1743,9 @@ RestoreBackup:
 			IniRead, TEVESubPath, %BackupPath%, TEVE, SubPath%A_Index%
 			TEVETxt := StrReplace(TEVETxt, "LINEBREAK" , "`n")
 			TEVETxt := StrReplace(TEVETxt, "TABBREAK" , "`t")
-			
 			FileCreateDir, %TEVERestorePath%%TEVESubPath%
 			FileDelete, %TEVERestorePath%%TEVESubPath%\%TEVEFile%
 			FileAppend, %TEVETxt%, %TEVERestorePath%%TEVESubPath%\%TEVEFile%
-			
 			TEVEperc := (A_Index / %name%Num) * 100
 			Progress, %TEVEperc%, %TEVEFile%, Restoring %name% Backup..., %name% Backup
 		}
@@ -1813,9 +1763,7 @@ CreateBackup:
 	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 	CreateBackupPath=
-	
-	FileSelectFolder, CreateBackupPath, 3,, Where do you want your Backup to be saved? (Press Cancel to Skip)
-	
+	FileSelectFolder, CreateBackupPath, 3,, Where do you want your Backup.ini to be created?
 	If (CreateBackupPath)
 	{
 		FileDelete, %CreateBackupPath%\Backup.ini
@@ -1839,14 +1787,11 @@ CreateBackup:
 				GaiacurrBackup := StrReplace(GaiacurrBackup, "`t" , "TABBREAK")
 				GaiacurrBackup := StrReplace(GaiacurrBackup, "`n" , "LINEBREAK")
 				GaiacurrBackup := StrReplace(GaiacurrBackup, "`r" , "LINEBREAK")
-				
 				GaiacurrSubPath := StrReplace(A_LoopFileLongPath, GaiaBuddyPath, "")
 				GaiacurrSubPath := StrReplace(GaiacurrSubPath, A_LoopFileName, "")
-				
 				IniWrite, %GaiacurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%Gaiacurrent%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%Gaiacurrent%
 				IniWrite, %GaiacurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%Gaiacurrent%
-				
 				Gaiaperc := (A_Index / Gaiamax) * 100
 				Progress, %Gaiaperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
@@ -1871,14 +1816,11 @@ CreateBackup:
 				HMcurrBackup := StrReplace(HMcurrBackup, "`t" , "TABBREAK")
 				HMcurrBackup := StrReplace(HMcurrBackup, "`n" , "LINEBREAK")
 				HMcurrBackup := StrReplace(HMcurrBackup, "`r" , "LINEBREAK")
-				
 				HMcurrSubPath := StrReplace(A_LoopFileLongPath, HMBuddyPath, "")
 				HMcurrSubPath := StrReplace(HMcurrSubPath, A_LoopFileName, "")
-				
 				IniWrite, %HMcurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%HMcurrent%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%HMcurrent%
 				IniWrite, %HMcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%HMcurrent%
-				
 				HMperc := (A_Index / HMmax) * 100
 				Progress, %HMperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
@@ -1895,7 +1837,6 @@ CreateBackup:
 			{
 				TBR13max++
 			}
-			
 			Loop, Files, *.txt, D F R
 			{
 				TBR13current++
@@ -1904,14 +1845,11 @@ CreateBackup:
 				TBR13currBackup := StrReplace(TBR13currBackup, "`t" , "TABBREAK")
 				TBR13currBackup := StrReplace(TBR13currBackup, "`n" , "LINEBREAK")
 				TBR13currBackup := StrReplace(TBR13currBackup, "`r" , "LINEBREAK")
-				
 				TBR13currSubPath := StrReplace(A_LoopFileLongPath, TBR13BuddyPath, "")
 				TBR13currSubPath := StrReplace(TBR13currSubPath, A_LoopFileName, "")
-				
 				IniWrite, %TBR13currSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TBR13current%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TBR13current%
 				IniWrite, %TBR13currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TBR13current%
-				
 				TBR13perc := (A_Index / TBR13max) * 100
 				Progress, %TBR13perc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
@@ -1928,7 +1866,6 @@ CreateBackup:
 			{
 				TBR21max++
 			}
-			
 			Loop, Files, *.txt, D F R
 			{
 				TBR21current++
@@ -1937,14 +1874,11 @@ CreateBackup:
 				TBR21currBackup := StrReplace(TBR21currBackup, "`t" , "TABBREAK")
 				TBR21currBackup := StrReplace(TBR21currBackup, "`n" , "LINEBREAK")
 				TBR21currBackup := StrReplace(TBR21currBackup, "`r" , "LINEBREAK")
-				
 				TBR21currSubPath := StrReplace(A_LoopFileLongPath, TBR21BuddyPath, "")
 				TBR21currSubPath := StrReplace(TBR21currSubPath, A_LoopFileName, "")
-				
 				IniWrite, %TBR21currSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TBR21current%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TBR21current%
 				IniWrite, %TBR21currBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TBR21current%
-				
 				TBR21perc := (A_Index / TBR21max) * 100
 				Progress, %TBR21perc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
@@ -1961,7 +1895,6 @@ CreateBackup:
 			{
 				TEVEmax++
 			}
-			
 			Loop, Files, *.txt, D F R
 			{
 				TEVEcurrent++
@@ -1970,14 +1903,11 @@ CreateBackup:
 				TEVEcurrBackup := StrReplace(TEVEcurrBackup, "`t" , "TABBREAK")
 				TEVEcurrBackup := StrReplace(TEVEcurrBackup, "`n" , "LINEBREAK")
 				TEVEcurrBackup := StrReplace(TEVEcurrBackup, "`r" , "LINEBREAK")
-				
 				TEVEcurrSubPath := StrReplace(A_LoopFileLongPath, TEVEBuddyPath, "")
 				TEVEcurrSubPath := StrReplace(TEVEcurrSubPath, A_LoopFileName, "")
-				
 				IniWrite, %TEVEcurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TEVEcurrent%
 				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TEVEcurrent%
 				IniWrite, %TEVEcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TEVEcurrent%
-				
 				TEVEperc := (A_Index / TEVEmax) * 100
 				Progress, %TEVEperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
