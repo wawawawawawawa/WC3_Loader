@@ -3,13 +3,14 @@ DetectHiddenWindows, On
 WinClose, %fullScriptPath% 
 UrlDownloadToFile, %2%, %1%
 Run, %1%
-If (FileExist("%3%"))
+OldExe = %3%
+If (OldExe)
 {
-	FileDelete, "%3%"
+	Run, %comspec% /c del "%OldExe%"
 }
 Run, %comspec% /c del "%a_scriptname%"
 exit ; when I don't exit here, it don't work
 if errorlevel <> 0
    msgbox, 16, , Error! File %a_scriptname% not deleted. Errorlevel: %errorlevel%
 else
-   msgbox, File %a_scriptname% was deleted. Errorlevel: %errorlevel%
+msgbox, File %a_scriptname% was deleted. Errorlevel: %errorlevel%
