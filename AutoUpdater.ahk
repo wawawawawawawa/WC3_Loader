@@ -4,7 +4,9 @@ WinClose, %fullScriptPath%
 UrlDownloadToFile, %2%, %1%
 Run, %1%
 If (FileExist("%3%"))
-	Run, %comspec% /c del "%3%"
+{
+	FileDelete, "%3%"
+}
 Run, %comspec% /c del "%a_scriptname%"
 exit ; when I don't exit here, it don't work
 if errorlevel <> 0
