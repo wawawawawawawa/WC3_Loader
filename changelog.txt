@@ -18,3 +18,5 @@
 1.5 : Added TeveF RPG
 
 1.6 : Added Icon and Tray Icon
+
+1.7 : Added more Options, Signed the .exe, Added incentive to use the .ahk over the .exe
