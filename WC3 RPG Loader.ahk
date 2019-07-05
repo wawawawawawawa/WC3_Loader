@@ -255,8 +255,8 @@ Menu, TrayMenu, Add, TBR 2.1 Loader, GUITBR21
 Menu, TrayMenu, Add, TeveF Loader, GUITEVE
 
 Menu, Tray, Nostandard
-Menu, Tray, Add, Show WC3 RPG Loader, ^F1
-Menu, Tray, Default, Show WC3 RPG Loader
+Menu, Tray, Add, Show/Hide WC3 RPG Loader, ^F1
+Menu, Tray, Default, Show/Hide WC3 RPG Loader
 Menu, Tray, Add
 Menu, Tray, Add, Loaders, :TrayMenu
 Menu, Tray, Add
@@ -409,7 +409,6 @@ return
 Update:
 {
 	Gui MainBuddy:+OwnDialogs
-	Gui, UpdateBuddy:+OwnerMainBuddy
 	CheckInternetVar:= % IsInternetConnected()
 	if (CheckInternetVar == 0)
 	{
