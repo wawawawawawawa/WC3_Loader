@@ -7,17 +7,19 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.6"
+Global currentversion := "1.7"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
 Global URLDownloadEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.exe"
 Global URLDownloadTrayIcon := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ico"
-Global URLCurrentLoader := A_ScriptDir . "\" . A_ScriptName
+SplitPath, A_ScriptName, OutFileName, OutDir, Extension, OutNameNoExt, OutDrive
+Global URLCurrentLoader := A_ScriptDir . "\" . OutNameNoExt
 Global URLCurrentUpdaterAHK := A_ScriptDir . "\AutoUpdater.ahk"
 Global URLCurrentUpdaterEXE := A_ScriptDir . "\AutoUpdater.exe"
 Global ININame := BuildIniName()
 Global TrayIcon := "0"
+RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
 
 ;=============== INI FILE ====================
 ifNotExist, %A_ScriptDir%\%ININame%
@@ -28,52 +30,96 @@ ifNotExist, %A_ScriptDir%\%ININame%
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR13Path
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR21Path
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
+	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, RetrieveContent
+	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
+	IniWrite, Default, %A_ScriptDir%\%ININame%, Loader, GUIColor
+	IniWrite, 0, %A_ScriptDir%\%ININame%, Loader, TrayOption
+	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Loader, WC3Path
 }
 IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
 IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
 IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+IniRead, RetrieveContent, %A_ScriptDir%\%ININame% , Loader, RetrieveContent
+IniRead, CheckUpdates, %A_ScriptDir%\%ININame% , Loader, CheckUpdates
+IniRead, GUIColor, %A_ScriptDir%\%ININame% , Loader, GUIColor
+IniRead, TrayOption, %A_ScriptDir%\%ININame% , Loader, TrayOption
+IniRead, WC3Path, %A_ScriptDir%\%ININame% , Loader, WC3Path
 
+If (GUIColor == "ERROR") {
+	GUIColor := "Default"
+	IniWrite, Default, %A_ScriptDir%\%ININame%, Loader, GUIColor
+}
+If (CheckUpdates == "ERROR") {
+	CheckUpdates := "1"
+	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
+}
+If (RetrieveContent == "ERROR") {
+	RetrieveContent := "1"
+	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, RetrieveContent
+}
+If (TrayOption == "ERROR") {
+	TrayOption := "0"
+	IniWrite, 0, %A_ScriptDir%\%ININame%, Loader, TrayOption
+}
 ;////////////////////////////////////////// GUI //////////////////////////////////////////////////////////////////
 ;=============== MAIN GUI ====================
 Gui 99:+LabelMainBuddy
-Gui, MainBuddy:Font, cBlack s10
+Gui, MainBuddy:Font, cBlack s12
+Gui, MainBuddy:Add, Tab3, vMainTab, Loaders|Backup|Settings
+Gui, MainBuddy:Tab, 1
 Gui, MainBuddy:Add, GroupBox, section h120 w265, Loaders : 
-Gui, Settings:Font, 
-Gui, MainBuddy:Add, Button, xp5 yp25 w120 gGUIGaia, Gaia Loader
-Gui, MainBuddy:Add, Button, xp130 w120 gGUIHM, HM Loader
-Gui, MainBuddy:Add, Button, xp-130 yp30 w120 gGUITBR13, TBR 1.38 Loader
-Gui, MainBuddy:Add, Button, xp130 w120 gGUITBR21, TBR 2.1 Loader
-Gui, MainBuddy:Add, Button, xp-130 yp30 w120 gGUITEVE, TeveF Loader
-Gui, MainBuddy:Font, cBlack s10
-Gui, MainBuddy:Add, GroupBox, xs h60 w265, Backup : 
-Gui, Settings:Font, 
-Gui, MainBuddy:Add, Button, xp5 yp25 w120 gCreateBackup, Create Backup
-Gui, MainBuddy:Add, Button, xp130 w120 gRestoreBackup, Restore Backup
-Gui, MainBuddy:Add, Link, xp-105 yp60, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa/Blablabla75011</a>
-Gui, MainBuddy:Add, Button, xs yp30 gUpdate, Check for new version
+Gui, MainBuddy:Font, 
+Gui, MainBuddy:Add, Button, xp10 yp25 w120 gGUIGaia, Gaia Loader
+Gui, MainBuddy:Add, Button, xp125 w120 gGUIHM, HM Loader
+Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITBR13, TBR 1.38 Loader
+Gui, MainBuddy:Add, Button, xp125 w120 gGUITBR21, TBR 2.1 Loader
+Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITEVE, TeveF Loader
+
+Gui, MainBuddy:Tab, 2
+Gui, MainBuddy:Font, cBlack s12
+Gui, MainBuddy:Add, GroupBox, section h120 w265, Backup : 
+Gui, MainBuddy:Font, 
+Gui, MainBuddy:Add, Button, xp10 yp25 w120 gCreateBackup, Create Backup
+Gui, MainBuddy:Add, Button, xp125 w120 gRestoreBackup, Restore Backup
+
+Gui, MainBuddy:Tab, 3
+Gui, MainBuddy:Font, cBlack s12
+Gui, MainBuddy:Add, GroupBox, section h120 w265, Settings : 
+Gui, MainBuddy:Font, 
+Gui, MainBuddy:Add, CheckBox, xp10 yp25 vGetContentBox gContentSetting Checked%RetrieveContent%, Allow Retrieve Content (Char Information Panel)
+Gui, MainBuddy:Add, CheckBox, yp20 vCheckUpdatesBox gUpdateSetting Checked%CheckUpdates%, Check for updates on launch
+Gui, MainBuddy:Add, CheckBox, yp20 vCheckTrayBox gTraySetting Checked%TrayOption%, Enable Launch Wc3 (Taskbar)
+Gui, MainBuddy:Add, Button, x+5 yp-5 vSetPathButton gSetWC3Path Checked%TrayOption%, Set WC3 Path
+Gui, MainBuddy:Add, Text, xs+10 yp30 , GUI Theme :
+Gui, MainBuddy:Add, DropDownList, yp-4 x+5 w100 gChangeColor vColorChoice, Default||White|Silver|Gray|Teal|Green|Olive|Maroon|Purple|Fuchsia
+
+
+Gui, MainBuddy:Tab, 
+Gui, MainBuddy:Add, Button, xs-10 yp200 gUpdate, Check for updates
+Gui, MainBuddy:Add, Link, xp180 yp5, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa</a>
 Gui, MainBuddy:+AlwaysOnTop
-Gui, MainBuddy:Show, Center, Loader %currentversion% (Press CTRL + F1 to Show/Hide)
 
 MainGUI = 1
 CurrentGUI = Main
 ;=============== UPDATE GUI ====================
-Gui 98:+LabelUpdate
-Gui, Update:Font, cBlue bold s10
-Gui, Update:Add, GroupBox, w220 h110 section, Version Information :
-Gui, Update:Font,
-Gui, Update:Add, Text, xp5 yp25, Current Version :
-Gui, Update:Font, bold 
-Gui, Update:Add, Text, xp90, %currentversion%
-Gui, Update:Font,
-Gui, Update:Add, Text, yp25 xp-90, Latest Version : 
-Gui, Update:Font, bold 
-Gui, Update:Add, Text, xp90 vLoaderLastVer, Not Updated
-Gui, Update:Font,
-Gui, Update:Add, Button, gAutoUpdate xp30 yp30 vGreyedButton, Automatic Install
-Gui, Update:Add, Button, gManualDownload xp-120 , Manual Download
-Gui, Update:Add, Button, xs yp40 w50 h30 gUpdateGuiClose, Back
+Gui 98:+LabelUpdateBuddy
+Gui, UpdateBuddy:Font, cBlue bold s10
+Gui, UpdateBuddy:Add, GroupBox, w220 h110 section, Version Information :
+Gui, UpdateBuddy:Font,
+Gui, UpdateBuddy:Add, Text, xp10 yp25, Current Version :
+Gui, UpdateBuddy:Font, bold 
+Gui, UpdateBuddy:Add, Text, xp90, %currentversion%
+Gui, UpdateBuddy:Font,
+Gui, UpdateBuddy:Add, Text, yp25 xp-90, Latest Version : 
+Gui, UpdateBuddy:Font, bold 
+Gui, UpdateBuddy:Add, Text, xp90 vLoaderLastVer, Not Updated
+Gui, UpdateBuddy:Font,
+Gui, UpdateBuddy:Add, Button, gManualDownload xs+10 yp25 , Manual Download
+Gui, UpdateBuddy:Add, Button, gAutoUpdate x+15 vGreyedButton, Automatic Install
+Gui, UpdateBuddy:Add, Button, xs yp40 w50 h30 gBack, Back
+Gui, UpdateBuddy:Add, Button, xp158 h30 gChangelog, Changelog
 ;=============== GAIA GUI ====================
 Gui 1:+LabelGaiaBuddy
 Gui, GaiaBuddy:Add, DropDownList, x5 y5 w120 vThiefchoice AltSubmit, |Thief
@@ -201,23 +247,58 @@ Gui 5a:+LabelTEVEBuddyStat
 Gui, TEVEBuddyStat:Add, Edit,vTEVEdata ReadOnly w600, 
 Gui, TEVEBuddyStat:Show, Hide Center, Retrieve content
 
-;=============== Startup ====================
+;=============== TRAY ICON ====================
+Menu, TrayMenu, Add, Gaia Loader, GUIGaia
+Menu, TrayMenu, Add, HM Loader, GUIHM
+Menu, TrayMenu, Add, TBR 1.38 Loader, GUITBR13
+Menu, TrayMenu, Add, TBR 2.1 Loader, GUITBR21
+Menu, TrayMenu, Add, TeveF Loader, GUITEVE
+
+Menu, Tray, Nostandard
+Menu, Tray, Add, Show WC3 RPG Loader, ^F1
+Menu, Tray, Default, Show WC3 RPG Loader
+Menu, Tray, Add
+Menu, Tray, Add, Loaders, :TrayMenu
+Menu, Tray, Add
+Menu, Tray, Add, Launch Warcraft III, GameLaunch
+Menu, Tray, Add
+Menu, Tray, Add, Reload Script, ReloadScript
+Menu, Tray, Standard
+Menu, Tray, Click, 1
+
+;=============== STARTUP ====================
 If FileExist("WC3 RPG Loader.ico")
 {
 	Menu, Tray, Icon , WC3 RPG Loader.ico
 	TrayIcon := "1"
 }
 UpdateDone = 0
-GoSub, Update
+Gui, MainBuddy:Color, %GUIColor%
+Gui, UpdateBuddy:Color, %GUIColor%
+Gui, GaiaBuddy:Color, %GUIColor%
+Gui, HMBuddy:Color, %GUIColor%
+Gui, TBR13Buddy:Color, %GUIColor%
+Gui, TBR21Buddy:Color, %GUIColor%
+Gui, TEVEBuddy:Color, %GUIColor%
+GuiControl, MainBuddy:ChooseString, ColorChoice, %GUIColor%
+
+Gui, MainBuddy:Show, Center, Loader %currentversion% (Press CTRL + F1 to Show/Hide)
+If (CheckUpdates = 1)
+{
+	GoSub, Update
+}
+If (TrayOption = 0)
+{
+	Menu, Tray, Disable, Launch Warcraft III
+	GuiControl, MainBuddy:Disable, SetPathButton
+}
 
 return
 
 ;////////////////////////////////////////// UPDATER //////////////////////////////////////////////////////////////////
 AutoUpdate:
 {
-	Gui MainBuddy:+OwnDialogs
-	SplitPath, A_ScriptName, OutFileName, OutDir, Extension, OutNameNoExt, OutDrive
-	
+	Gui UpdateBuddy:+OwnDialogs
 	If (TrayIcon == "0")
 	{
 		MsgBox, 4, Optional Download, Do you want to a new shiny tray icon as well?
@@ -228,37 +309,94 @@ AutoUpdate:
 	}
 	If (Extension == "exe")
 	{
-		MsgBox, 4, Optional Download, Do you want to download the .ahk file as well?`n`nYou can see the source code by opening the .ahk file with notepad`nYou can execute the .ahk file only if AutoHotkey is installed.
+		MsgBox, 4, Warning!, My .exe files are detected as Trojans by virustotal! (2/68, welp).`nDo you want to use the .ahk files instead? (0/68 from virustotal)`nYou can also easily look at the source code with Notepad on the ahk files (NotePad++ is even better :p)
 		IfMsgBox, Yes
 		{
-			UrlDownloadToFile, %URLDownloadAHK%, %A_ScriptDir%\%OutNameNoExt%.ahk
+			If (AHKInstallPath)
+			{
+				Progress, , , Downloading AutoUpdater..., AutoUpdater.ahk Download
+				Sleep, 500
+				UrlDownloadToFile, %URLDownloadUpdaterAHK%, %URLCurrentUpdaterAHK%
+				Progress, 100 , ,Download Completed. Launching..., AutoUpdater.ahk Download Completed
+				Sleep, 500
+				Progress, Off
+				NewLoaderURL = %URLCurrentLoader%.ahk
+				DeleteOldEXE = %URLCurrentLoader%.exe
+				
+				Run %URLCurrentUpdaterAHK% "%NewLoaderURL%" "%URLDownloadAHK%" "%DeleteOldEXE%"
+				ExitApp
+			}
+			Else
+			{
+				MsgBox, 4, Autohotkey Required, The ahk files requires Autohotkey to be installed.`nDo you want to download it?
+				IfMsgBox, Yes
+				{
+					Progress, , , Downloading AutoHotkey..., AutoHotkey Download
+					UrlDownloadToFile, http://www.autohotkey.com/download/AutoHotkeyInstall.exe, %A_Temp%\AutoHotkeyInstall.exe
+					Progress, 100 , ,Download Completed. Launching..., AutoHotkey Download Completed
+					Sleep, 200
+					MsgBox, 4096,, WC3 RPG Loader will now minimize during the installation of AutoHotkey.
+					Progress, Off
+					Gui, MainBuddy:Show , Minimize
+					Gui, UpdateBuddy:Show , Minimize
+					RunWait, %A_Temp%\AutoHotkeyInstall.exe
+					Gui, MainBuddy:Show , Restore
+					Gui, UpdateBuddy:Show , Restore
+					RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
+					If (!AHKInstallPath)
+					{
+						Msgbox, 4096, ERROR, I can't find AutoHotkey Installation Path`nPlease use the Manual Download
+					}
+					Else
+					{
+						Msgbox, 4096, Installation, AutoHotkey Installed, now running the Auto Updater
+						Progress, , , Downloading AutoUpdater..., AutoUpdater.ahk Download
+						Sleep, 500
+						UrlDownloadToFile, %URLDownloadUpdaterAHK%, %URLCurrentUpdaterAHK%
+						Progress, 100 , ,Download Completed. Launching..., AutoUpdater.ahk Download Completed
+						Sleep, 500
+						Progress, Off
+						NewLoaderURL = %URLCurrentLoader%.ahk
+						DeleteOldEXE = %URLCurrentLoader%.exe
+						
+						Run %URLCurrentUpdaterAHK% "%NewLoaderURL%" "%URLDownloadAHK%" "%DeleteOldEXE%"
+						ExitApp
+					}
+				}
+			}
 		}
-		
-		Progress, , , Downloading AutoUpdater..., AutoUpdater.exe Download
-		Sleep, 500
-		UrlDownloadToFile, %URLDownloadUpdaterEXE%, %URLCurrentUpdaterEXE%
-		Progress, 100 , ,Download Completed. Launching..., AutoUpdater.exe Download Completed
-		Sleep, 500
-		
-		Run %URLCurrentUpdaterEXE% "%URLCurrentLoader%" "%URLDownloadEXE%"
+		Else
+		{
+			MsgBox, 4, Optional Download, Do you want to download the .ahk file as well?
+			IfMsgBox, Yes
+			{
+				UrlDownloadToFile, %URLDownloadAHK%, %A_ScriptDir%\%OutNameNoExt%.ahk
+			}
+			Progress, , , Downloading AutoUpdater..., AutoUpdater.exe Download
+			Sleep, 500
+			UrlDownloadToFile, %URLDownloadUpdaterEXE%, %URLCurrentUpdaterEXE%
+			Progress, 100 , ,Download Completed. Launching..., AutoUpdater.exe Download Completed
+			Sleep, 500
+			Progress, Off
+			NewLoaderURL = %URLCurrentLoader%.exe
+			
+			Run %URLCurrentUpdaterEXE% "%NewLoaderURL%" "%URLDownloadEXE%"
+			ExitApp
+		}
 	}
 	Else If (Extension == "ahk")
 	{
-		MsgBox, 4, Optional Download, Do you want to download the .exe file as well?
-		IfMsgBox, Yes
-		{
-			UrlDownloadToFile, %URLDownloadEXE%, %A_ScriptDir%\%OutNameNoExt%.exe
-		}
-		
 		Progress, , , Downloading AutoUpdater..., AutoUpdater.ahk Download
 		Sleep, 500
 		UrlDownloadToFile, %URLDownloadUpdaterAHK%, %URLCurrentUpdaterAHK%
 		Progress, 100 , ,Download Completed. Launching..., AutoUpdater.ahk Download Completed
 		Sleep, 500
+		Progress, Off
+		NewLoaderURL = %URLCurrentLoader%.ahk
 		
-		Run %URLCurrentUpdaterAHK% "%URLCurrentLoader%" "%URLDownloadAHK%"
+		Run %URLCurrentUpdaterAHK% "%NewLoaderURL%" "%URLDownloadAHK%"
+		ExitApp
 	}
-	ExitApp
 }
 return
 
@@ -271,6 +409,7 @@ return
 Update:
 {
 	Gui MainBuddy:+OwnDialogs
+	Gui, UpdateBuddy:+OwnerMainBuddy
 	CheckInternetVar:= % IsInternetConnected()
 	if (CheckInternetVar == 0)
 	{
@@ -281,30 +420,36 @@ Update:
 	}
 	else
 	{
+		CurrentGUI = Update
+		GuiHideAllBut(CurrentGUI)
 		url=https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/version.txt
-		URLDownloadToVar(url){
-			obj:=ComObjCreate("WinHttp.WinHttpRequest.5.1"),obj.Open("GET",url),obj.Send()
-			return obj.status=200?obj.ResponseText:""
-		}
 		version := StrReplace(URLDownloadToVar(url), "`n", "")
-		GuiControl, Update:, LoaderLastVer, %version%
+		GuiControl, UpdateBuddy:, LoaderLastVer, %version%
 		If (version != currentversion)
 		{
-			GuiControl, Update:Enable, GreyedButton
-			Gui, Update:Show, Center, Update Available
-			Gui, Update:+AlwaysOnTop
+			GuiControl, UpdateBuddy:Enable, GreyedButton
+			Gui, UpdateBuddy:Show, Center, Update Available
+			Gui, UpdateBuddy:+AlwaysOnTop
 		}
 		Else
 		{
 			If (UpdateDone == 1)
 			{
-				GuiControl, Update:Disable, GreyedButton				
-				Gui, Update:Show, Center, Up To Date
-				Gui, Update:+AlwaysOnTop
+				GuiControl, UpdateBuddy:Disable, GreyedButton				
+				Gui, UpdateBuddy:Show, Center, Up To Date
+				Gui, UpdateBuddy:+AlwaysOnTop
 			}
 		}
 	}
 	UpdateDone = 1
+}
+return
+
+Changelog:
+{
+	url=https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/changelog.txt
+	changelogtext := URLDownloadToVar(url)
+	MsgBox, 4096, Changelog, %changelogtext%
 }
 return
 
@@ -648,17 +793,20 @@ return
 
 HMStatChoice:
 {
-	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
-	SetWorkingDir, %HMBuddyPath%
-	GuiControlGet, HMCurrentStatNum,, hmclassinfo,
-	GuiControlGet, HMCurrentCharNum,, hmclasslist,
-	HMChosenStat := HMArrStat[HMCurrentCharNum]
-	StringTrimLeft, HMChosenStat, HMChosenStat, 2
-	HMArrStat2 := StrSplit(HMChosenStat , " | ")
-	HMGetStat := HMArrStat2[HMCurrentStatNum]
-	GuiControl, HMBuddyStat:, data, %HMGetStat%
-	Gui, HMBuddyStat:Show
-	Gui, HMBuddyStat:+AlwaysOnTop
+	If (RetrieveContent == 1)
+	{
+		IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
+		SetWorkingDir, %HMBuddyPath%
+		GuiControlGet, HMCurrentStatNum,, hmclassinfo,
+		GuiControlGet, HMCurrentCharNum,, hmclasslist,
+		HMChosenStat := HMArrStat[HMCurrentCharNum]
+		StringTrimLeft, HMChosenStat, HMChosenStat, 2
+		HMArrStat2 := StrSplit(HMChosenStat , " | ")
+		HMGetStat := HMArrStat2[HMCurrentStatNum]
+		GuiControl, HMBuddyStat:, data, %HMGetStat%
+		Gui, HMBuddyStat:Show
+		Gui, HMBuddyStat:+AlwaysOnTop
+	}
 }
 return
 
@@ -782,14 +930,17 @@ TBR13Choice:
 return
 TBR13StatChoice:
 {
-	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
-	SetWorkingDir, %TBR13BuddyPath%
-	GuiControlGet, TBR13CurrentStatNum,, tbr13classinfo,
-	GuiControlGet, TBR13CurrentCharNum,, tbr13classchoice,
-	TBR13ChosenStat := TBR13CharStat[TBR13CurrentStatNum]
-	GuiControl, TBR13BuddyStat:, TBR13data, %TBR13ChosenStat%
-	Gui, TBR13BuddyStat:Show
-	Gui, TBR13BuddyStat:+AlwaysOnTop
+	If (RetrieveContent == 1)
+	{
+		IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
+		SetWorkingDir, %TBR13BuddyPath%
+		GuiControlGet, TBR13CurrentStatNum,, tbr13classinfo,
+		GuiControlGet, TBR13CurrentCharNum,, tbr13classchoice,
+		TBR13ChosenStat := TBR13CharStat[TBR13CurrentStatNum]
+		GuiControl, TBR13BuddyStat:, TBR13data, %TBR13ChosenStat%
+		Gui, TBR13BuddyStat:Show
+		Gui, TBR13BuddyStat:+AlwaysOnTop
+	}
 }
 return
 LoadTBR13:
@@ -1033,17 +1184,20 @@ TBR21CharChoice:
 return
 TBR21StatChoice:
 {
-	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
-	SetWorkingDir, %TBR21BuddyPath%
-	GuiControlGet, TBR21CurrentStatNum,, tbr21classinfo,
-	GuiControlGet, TBR21CurrentCharNum,, tbr21classlist,
-	TBR21ChosenStat := TBR21ArrStat[TBR21CurrentCharNum]
-	StringTrimLeft, TBR21ChosenStat, TBR21ChosenStat, 2
-	TBR21ArrStat2 := StrSplit(TBR21ChosenStat , " | ")
-	TBR21GetStat := TBR21ArrStat2[TBR21CurrentStatNum]
-	GuiControl, TBR21BuddyStat:, TBR21data, %TBR21GetStat%
-	Gui, TBR21BuddyStat:Show
-	Gui, TBR21BuddyStat:+AlwaysOnTop
+	If (RetrieveContent == 1)
+	{
+		IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
+		SetWorkingDir, %TBR21BuddyPath%
+		GuiControlGet, TBR21CurrentStatNum,, tbr21classinfo,
+		GuiControlGet, TBR21CurrentCharNum,, tbr21classlist,
+		TBR21ChosenStat := TBR21ArrStat[TBR21CurrentCharNum]
+		StringTrimLeft, TBR21ChosenStat, TBR21ChosenStat, 2
+		TBR21ArrStat2 := StrSplit(TBR21ChosenStat , " | ")
+		TBR21GetStat := TBR21ArrStat2[TBR21CurrentStatNum]
+		GuiControl, TBR21BuddyStat:, TBR21data, %TBR21GetStat%
+		Gui, TBR21BuddyStat:Show
+		Gui, TBR21BuddyStat:+AlwaysOnTop
+	}
 }
 return
 LoadTBR21:
@@ -1270,17 +1424,20 @@ TEVECharChoice:
 return
 TEVEStatChoice:
 {
-	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
-	SetWorkingDir, %TEVEBuddyPath%
-	GuiControlGet, TEVECurrentStatNum,, teveclassinfo,
-	GuiControlGet, TEVECurrentCharNum,, teveclasslist,
-	TEVEChosenStat := TEVEArrStat[TEVECurrentCharNum]
-	StringTrimLeft, TEVEChosenStat, TEVEChosenStat, 2
-	TEVEArrStat2 := StrSplit(TEVEChosenStat , " | ")
-	TEVEGetStat := TEVEArrStat2[TEVECurrentStatNum]
-	GuiControl, TEVEBuddyStat:, TEVEdata, %TEVEGetStat%
-	Gui, TEVEBuddyStat:Show
-	Gui, TEVEBuddyStat:+AlwaysOnTop
+	If (RetrieveContent == 1)
+	{
+		IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+		SetWorkingDir, %TEVEBuddyPath%
+		GuiControlGet, TEVECurrentStatNum,, teveclassinfo,
+		GuiControlGet, TEVECurrentCharNum,, teveclasslist,
+		TEVEChosenStat := TEVEArrStat[TEVECurrentCharNum]
+		StringTrimLeft, TEVEChosenStat, TEVEChosenStat, 2
+		TEVEArrStat2 := StrSplit(TEVEChosenStat , " | ")
+		TEVEGetStat := TEVEArrStat2[TEVECurrentStatNum]
+		GuiControl, TEVEBuddyStat:, TEVEdata, %TEVEGetStat%
+		Gui, TEVEBuddyStat:Show
+		Gui, TEVEBuddyStat:+AlwaysOnTop
+	}
 }
 return
 LoadTEVE:
@@ -1372,6 +1529,14 @@ IsInternetConnected()
 	}
 	return
 }
+return
+
+URLDownloadToVar(url)
+{
+	obj:=ComObjCreate("WinHttp.WinHttpRequest.5.1"),obj.Open("GET",url),obj.Send()
+	return obj.status=200?obj.ResponseText:""
+}
+return
 
 ;////////////////////////////////////////// SORTING FUNCTIONS ///////////////////////////////////////////////////////////////
 ;https://autohotkey.com/board/topic/32830-func-sort-by-numbers-within-a-string/
@@ -1519,25 +1684,39 @@ Else
 }
 Return
 
+;============== GUI ===================
+GuiHideAllBut(ThisOne)
+{
+	GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "Update"]
+	For i in GuiList
+	{
+		GUICurrent := GuiList[i]
+		If (ThisOne != GUICurrent)
+		{
+			Gui, %GUICurrent%Buddy:Show, Hide
+			%GUICurrent%GUI = 0
+		}
+		Else
+		{
+			Gui, %ThisOne%Buddy:Show
+			Gui, %CurrentGUI%Buddy:+AlwaysOnTop
+			%ThisOne%GUI = 1
+		}
+	}
+}
+return
+
 Back:
 {
-	MainGUI = 1
-	Gui, %CurrentGUI%Buddy:Show, Hide
-	%CurrentGUI%GUI = 0
 	CurrentGUI = Main
-	Gui, MainBuddy:Show
-	Gui, MainBuddy:+AlwaysOnTop
+	GuiHideAllBut(CurrentGUI)
 }
 return
 
 GUIGaia:
 {
 	CurrentGUI = Gaia
-	Gui, %CurrentGUI%Buddy:Show
-	Gui, %CurrentGUI%Buddy:+AlwaysOnTop
-	%CurrentGUI%GUI = 1
-	Gui, MainBuddy:Show, Hide
-	MainGUI = 0
+	GuiHideAllBut(CurrentGUI)
 	IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame%, Settings, GaiaPath
 	SetWorkingDir, %GaiaBuddyPath%
 	GoSub, GaiaRefresh
@@ -1547,11 +1726,7 @@ return
 GUIHM:
 {
 	CurrentGUI = HM
-	Gui, %CurrentGUI%Buddy:Show
-	Gui, %CurrentGUI%Buddy:+AlwaysOnTop
-	%CurrentGUI%GUI = 1
-	Gui, MainBuddy:Show, Hide
-	MainGUI = 0
+	GuiHideAllBut(CurrentGUI)
 	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
 	SetWorkingDir, %HMBuddyPath%
 	GoSub, HMRefresh
@@ -1561,11 +1736,7 @@ return
 GUITBR13:
 {
 	CurrentGUI = TBR13
-	Gui, %CurrentGUI%Buddy:Show
-	Gui, %CurrentGUI%Buddy:+AlwaysOnTop
-	%CurrentGUI%GUI = 1
-	Gui, MainBuddy:Show, Hide
-	MainGUI = 0
+	GuiHideAllBut(CurrentGUI)
 	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame%, Settings, TBR13Path
 	SetWorkingDir, %TBR13BuddyPath%
 	GoSub, TBR13Refresh
@@ -1575,11 +1746,7 @@ return
 GUITBR21:
 {
 	CurrentGUI = TBR21
-	Gui, %CurrentGUI%Buddy:Show
-	Gui, %CurrentGUI%Buddy:+AlwaysOnTop
-	%CurrentGUI%GUI = 1
-	Gui, MainBuddy:Show, Hide
-	MainGUI = 0
+	GuiHideAllBut(CurrentGUI)
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame%, Settings, TBR21Path
 	SetWorkingDir, %TBR21BuddyPath%
 	GoSub, TBR21Refresh
@@ -1589,11 +1756,7 @@ return
 GUITEVE:
 {
 	CurrentGUI = TEVE
-	Gui, %CurrentGUI%Buddy:Show
-	Gui, %CurrentGUI%Buddy:+AlwaysOnTop
-	%CurrentGUI%GUI = 1
-	Gui, MainBuddy:Show, Hide
-	MainGUI = 0
+	GuiHideAllBut(CurrentGUI)
 	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame%, Settings, TEVEPath
 	SetWorkingDir, %TEVEBuddyPath%
 	GoSub, TEVERefresh
@@ -1642,9 +1805,16 @@ TEVEBuddyGuiClose:
 }
 return
 
-UpdateGuiClose:
+UpdateBuddyGuiClose:
 {
-	Gui, Update:Show, Hide
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+}
+return
+
+ReloadScript:
+{
+	Reload
 }
 return
 
@@ -1997,6 +2167,78 @@ ChangeTEVEPath:
 	}
 	IniWrite, %TEVEBuddyPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
 	GuiControl, TEVEBuddy:, TEVEPathText, %TEVEBuddyPath%
+}
+return
+
+;============== SETTINGS =================
+ChangeColor:
+{
+	GuiControlGet, color,, ColorChoice
+	Gui, MainBuddy:Color, %color%
+	Gui, UpdateBuddy:Color, %color%
+	Gui, GaiaBuddy:Color, %color%
+	Gui, HMBuddy:Color, %color%
+	Gui, TBR13Buddy:Color, %color%
+	Gui, TBR21Buddy:Color, %color%
+	Gui, TEVEBuddy:Color, %color%
+	IniWrite, %color%, %A_ScriptDir%\%ININame%, Loader, GUIColor
+}
+return
+
+ContentSetting:
+{
+	GuiControlGet, CheckContent,, GetContentBox
+	IniWrite, %CheckContent%, %A_ScriptDir%\%ININame%, Loader, RetrieveContent
+	IniRead, RetrieveContent, %A_ScriptDir%\%ININame% , Loader, RetrieveContent
+}
+return
+
+UpdateSetting:
+{
+	GuiControlGet, UpdateOption,, CheckUpdatesBox
+	IniWrite, %UpdateOption%, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
+}
+return
+
+GameLaunch:
+{
+	If(WC3Path && TrayOption = 1)
+	{
+		Run, %WC3Path%
+	}
+}
+return
+
+TraySetting:
+{
+	GuiControlGet, CurrentTrayOption ,, CheckTrayBox
+	IniWrite, %CurrentTrayOption%, %A_ScriptDir%\%ININame%, Loader, TrayOption
+	IniRead, TrayOption, %A_ScriptDir%\%ININame% , Loader, TrayOption
+	If (TrayOption = 1)
+	{
+		Menu, Tray, Enable, Launch Warcraft III
+		GuiControl, MainBuddy:Enable, SetPathButton
+	}
+	Else
+	{
+		Menu, Tray, Disable, Launch Warcraft III
+		GuiControl, MainBuddy:Disable, SetPathButton
+	}
+}
+return
+
+SetWC3Path:
+{
+	IfExist, %ProgramFiles%\Warcraft III\
+	{
+		FileSelectFile, WC3Path, *%ProgramFiles%\Warcraft III\, 3, Show your Warcraft3.exe location
+	}
+	else
+	{
+		FileSelectFile, WC3Path, , 3, Show your Warcraft3.exe location
+	}
+	IniWrite, %WC3Path%, %A_ScriptDir%\%ININame%, Loader, WC3Path
+	IniRead, WC3Path, %A_ScriptDir%\%ININame%, Loader, WC3Path
 }
 return
 
