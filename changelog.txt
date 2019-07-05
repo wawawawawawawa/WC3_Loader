@@ -3,7 +3,7 @@
 1.1 : Added Version Updater
 
 1.2 : Added Backup Tool
-      The WC3 RPG Loader.exe now returns 2/68 on totalvirus...
+      The WC3 RPG Loader.exe now returns 2/68 on virustotal...
       Ah well, creating a backup is considered "stealing"...
       At least the WC3 RPG Loader..ahk is still 0/68 :)
       
@@ -22,3 +22,4 @@
 1.7 : Added more Options
       Added Self-Signed Certificate on the .exe
       Added incentive to use the .ahk over the .exe
+      (btw only 1/68 from virustotal on each exe now :D)
