@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.7"
+Global currentversion := "1.8"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -19,6 +19,7 @@ Global URLCurrentUpdaterAHK := A_ScriptDir . "\AutoUpdater.ahk"
 Global URLCurrentUpdaterEXE := A_ScriptDir . "\AutoUpdater.exe"
 Global ININame := BuildIniName()
 Global TrayIcon := "0"
+Global switch := "1"
 RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
 
 ;=============== INI FILE ====================
@@ -262,6 +263,8 @@ Menu, Tray, Add, Loaders, :TrayMenu
 Menu, Tray, Add
 Menu, Tray, Add, Launch Warcraft III, GameLaunch
 Menu, Tray, Add
+Menu, Tray, Add, Hide Warcraft III, GameShowHide
+Menu, Tray, Add
 Menu, Tray, Add, Reload Script, ReloadScript
 Menu, Tray, Standard
 Menu, Tray, Click, 1
@@ -420,7 +423,6 @@ Update:
 	else
 	{
 		CurrentGUI = Update
-		GuiHideAllBut(CurrentGUI)
 		url=https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/version.txt
 		version := StrReplace(URLDownloadToVar(url), "`n", "")
 		GuiControl, UpdateBuddy:, LoaderLastVer, %version%
@@ -428,7 +430,7 @@ Update:
 		{
 			GuiControl, UpdateBuddy:Enable, GreyedButton
 			Gui, UpdateBuddy:Show, Center, Update Available
-			Gui, UpdateBuddy:+AlwaysOnTop
+			GuiHideAllBut(CurrentGUI)
 		}
 		Else
 		{
@@ -436,7 +438,7 @@ Update:
 			{
 				GuiControl, UpdateBuddy:Disable, GreyedButton				
 				Gui, UpdateBuddy:Show, Center, Up To Date
-				Gui, UpdateBuddy:+AlwaysOnTop
+				GuiHideAllBut(CurrentGUI)
 			}
 		}
 	}
@@ -2204,6 +2206,25 @@ GameLaunch:
 	If(WC3Path && TrayOption = 1)
 	{
 		Run, %WC3Path%
+	}
+}
+return
+
+GameShowHide:
+{
+	If WinExist("Warcraft III")
+	{
+		switch *= -1
+		If (switch = 1)
+		{
+			WinRestore, Warcraft III
+			Menu, Tray, Rename, Show Warcraft III, Hide Warcraft III
+		}
+		Else
+		{
+			WinMinimize, Warcraft III
+			Menu, Tray, Rename, Hide Warcraft III, Show Warcraft III
+		}
 	}
 }
 return
