@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.8"
+Global currentversion := "1.8a"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -326,24 +326,6 @@ return
 AutoUpdate:
 {
 	Gui UpdateBuddy:+OwnDialogs
-	ColorDir := A_ScriptDir "\Color"
-	if !FileExist(ColorDir)
-	{
-		FileCreateDir, %ColorDir%
-		Progress, , , Downloading Required Colors..., Colors Download
-		Sleep, 100
-		UrlDownloadToFile, %URLDownloadHoop%, %ColorDir%\Hoop.png
-		ColorArray := ["0", "5", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]
-		For i in ColorArray
-		{
-			CurrColor := ColorArray[i]
-			UrlDownloadToFile, %URLDownloadColor%%CurrColor%.png, %ColorDir%\%CurrColor%.png
-			Progress, %CurrColor%, , Downloading Required Colors..., Colors Download
-		}
-		Progress, 100 , ,Colors Download Completed. , Colors Download Completed
-		Sleep, 500
-		Progress, Off
-	}
 	If (TrayIcon == "0")
 	{
 		MsgBox, 4, Optional Download, Do you want to a new shiny tray icon as well?
@@ -2134,6 +2116,25 @@ getDPImultiplier()
 
 ChangeColor:
 {
+	
+	ColorDir := A_ScriptDir "\Color"
+	if !FileExist(ColorDir)
+	{
+		FileCreateDir, %ColorDir%
+		Progress, , , Downloading Required Colors..., Colors Download
+		Sleep, 100
+		UrlDownloadToFile, %URLDownloadHoop%, %ColorDir%\Hoop.png
+		ColorArray := ["0", "5", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]
+		For i in ColorArray
+		{
+			CurrColor := ColorArray[i]
+			UrlDownloadToFile, %URLDownloadColor%%CurrColor%.png, %ColorDir%\%CurrColor%.png
+			Progress, %CurrColor%, , Downloading Required Colors..., Colors Download
+		}
+		Progress, 100 , ,Colors Download Completed. , Colors Download Completed
+		Sleep, 500
+		Progress, Off
+	}
 	IniRead, GUIColorX, %A_ScriptDir%\%ININame%, Loader, GUIColorX, 620
 	IniRead, GUIColorY, %A_ScriptDir%\%ININame%, Loader, GUIColorY, 443
 	CurrentGUI = CP
