@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.7a"
+Global currentversion := "1.8"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -17,6 +17,8 @@ SplitPath, A_ScriptName, OutFileName, OutDir, Extension, OutNameNoExt, OutDrive
 Global URLCurrentLoader := A_ScriptDir . "\" . OutNameNoExt
 Global URLCurrentUpdaterAHK := A_ScriptDir . "\AutoUpdater.ahk"
 Global URLCurrentUpdaterEXE := A_ScriptDir . "\AutoUpdater.exe"
+Global URLDownloadHoop := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/Color/Hoop.png"
+Global URLDownloadColor := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/Color/"
 Global ININame := BuildIniName()
 Global TrayIcon := "0"
 Global switch := "1"
@@ -42,28 +44,12 @@ IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
 IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
-IniRead, RetrieveContent, %A_ScriptDir%\%ININame% , Loader, RetrieveContent
-IniRead, CheckUpdates, %A_ScriptDir%\%ININame% , Loader, CheckUpdates
-IniRead, GUIColor, %A_ScriptDir%\%ININame% , Loader, GUIColor
-IniRead, TrayOption, %A_ScriptDir%\%ININame% , Loader, TrayOption
+IniRead, RetrieveContent, %A_ScriptDir%\%ININame% , Loader, RetrieveContent, 1
+IniRead, CheckUpdates, %A_ScriptDir%\%ININame% , Loader, CheckUpdates, 1
+IniRead, GUIColor, %A_ScriptDir%\%ININame% , Loader, GUIColor, Default
+IniRead, TrayOption, %A_ScriptDir%\%ININame% , Loader, TrayOption, 0
 IniRead, WC3Path, %A_ScriptDir%\%ININame% , Loader, WC3Path
 
-If (GUIColor == "ERROR") {
-	GUIColor := "Default"
-	IniWrite, Default, %A_ScriptDir%\%ININame%, Loader, GUIColor
-}
-If (CheckUpdates == "ERROR") {
-	CheckUpdates := "1"
-	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
-}
-If (RetrieveContent == "ERROR") {
-	RetrieveContent := "1"
-	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, RetrieveContent
-}
-If (TrayOption == "ERROR") {
-	TrayOption := "0"
-	IniWrite, 0, %A_ScriptDir%\%ININame%, Loader, TrayOption
-}
 ;////////////////////////////////////////// GUI //////////////////////////////////////////////////////////////////
 ;=============== MAIN GUI ====================
 Gui 99:+LabelMainBuddy
@@ -94,7 +80,7 @@ Gui, MainBuddy:Add, CheckBox, yp20 vCheckUpdatesBox gUpdateSetting Checked%Check
 Gui, MainBuddy:Add, CheckBox, yp20 vCheckTrayBox gTraySetting Checked%TrayOption%, Enable Launch Wc3 (Taskbar)
 Gui, MainBuddy:Add, Button, x+5 yp-5 vSetPathButton gSetWC3Path Checked%TrayOption%, Set WC3 Path
 Gui, MainBuddy:Add, Text, xs+10 yp30 , GUI Theme :
-Gui, MainBuddy:Add, DropDownList, yp-4 x+5 w100 gChangeColor vColorChoice, Default||White|Silver|Gray|Teal|Green|Olive|Maroon|Purple|Fuchsia
+Gui, MainBuddy:Add, Button, yp-4 x+5 w100 gChangeColor vColorChoice, Choose Color
 
 
 Gui, MainBuddy:Tab, 
@@ -248,6 +234,44 @@ Gui 5a:+LabelTEVEBuddyStat
 Gui, TEVEBuddyStat:Add, Edit,vTEVEdata ReadOnly w600, 
 Gui, TEVEBuddyStat:Show, Hide Center, Retrieve content
 
+;=============== GUI COLOR PICKER ====================
+DPI := getDPImultiplier()
+FontScaler := 2/DPI
+
+eight := Floor(8*FontScaler)
+twelve := Floor(12*FontScaler)
+
+cY = 610	; Used to position the saved colors
+cH = 30
+cW = 55
+cG = 5
+cX = 22
+
+; To load the saved variables
+IniRead, vSlider, %A_ScriptDir%\%ININame%, Loader, vSlider, 100
+IniRead, sColor, %A_ScriptDir%\%ININame%, Loader, sColor, 000000
+IniRead, GUIColorX, %A_ScriptDir%\%ININame%, Loader, GUIColorX, 620
+IniRead, GUIColorY, %A_ScriptDir%\%ININame%, Loader, GUIColorY, 443
+
+; Create the Halo
+Gui Halo: -DPIScale
+Gui Halo: Color, AE29AD
+Gui Halo: -caption -Border +ToolWindow +LastFound +AlwaysOnTop 
+WinSet, TransColor, AE29AD
+Gui Halo:Add, Picture, w20 h-1, Color/Hoop.png
+
+; Create the Color Picker Window and set colors
+Gui CPBuddy:Font, cDDDDDD s%eight% q5
+Gui CPBuddy:Add, Button, x20 y440 w80 h50 gBack, Back
+Gui CPBuddy:+caption Border  -DPIScale
+Gui CPBuddy:Font, cDDDDDD s%twelve% q5
+Gui CPBuddy:Color, 222222, DDDDDD
+Gui CPBuddy:Add, Text, x180 y440, Saturation: 
+Gui CPBuddy:Add, Picture, x20 y20 w600 h-1 Border vColorPallet, Color\%vSlider%.png
+Gui CPBuddy:Add, Text, x340 y440 w75 Center ReadOnly gCP_SatEdit vSatEdit, %vSlider%`%
+Gui CPBuddy:Add, Slider, x175 y480 w240 Range0-100 AltSubmit Line5 page25 Thick17 NoTicks gCP_Slider vvSlider, %vSlider%
+Gui CPBuddy:Add, TreeView, x502 y435 w120 h60 ReadOnly Background%sColor% vCP_Top
+
 ;=============== TRAY ICON ====================
 Menu, TrayMenu, Add, Gaia Loader, GUIGaia
 Menu, TrayMenu, Add, HM Loader, GUIHM
@@ -256,8 +280,8 @@ Menu, TrayMenu, Add, TBR 2.1 Loader, GUITBR21
 Menu, TrayMenu, Add, TeveF Loader, GUITEVE
 
 Menu, Tray, Nostandard
-Menu, Tray, Add, Show/Hide WC3 RPG Loader, ^F1
-Menu, Tray, Default, Show/Hide WC3 RPG Loader
+Menu, Tray, Add, Hide WC3 RPG Loader, ^F1
+Menu, Tray, Default, Hide WC3 RPG Loader
 Menu, Tray, Add
 Menu, Tray, Add, Loaders, :TrayMenu
 Menu, Tray, Add
@@ -283,7 +307,7 @@ Gui, HMBuddy:Color, %GUIColor%
 Gui, TBR13Buddy:Color, %GUIColor%
 Gui, TBR21Buddy:Color, %GUIColor%
 Gui, TEVEBuddy:Color, %GUIColor%
-GuiControl, MainBuddy:ChooseString, ColorChoice, %GUIColor%
+Gui, CPBuddy:Color, %GUIColor%
 
 Gui, MainBuddy:Show, Center, Loader %currentversion% (Press CTRL + F1 to Show/Hide)
 If (CheckUpdates = 1)
@@ -302,6 +326,24 @@ return
 AutoUpdate:
 {
 	Gui UpdateBuddy:+OwnDialogs
+	ColorDir := A_ScriptDir "\Color"
+	if !FileExist(ColorDir)
+	{
+		FileCreateDir, %ColorDir%
+		Progress, , , Downloading Required Colors..., Colors Download
+		Sleep, 100
+		UrlDownloadToFile, %URLDownloadHoop%, %ColorDir%\Hoop.png
+		ColorArray := ["0", "5", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80", "85", "90", "95", "100"]
+		For i in ColorArray
+		{
+			CurrColor := ColorArray[i]
+			UrlDownloadToFile, %URLDownloadColor%%CurrColor%.png, %ColorDir%\%CurrColor%.png
+			Progress, %CurrColor%, , Downloading Required Colors..., Colors Download
+		}
+		Progress, 100 , ,Colors Download Completed. , Colors Download Completed
+		Sleep, 500
+		Progress, Off
+	}
 	If (TrayIcon == "0")
 	{
 		MsgBox, 4, Optional Download, Do you want to a new shiny tray icon as well?
@@ -422,12 +464,12 @@ Update:
 	}
 	else
 	{
-		CurrentGUI = Update
 		url=https://raw.githubusercontent.com/wawawawawawawa/WC3_Loader/master/version.txt
 		version := StrReplace(URLDownloadToVar(url), "`n", "")
 		GuiControl, UpdateBuddy:, LoaderLastVer, %version%
 		If (version != currentversion)
 		{
+			CurrentGUI = Update
 			GuiControl, UpdateBuddy:Enable, GreyedButton
 			Gui, UpdateBuddy:Show, Center, Update Available
 			GuiHideAllBut(CurrentGUI)
@@ -436,6 +478,7 @@ Update:
 		{
 			If (UpdateDone == 1)
 			{
+				CurrentGUI = Update
 				GuiControl, UpdateBuddy:Disable, GreyedButton				
 				Gui, UpdateBuddy:Show, Center, Up To Date
 				GuiHideAllBut(CurrentGUI)
@@ -1671,159 +1714,12 @@ class GroupSort
 		return t
 	}
 }
-;============== HOTKEYS ===================
-^F1::
-If (%CurrentGUI%GUI = 1)
-{
-    Gui, %CurrentGUI%Buddy:Show, Hide
-	%CurrentGUI%GUI = 0
-}
-Else 
-{
-	Gui, %CurrentGUI%Buddy:Show
-	%CurrentGUI%GUI = 1
-}
-Return
-
-;============== GUI ===================
-GuiHideAllBut(ThisOne)
-{
-	GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "Update"]
-	For i in GuiList
-	{
-		GUICurrent := GuiList[i]
-		If (ThisOne != GUICurrent)
-		{
-			Gui, %GUICurrent%Buddy:Show, Hide
-			%GUICurrent%GUI = 0
-		}
-		Else
-		{
-			Gui, %ThisOne%Buddy:Show
-			Gui, %CurrentGUI%Buddy:+AlwaysOnTop
-			%ThisOne%GUI = 1
-		}
-	}
-}
-return
-
-Back:
-{
-	CurrentGUI = Main
-	GuiHideAllBut(CurrentGUI)
-}
-return
-
-GUIGaia:
-{
-	CurrentGUI = Gaia
-	GuiHideAllBut(CurrentGUI)
-	IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame%, Settings, GaiaPath
-	SetWorkingDir, %GaiaBuddyPath%
-	GoSub, GaiaRefresh
-}
-return
-
-GUIHM:
-{
-	CurrentGUI = HM
-	GuiHideAllBut(CurrentGUI)
-	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
-	SetWorkingDir, %HMBuddyPath%
-	GoSub, HMRefresh
-}
-return
-
-GUITBR13:
-{
-	CurrentGUI = TBR13
-	GuiHideAllBut(CurrentGUI)
-	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame%, Settings, TBR13Path
-	SetWorkingDir, %TBR13BuddyPath%
-	GoSub, TBR13Refresh
-}
-return
-
-GUITBR21:
-{
-	CurrentGUI = TBR21
-	GuiHideAllBut(CurrentGUI)
-	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame%, Settings, TBR21Path
-	SetWorkingDir, %TBR21BuddyPath%
-	GoSub, TBR21Refresh
-}
-return
-
-GUITEVE:
-{
-	CurrentGUI = TEVE
-	GuiHideAllBut(CurrentGUI)
-	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame%, Settings, TEVEPath
-	SetWorkingDir, %TEVEBuddyPath%
-	GoSub, TEVERefresh
-}
-return
-
-MainBuddyGuiClose:
-{
-	%CurrentGUI%GUI = 0
-	Gui, %CurrentGUI%Buddy:Show, Hide
-}
-return
-
-GaiaBuddyGuiClose:
-{
-	%CurrentGUI%GUI = 0
-	Gui, %CurrentGUI%Buddy:Show, Hide
-}
-return
-
-HMBuddyGuiClose:
-{
-	%CurrentGUI%GUI = 0
-	Gui, %CurrentGUI%Buddy:Show, Hide
-}
-return
-
-TBR13BuddyGuiClose:
-{
-	%CurrentGUI%GUI = 0
-	Gui, %CurrentGUI%Buddy:Show, Hide
-}
-return
-
-TBR21BuddyGuiClose:
-{
-	%CurrentGUI%GUI = 0
-	Gui, %CurrentGUI%Buddy:Show, Hide
-}
-return
-
-TEVEBuddyGuiClose:
-{
-	%CurrentGUI%GUI = 0
-	Gui, %CurrentGUI%Buddy:Show, Hide
-}
-return
-
-UpdateBuddyGuiClose:
-{
-	%CurrentGUI%GUI = 0
-	Gui, %CurrentGUI%Buddy:Show, Hide
-}
-return
-
-ReloadScript:
-{
-	Reload
-}
-return
 
 ;=============== BACKUP ====================
 RestoreBackup:
 {
 	Gui MainBuddy:+OwnDialogs
-	FileSelectFile, BackupPath,,, Choose the Backup.ini to Restore, *.ini
+	FileSelectFile, BackupPath,,, Choose the Backup.ini to Restore, INI (*.ini)
 	If (BackupPath)
 	{
 		FileSelectFolder, RestorePath, 3,, Where do you want your Restored Saves to be? (Press Cancel to Skip)
@@ -2090,6 +1986,333 @@ CreateBackup:
 }
 return
 
+;============== GUI COLOR PICKER =================
+CP_Slider:
+GuiControlGet, vSlider 	; Gets and sets the Saturation 
+vSlider := SliderRound(vSlider)	; from slider to edit box
+GuiControl, CPBuddy:, SatEdit, %vSlider%`% 	
+if (mod(vSlider, 5) = 0) {	; Makes sure the number is dividable by 5
+	GuiControl, CPBuddy:, ColorPallet, Color\%vSlider%.png
+	if (vLoading = "No") {
+		vColor := GetColor(GUIColorX, GUIColorY)
+		SetColor(vColor, "Top")	; Updates the color under the halo
+	}
+}
+IniWrite, %vSlider%, %A_ScriptDir%\%ININame%, Loader, vSlider
+return
+
+CP_SatEdit:	; Gets and sets the Saturation 
+GuiControlGet, SatEdit 	; from edit box to slider	
+GuiControl, CPBuddy:, vSlider, %SatEdit% 
+if (mod(SatEdit, 5) = 0) {	; Makes sure the number is dividable by 5
+	GuiControl, CPBuddy:, ColorPallet, Color\%SatEdit%.png
+	vColor := GetColor(GUIColorX, GUIColorY)
+	SetColor(vColor, "Top")	; Updates the color under the halo
+}
+return
+
+SliderRound(vSlider) {				; Makes sure the slider stops on
+	ModuloSlider := Mod(vSlider,5)
+	if (vSlider = "")				; the closest 5 as that is the 
+		vSlider = 100 				; only color image saved
+	if (ModuloSlider = 0)
+		return vSlider
+	else if (ModuloSlider == 1 || ModuloSlider == 6)
+		return vSlider - 1
+	else if (ModuloSlider == 2 || ModuloSlider == 7)
+		return vSlider - 2
+	else if (ModuloSlider == 3 || ModuloSlider == 8)
+		return vSlider + 2
+	else if (ModuloSlider == 4 || ModuloSlider == 9)
+		return vSlider + 1
+}
+
+HaloMove(vX="Hide", vY="Hide", wID="") {	; Function to position the halo correctly
+	if (vX != "Hide") OR (vY != "Hide") {
+		WinGetPos, wX, wY,,, ahk_id %wID%
+		if(wX && wY)
+		{
+			wX := (wX + vX - 19)
+			wY := (wY + vY - 15)
+			Gui Halo:Show, x%wX% y%wY% NoActivate
+		}
+	} else
+		Gui Halo:Show, Hide
+	return
+}
+
+GetColor(X, Y) { ; Gets the pixel color under the mouse cursor
+	PixelGetColor vColor, X, Y, RGB
+	StringRight, vColor, vColor, 6
+	return vColor
+}
+
+SetColor(vColor, Which) { ; Sets vColor to Which box
+	GuiControl, CPBuddy: +Background%vColor%, CP_%Which%
+}
+return
+CP_PickTimer:	; Timer that runs constantly to get color 
+IfWinActive, ahk_id %wID%	; So it only works when the window is active
+{
+	if (DoOnlyOnce = 1)
+		HaloMove(GUIColorX, GUIColorY, wID) ; Position the halo into saved position
+	DoOnlyOnce = 0
+	CoordMode, Mouse, Relative
+	MouseGetPos X, Y
+	if (x < 14) OR (x > 631) OR (y < 37) OR (y > 455) {
+		if (DoMe = "Yes") { ;  Makes sure this is not run more than once
+			SetColor(sColor, "Top")	; Set top box color
+			HaloMove(GUIColorX, GUIColorY, wID) ; Position the halo into saved position
+			DoMe := "No"
+		}
+		return
+	}
+	DoMe := "Yes"
+	if (x < 24) 	; Makes sure the halo stays in the confines
+		x = 24
+	else if (x > 621) 
+		x = 621
+	if (y < 47) 
+		y = 47
+	else if (y > 445)
+		y = 445 
+	vColor := GetColor(X, Y) ; Get the color under the halo
+	SetColor(vColor, "Top")	; Set top box color
+	HaloMove(X, Y, wID)	; Position the halo
+} else if (DoOnlyOnce = 0) {	; Do this is Color Picker loses focus
+	HaloMove() ; Hide the halo as it would show over other windows otherwise
+	DoOnlyOnce = 1
+}
+return
+
+; Saves the color left clicked under the halo
+~Lbutton::
+IfWinActive ahk_id %wID%	; Only when the window is active will this run
+{
+	MouseGetPos X, Y ; To be sure it is within the Color Pallet	
+	if (x > 14) && (x < 631) && (y > 37) && (y < 455) {
+		if (x < 24) 	; Makes sure the halo stays in the confines
+			x = 24
+		else if (x > 621) 
+			x = 621
+		if (y < 47) 
+			y = 47
+		else if (y > 445)
+			y = 445 
+		; Save variables to to be used when reopening the Color Pallet
+		IniWrite, %vColor%, %A_ScriptDir%\%ININame%, Loader, GUIColor
+		IniWrite, %X%, %A_ScriptDir%\%ININame%, Loader, GUIColorX
+		IniWrite, %Y%, %A_ScriptDir%\%ININame%, Loader, GUIColorY
+		sColor := vColor
+		GUIColorX := X
+		GUIColorY := Y
+		if (StrLen(sColor) = 8) ; Trim the 0x from the beginning if its there
+			StringTrimLeft, sColor, sColor, 2
+		Gui, MainBuddy:Color, %sColor%
+		Gui, UpdateBuddy:Color, %sColor%
+		Gui, GaiaBuddy:Color, %sColor%
+		Gui, HMBuddy:Color, %sColor%
+		Gui, TBR13Buddy:Color, %sColor%
+		Gui, TBR21Buddy:Color, %sColor%
+		Gui, TEVEBuddy:Color, %sColor%
+		Gui, CPBuddy:Color, %sColor%
+		GuiControl, CPBuddy:Focus, vSlider
+	}
+}
+return
+
+getDPImultiplier()
+{
+		RegRead, DPI_value, HKEY_CURRENT_USER, Control Panel\Desktop\WindowMetrics, AppliedDPI
+		if errorlevel=1 ; the reg key was not found - it means default settings
+		   return 1
+		if DPI_value=96 ; 96 is the default font size setting
+		   return 1
+		if DPI_value>96 ; A higher value should mean LARGE font size setting
+		   return DPI_value/96
+}
+
+ChangeColor:
+{
+	IniRead, GUIColorX, %A_ScriptDir%\%ININame%, Loader, GUIColorX, 620
+	IniRead, GUIColorY, %A_ScriptDir%\%ININame%, Loader, GUIColorY, 443
+	CurrentGUI = CP
+	%CurrentGUI%GUI = 1
+	GuiHideAllBut(CurrentGUI)
+	Gui CPBuddy:Show, Center w640 h520, Color Picker ; Shows the Color Picker {x60 y40}
+	Gui, Halo:+OwnerCPBuddy
+	Gui CPBuddy:+AlwaysOnTop
+	WinGet wID, ID, A ; Gets Color Picker ID for ease of use later on
+	HaloMove(GUIColorX, GUIColorY, wID) ; Set halo to saved color
+	SetTimer, CP_PickTimer, 10 ; Start Color Picker timer
+}
+return
+
+;============== HOTKEYS ===================
+^F1::
+If (%CurrentGUI%GUI = 1)
+{
+    Gui, %CurrentGUI%Buddy:Show, Hide
+	%CurrentGUI%GUI = 0
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+Else 
+{
+	Gui, %CurrentGUI%Buddy:Show
+	%CurrentGUI%GUI = 1
+	Menu, Tray, Rename, Show WC3 RPG Loader, Hide WC3 RPG Loader
+}
+Return
+
+;============== GUI ===================
+GuiHideAllBut(ThisOne)
+{
+	GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "Update", "CP"]
+	For i in GuiList
+	{
+		GUICurrent := GuiList[i]
+		If (ThisOne != GUICurrent)
+		{
+			Gui, %GUICurrent%Buddy:Show, Hide
+			%GUICurrent%GUI = 0
+		}
+		Else
+		{
+			Gui, %ThisOne%Buddy:Show
+			Gui, %CurrentGUI%Buddy:+AlwaysOnTop
+			%ThisOne%GUI = 1
+		}
+	}
+}
+return
+
+Back:
+{
+	CurrentGUI = Main
+	GuiHideAllBut(CurrentGUI)
+}
+return
+
+GUIGaia:
+{
+	CurrentGUI = Gaia
+	GuiHideAllBut(CurrentGUI)
+	IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame%, Settings, GaiaPath
+	SetWorkingDir, %GaiaBuddyPath%
+	GoSub, GaiaRefresh
+}
+return
+
+GUIHM:
+{
+	CurrentGUI = HM
+	GuiHideAllBut(CurrentGUI)
+	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame%, Settings, HMPath
+	SetWorkingDir, %HMBuddyPath%
+	GoSub, HMRefresh
+}
+return
+
+GUITBR13:
+{
+	CurrentGUI = TBR13
+	GuiHideAllBut(CurrentGUI)
+	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame%, Settings, TBR13Path
+	SetWorkingDir, %TBR13BuddyPath%
+	GoSub, TBR13Refresh
+}
+return
+
+GUITBR21:
+{
+	CurrentGUI = TBR21
+	GuiHideAllBut(CurrentGUI)
+	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame%, Settings, TBR21Path
+	SetWorkingDir, %TBR21BuddyPath%
+	GoSub, TBR21Refresh
+}
+return
+
+GUITEVE:
+{
+	CurrentGUI = TEVE
+	GuiHideAllBut(CurrentGUI)
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame%, Settings, TEVEPath
+	SetWorkingDir, %TEVEBuddyPath%
+	GoSub, TEVERefresh
+}
+return
+
+MainBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+GaiaBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+HMBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+TBR13BuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+TBR21BuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+TEVEBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+UpdateBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+CPBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
+ReloadScript:
+{
+	Reload
+}
+return
+
 ;============== CHANGE PATH =================
 ChangeGaiaPath:
 {
@@ -2172,20 +2395,6 @@ ChangeTEVEPath:
 return
 
 ;============== SETTINGS =================
-ChangeColor:
-{
-	GuiControlGet, color,, ColorChoice
-	Gui, MainBuddy:Color, %color%
-	Gui, UpdateBuddy:Color, %color%
-	Gui, GaiaBuddy:Color, %color%
-	Gui, HMBuddy:Color, %color%
-	Gui, TBR13Buddy:Color, %color%
-	Gui, TBR21Buddy:Color, %color%
-	Gui, TEVEBuddy:Color, %color%
-	IniWrite, %color%, %A_ScriptDir%\%ININame%, Loader, GUIColor
-}
-return
-
 ContentSetting:
 {
 	GuiControlGet, CheckContent,, GetContentBox
@@ -2251,11 +2460,11 @@ SetWC3Path:
 {
 	IfExist, %ProgramFiles%\Warcraft III\
 	{
-		FileSelectFile, WC3Path, *%ProgramFiles%\Warcraft III\, 3, Show your Warcraft3.exe location
+		FileSelectFile, WC3Path,, *%ProgramFiles%\Warcraft III\, Show your Warcraft3.exe location, EXE (*.exe)
 	}
 	else
 	{
-		FileSelectFile, WC3Path, , 3, Show your Warcraft3.exe location
+		FileSelectFile, WC3Path,, , Show your Warcraft3.exe location, EXE (*.exe)
 	}
 	IniWrite, %WC3Path%, %A_ScriptDir%\%ININame%, Loader, WC3Path
 	IniRead, WC3Path, %A_ScriptDir%\%ININame%, Loader, WC3Path
@@ -2282,3 +2491,15 @@ Loop, % tmp0
 }
 return ini_name ".ini"
 }
+;============== HOTSTRING =================
+#IfWinActive "Warcraft III"
+:B0:-save::
+If (CurrentGUI != "Main" && CurrentGUI != "Update")
+{
+	Sleep, 5000
+	IniRead, %CurrentGUI%BuddyPath, %A_ScriptDir%\%ININame%, Settings, %CurrentGUI%Path
+	ActivePath := CurrentGUI "BuddyPath"
+	SetWorkingDir, %ActivePath%
+	GoSub, %CurrentGUI%Refresh
+}
+return
