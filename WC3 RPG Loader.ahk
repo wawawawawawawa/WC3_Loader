@@ -2134,6 +2134,7 @@ ChangeColor:
 		Progress, 100 , ,Colors Download Completed. , Colors Download Completed
 		Sleep, 500
 		Progress, Off
+		Reload
 	}
 	IniRead, GUIColorX, %A_ScriptDir%\%ININame%, Loader, GUIColorX, 620
 	IniRead, GUIColorY, %A_ScriptDir%\%ININame%, Loader, GUIColorY, 443
