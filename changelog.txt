@@ -23,3 +23,6 @@
       Added Self-Signed Certificate on the .exe
       Added incentive to use the .ahk over the .exe
       (btw only 1/68 from virustotal on each exe now :D)
+
+1.8 : Added Theme
+      Writting "-save" automatically refresh current opened loader
