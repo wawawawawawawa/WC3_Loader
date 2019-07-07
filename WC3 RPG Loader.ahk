@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.8a"
+Global currentversion := "1.9"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -22,6 +22,7 @@ Global URLDownloadColor := "https://github.com/wawawawawawawa/WC3_Loader/raw/mas
 Global ININame := BuildIniName()
 Global TrayIcon := "0"
 Global switch := "1"
+Global GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "GOH", "Update", "CP"]
 RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
 
 ;=============== INI FILE ====================
@@ -33,6 +34,7 @@ ifNotExist, %A_ScriptDir%\%ININame%
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR13Path
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR21Path
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
+	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, GOHPath
 	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, RetrieveContent
 	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
 	IniWrite, Default, %A_ScriptDir%\%ININame%, Loader, GUIColor
@@ -44,6 +46,7 @@ IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
 IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
 IniRead, RetrieveContent, %A_ScriptDir%\%ININame% , Loader, RetrieveContent, 1
 IniRead, CheckUpdates, %A_ScriptDir%\%ININame% , Loader, CheckUpdates, 1
 IniRead, GUIColor, %A_ScriptDir%\%ININame% , Loader, GUIColor, Default
@@ -63,6 +66,7 @@ Gui, MainBuddy:Add, Button, xp125 w120 gGUIHM, HM Loader
 Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITBR13, TBR 1.38 Loader
 Gui, MainBuddy:Add, Button, xp125 w120 gGUITBR21, TBR 2.1 Loader
 Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITEVE, TeveF Loader
+Gui, MainBuddy:Add, Button, xp125 w120 gGUIGOH, GoH Loader
 
 Gui, MainBuddy:Tab, 2
 Gui, MainBuddy:Font, cBlack s12
@@ -234,6 +238,26 @@ Gui 5a:+LabelTEVEBuddyStat
 Gui, TEVEBuddyStat:Add, Edit,vTEVEdata ReadOnly w600, 
 Gui, TEVEBuddyStat:Show, Hide Center, Retrieve content
 
+;=============== GOH GUI ====================
+Gui 6:+LabelGOHBuddy
+Gui, GOHBuddy:Add, Text, x40 y5, Class Selection :
+Gui, GOHBuddy:Add, Text, x205 y5, Characters Available :
+Gui, GOHBuddy:Add, Text, x500 y5, Character Information :
+Gui, GOHBuddy:Add, ListBox, x5 y20 w150 h300 vGOHclasschoice gGOHChoice , 
+Gui, GOHBuddy:Add, ListBox, x160 y20 w200 h300 vgohclasslist gGOHCharChoice AltSubmit, 
+Gui, GOHBuddy:Add, ListBox, x365 y20 w400 h300 vgohclassinfo gGOHStatChoice AltSubmit, 
+Gui, GOHBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
+Gui, GOHBuddy:Add, Button, x275 y320 w130 h40 gGOHRefresh, Refresh
+Gui, GOHBuddy:Add, Button, x636 y320 w130 h40 gLoadGOH, Load
+Gui, GOHBuddy:Add, Button, x5 y370 h40 gChangeGOHPath, Change Save Folder
+Gui, GOHBuddy:Add, Edit, x155 y370 w300 h40 vGOHPathText ReadOnly, %GOHBuddyPath%
+Gui, GOHBuddy:Show, Hide Center, GoH Buddy (Press CTRL + F1 to Show/Hide)
+
+GOHGUI = 0
+
+Gui 6a:+LabelGOHBuddyStat
+Gui, GOHBuddyStat:Add, Edit,vGOHdata ReadOnly w600, 
+Gui, GOHBuddyStat:Show, Hide Center, Retrieve content
 ;=============== GUI COLOR PICKER ====================
 DPI := getDPImultiplier()
 FontScaler := 2/DPI
@@ -300,20 +324,17 @@ If FileExist("WC3 RPG Loader.ico")
 	TrayIcon := "1"
 }
 UpdateDone = 0
-Gui, MainBuddy:Color, %GUIColor%
-Gui, UpdateBuddy:Color, %GUIColor%
-Gui, GaiaBuddy:Color, %GUIColor%
-Gui, HMBuddy:Color, %GUIColor%
-Gui, TBR13Buddy:Color, %GUIColor%
-Gui, TBR21Buddy:Color, %GUIColor%
-Gui, TEVEBuddy:Color, %GUIColor%
-Gui, CPBuddy:Color, %GUIColor%
-
+For i in GUIList
+{
+	GuiName := GUIList[i]
+	Gui, %GuiName%Buddy:Color, %GUIColor%
+}
 Gui, MainBuddy:Show, Center, Loader %currentversion% (Press CTRL + F1 to Show/Hide)
 If (CheckUpdates = 1)
 {
 	GoSub, Update
 }
+UpdateDone = 1
 If (TrayOption = 0)
 {
 	Menu, Tray, Disable, Launch Warcraft III
@@ -540,7 +561,7 @@ GaiaRefresh:
 			if (Gaiacurrentclass)
 			{
 				GaiaReplacedStr := sortByNumberWithin(Gaiacurrentclass,"|")
-				GaiaReplacedStr := StrReplace(GaiaReplacedStr, "|" , " | ")
+				GaiaReplacedStr := StrReplace(GaiaReplacedStr, "|" , "| ")
 				GaiaReplacedStr=| %GaiaReplacedStr%
 				GuiControl, GaiaBuddy:, %classGaia%choice, %GaiaReplacedStr%
 				GuiControl, GaiaBuddy:Choose, %classGaia%choice, 1
@@ -751,29 +772,29 @@ HMChoice:
 		HMnewlvl := HMCurrentLvls[i]
 		if (!HMlvllist)
 		{
-			HMlvllist = %HMnewlvl%
+			HMlvllist=%HMnewlvl%
 		}
 		else
 		{
-			HMlvllist = %HMlvllist% `n%HMnewlvl%
+			HMlvllist=%HMlvllist%`n%HMnewlvl%
 		}
 		HMnewcode := HMCurrentCodes[i]
 		if (!HMcodelist)
 		{
-			HMcodelist = %HMnewcode%
+			HMcodelist=%HMnewcode%
 		}
 		else
 		{
-			HMcodelist = %HMcodelist% `n%HMnewcode%
+			HMcodelist=%HMcodelist%`n%HMnewcode%
 		}
 		HMnewstat := HMCurrentStat[i]
 		if (!HMstatlist)
 		{
-			HMstatlist = %HMnewstat%
+			HMstatlist=%HMnewstat%
 		}
 		else
 		{
-			HMstatlist = %HMstatlist% `n%HMnewstat%
+			HMstatlist=%HMstatlist%`n%HMnewstat%
 		}
 	}
 	HMObj := [HMlvllist, HMcodelist, HMstatlist]
@@ -1120,48 +1141,48 @@ TBR21Choice:
 		TBR21newlvl := TBR21LvlCurr[i]
 		if (!TBR21lvllist)
 		{
-			TBR21lvllist = %TBR21newlvl%
+			TBR21lvllist=%TBR21newlvl%
 		}
 		else
 		{
-			TBR21lvllist = %TBR21lvllist% `n%TBR21newlvl%
+			TBR21lvllist=%TBR21lvllist%`n%TBR21newlvl%
 		}
 		TBR21newcode := TBR21CodeCurr[i]
 		if (!TBR21codelist)
 		{
-			TBR21codelist = %TBR21newcode%
+			TBR21codelist=%TBR21newcode%
 		}
 		else
 		{
-			TBR21codelist = %TBR21codelist% `n%TBR21newcode%
+			TBR21codelist=%TBR21codelist%`n%TBR21newcode%
 		}
 		TBR21newstat := TBR21StatCurr[i]
 		if (!TBR21statlist)
 		{
-			TBR21statlist = %TBR21newstat%
+			TBR21statlist=%TBR21newstat%
 		}
 		else
 		{
-			TBR21statlist = %TBR21statlist% `n%TBR21newstat%
+			TBR21statlist=%TBR21statlist%`n%TBR21newstat%
 		}
 		
 		TBR21newxp := TBR21XPCurr[i]
 		if (!TBR21xplist)
 		{
-			TBR21xplist = %TBR21newxp%
+			TBR21xplist=%TBR21newxp%
 		}
 		else
 		{
-			TBR21xplist = %TBR21xplist% `n%TBR21newxp%
+			TBR21xplist=%TBR21xplist%`n%TBR21newxp%
 		}
 		TBR21newtxt := TBR21CharTXTCurr[i]
 		if (!TBR21txtlist)
 		{
-			TBR21txtlist = %TBR21newtxt%
+			TBR21txtlist=%TBR21newtxt%
 		}
 		else
 		{
-			TBR21txtlist = %TBR21txtlist% `n%TBR21newtxt%
+			TBR21txtlist=%TBR21txtlist%`n%TBR21newtxt%
 		}
 	}
 	TBR21Obj := [TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
@@ -1366,38 +1387,38 @@ TEVEChoice:
 		TEVEnewlvl := TEVELvlCurr[i]
 		if (!TEVElvllist)
 		{
-			TEVElvllist = %TEVEnewlvl%
+			TEVElvllist=%TEVEnewlvl%
 		}
 		else
 		{
-			TEVElvllist = %TEVElvllist% `n%TEVEnewlvl%
+			TEVElvllist=%TEVElvllist%`n%TEVEnewlvl%
 		}
 		TEVEnewstat := TEVEStatCurr[i]
 		if (!TEVEstatlist)
 		{
-			TEVEstatlist = %TEVEnewstat%
+			TEVEstatlist=%TEVEnewstat%
 		}
 		else
 		{
-			TEVEstatlist = %TEVEstatlist% `n%TEVEnewstat%
+			TEVEstatlist=%TEVEstatlist%`n%TEVEnewstat%
 		}
 		TEVEnewcode1 := TEVECurrentCode1[i]
 		if (!TEVEcode1list)
 		{
-			TEVEcode1list = %TEVEnewcode1%
+			TEVEcode1list=%TEVEnewcode1%
 		}
 		else
 		{
-			TEVEcode1list = %TEVEcode1list% `n%TEVEnewcode1%
+			TEVEcode1list=%TEVEcode1list%`n%TEVEnewcode1%
 		}
 		TEVEnewcode2 := TEVECurrentCode2[i]
 		if (!TEVEcode2list)
 		{
-			TEVEcode2list = %TEVEnewcode2%
+			TEVEcode2list=%TEVEnewcode2%
 		}
 		else
 		{
-			TEVEcode2list = %TEVEcode2list% `n%TEVEnewcode2%
+			TEVEcode2list=%TEVEcode2list%`n%TEVEnewcode2%
 		}
 	}
 	TEVEObj := [TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
@@ -1478,11 +1499,10 @@ LoadTEVE:
 		TEVECurrCode1 := TEVEArrCode1[TEVECurrentCharNum]
 		TEVECurrCode2 := TEVEArrCode2[TEVECurrentCharNum]
 		TEVECurrLvl := TEVEArrLvls[TEVECurrentCharNum]
-		TEVECurrClass := TEVECurrentChar
-		Clipboard := "Loading : " . TEVECurrClass . " - Level " . TEVECurrLvl
-		SetTitleMatchMode,1
+		SetTitleMatchMode, 1
 		If WinExist("Warcraft III")
 		{
+			Clipboard := "Loading : " . TEVECurrentChar . " - Level " . TEVECurrLvl
 			WinActivate, Warcraft III
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
@@ -1511,6 +1531,236 @@ LoadTEVE:
 }
 return
 
+GOHRefresh:
+{
+	; Empty Old Var
+	IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
+	SetWorkingDir, %GOHBuddyPath%
+	GuiControl, GOHBuddy:, gohclassinfo, |
+	GuiControl, GOHBuddy:, gohclasslist, |
+	GuiControl, GOHBuddy:, gohclasschoice, |
+	GOHClasses := []
+	GOHLvl := []
+	GOHCode := []
+	GOHStats := []
+	GOHClassList=
+	
+	If (GOHBuddyPath)
+	{
+		Loop, Files, *.txt
+		{
+			FileReadLine, GOHfileline, %A_LoopFileLongPath%, 4
+			StringTrimLeft, GOHfileline, GOHfileline, 2
+			GOHCode.Push(GOHfileline)
+			GOHcurrChar := StrSplit(A_LoopFileName , ["(", ")"])
+			GOHcurrClass := GOHcurrChar[1]
+			GOHcurrLvl := GOHcurrChar[2]
+			GOHcurrStat := GOHcurrChar[3]
+			StringTrimRight, GOHcurrClass, GOHcurrClass, 1
+			StringTrimLeft, GOHcurrStat, GOHcurrStat, 3
+			StringTrimRight, GOHcurrStat, GOHcurrStat, 4
+			If (SubStr(GOHcurrLvl, 1 , 2) == "MP")
+			{
+				GOHcurrLvl = Lv.60 - %GOHcurrLvl%
+			}
+			GOHcurrStat = | FileName: %A_LoopFileName% | TimePlayed: %GOHcurrStat% | Code: %GOHfileline%
+			GOHClasses.Push(GOHcurrClass)
+			GOHStats.Push(GOHcurrStat)
+			GOHLvl.Push(GOHcurrLvl)
+			
+			if (GOHClassList)
+			{
+				if InStr(GOHClassList, GOHcurrClass)
+				{
+					
+				}
+				else
+				{
+					GOHClassList = %GOHClassList%|%GOHcurrClass%
+				}
+			}
+			else
+			{
+				GOHClassList = |%GOHcurrClass%
+			}
+		}
+		GuiControl, GOHBuddy:, gohclasschoice, %GOHClassList%
+		GuiControl, GOHBuddy:Choose, gohclasschoice, 1
+	}
+}
+return
+GOHChoice:
+{	
+	IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
+	SetWorkingDir, %GOHBuddyPath%
+	GuiControlGet, GOHCurrentClass,, gohclasschoice, 
+	for i in GOHClasses
+	{
+		GOHcurr := GOHClasses[i]
+		If(GOHcurr = GOHCurrentClass)
+		{
+			GOHLvlChar := GOHLvl[i]
+			GOHCodeChar := GOHCode[i]
+			GOHStatChar := GOHStats[i]
+			If InStr(GOHLvlChar, "MP")
+			{
+				if (!GOHLvlCharMaxList)
+				{
+					GOHLvlCharMaxList=%GOHLvlChar%
+					GOHStatCharMaxList=%GOHStatChar%
+					StringTrimLeft, GOHLvlChar, GOHLvlChar, 11
+					GOHLvlCharMaxNum=%GOHLvlChar%
+					GOHCodeCharMaxList=%GOHCodeChar%
+				}
+				else
+				{
+					GOHLvlCharMaxList=%GOHLvlCharMaxList%`n%GOHLvlChar%
+					GOHStatCharMaxList=%GOHStatCharMaxList%`n%GOHStatChar%
+					StringTrimLeft, GOHLvlChar, GOHLvlChar, 11
+					GOHLvlCharMaxNum=%GOHLvlCharMaxNum%`n%GOHLvlChar%
+					GOHCodeCharMaxList=%GOHCodeCharMaxList%`n%GOHCodeChar%
+				}
+			}
+			else
+			{
+				if (!GOHLvlCharLvlList)
+				{
+					GOHLvlCharLvlList=%GOHLvlChar%
+					GOHStatCharLvlList=%GOHStatChar%
+					StringTrimLeft, GOHLvlChar, GOHLvlChar, 3
+					GOHLvlCharLvlNum=%GOHLvlChar%
+					GOHCodeCharLvlList=%GOHCodeChar%
+				}
+				else
+				{
+					GOHLvlCharLvlList=%GOHLvlCharLvlList%`n%GOHLvlChar%
+					GOHStatCharLvlList=%GOHStatCharLvlList%`n%GOHStatChar%
+					StringTrimLeft, GOHLvlChar, GOHLvlChar, 3
+					GOHLvlCharLvlNum=%GOHLvlCharLvlNum%`n%GOHLvlChar%
+					GOHCodeCharLvlList=%GOHCodeCharLvlList%`n%GOHCodeChar%
+				}
+			}
+		}
+	}
+	GOHLvlObj := [GOHLvlCharLvlNum, GOHLvlCharLvlList, GOHStatCharLvlList, GOHCodeCharLvlList]
+	GOHMaxObj := [GOHLvlCharMaxNum, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
+	GOHLvlCharLvlList=
+	GOHStatCharLvlList=
+	GOHLvlCharLvlNum=
+	GOHCodeCharLvlList=
+	GOHLvlCharMaxList=
+	GOHStatCharMaxList=
+	GOHLvlCharMaxNum=
+	GOHCodeCharMaxList=
+	
+	GOHsortingnonsenseLvl := new GroupSort(GOHLvlObj, "N R")
+	GOHArrLvlLvl := StrSplit(GOHsortingnonsenseLvl.fetch("2") , "`n")
+	GOHArrStatLvl := StrSplit(GOHsortingnonsenseLvl.fetch("3") , "`n")
+	GOHArrCodeLvl := StrSplit(GOHsortingnonsenseLvl.fetch("4") , "`n")
+	
+	GOHsortingnonsenseMax := new GroupSort(GOHMaxObj, "N R")
+	GOHArrLvlMax := StrSplit(GOHsortingnonsenseMax.fetch("2") , "`n")
+	GOHArrStatMax := StrSplit(GOHsortingnonsenseMax.fetch("3") , "`n")
+	GOHArrCodeMax := StrSplit(GOHsortingnonsenseMax.fetch("4") , "`n")
+	
+	For i in GOHArrLvlLvl
+	{
+		GOHNewLvl := GOHArrLvlLvl[i]
+		GOHArrLvlMax.Push(GOHNewLvl)
+		GOHNewStat := GOHArrStatLvl[i]
+		GOHArrStatMax.Push(GOHNewStat)
+		GOHNewCode := GOHArrCodeLvl[i]
+		GOHArrCodeMax.Push(GOHNewCode)
+	}
+	
+	For i in GOHArrLvlMax
+	{
+		GOHThisLvl := GOHArrLvlMax[i]
+		 If (GOHlvllist)
+		{
+			GOHlvllist=%GOHlvllist%| %GOHThisLvl%
+		}
+		else
+		{
+			GOHlvllist=| %GOHThisLvl%
+		}
+	}	
+	
+	GOHDefaultStat := GOHArrStatMax[1]
+	GOHCurrentCode := GOHArrCodeMax[1]
+	GuiControl, GOHBuddy:, gohclasslist, %GOHlvllist%
+	GuiControl, GOHBuddy:Choose, gohclasslist, 1
+	GuiControl, GOHBuddy:, gohclassinfo, %GOHDefaultStat%
+	GuiControl, GOHBuddy:Choose, gohclassinfo, 1
+	GOHlvllist=
+	GOHstatlist=
+}
+return
+GOHCharChoice:
+{
+	IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
+	SetWorkingDir, %GOHBuddyPath%
+	GuiControlGet, GOHCurrentCharNum,, gohclasslist, 
+	GOHChosenStat := GOHArrStatMax[GOHCurrentCharNum]
+	GOHCurrentCode := GOHArrCodeMax[GOHCurrentCharNum]
+	GuiControl, GOHBuddy:, gohclassinfo, %GOHChosenStat%
+	GuiControl, GOHBuddy:Choose, gohclassinfo, 1
+}
+return
+GOHStatChoice:
+{
+	If (RetrieveContent == 1)
+	{
+		IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
+		SetWorkingDir, %GOHBuddyPath%
+		GuiControlGet, GOHCurrentStatNum,, gohclassinfo,
+		GuiControlGet, GOHCurrentCharNum,, gohclasslist,
+		GOHChosenStat := GOHArrStatMax[GOHCurrentCharNum]
+		StringTrimLeft, GOHChosenStat, GOHChosenStat, 2
+		GOHArrStat2 := StrSplit(GOHChosenStat , " | ")
+		GOHGetStat := GOHArrStat2[GOHCurrentStatNum]
+		GuiControl, GOHBuddyStat:, GOHdata, %GOHGetStat%
+		Gui, GOHBuddyStat:Show
+		Gui, GOHBuddyStat:+AlwaysOnTop
+	}
+}
+return
+LoadGOH:
+{
+	IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
+	SetWorkingDir, %GOHBuddyPath%
+	GuiControlGet, GOHCurrentClass,, gohclasschoice, 
+	GuiControlGet, GOHCurrentCharNum,, gohclasslist,
+	if (GOHCurrentClass && GOHCurrentCharNum)
+	{
+		GOHCurrCode := GOHArrCodeMax[GOHCurrentCharNum]
+		GOHCurrLvl := GOHArrLvlMax[GOHCurrentCharNum]
+		If WinExist("Warcraft III")
+		{
+			Clipboard := "Loading : " . GOHCurrentClass . " - Level " . GOHCurrLvl
+			WinActivate, Warcraft III
+			ClipWait, 200
+			Send {esc}{Enter}^v{Enter}
+			Sleep 200
+			Clipboard := GOHCurrCode
+			ClipWait, 200
+			Send {esc}{Enter}^v{Enter}
+			Sleep 200
+			Send {esc}{Enter}-farcam on{Enter}
+			Sleep 200
+		}
+		else
+		{
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
+		}
+		SetTitleMatchMode, 2
+	}
+	else
+	{
+		MsgBox, 262208, Invalid Save File, You need to choose a Save !
+	}
+}
+return
 ;////////////////////////////////////////// UPDATER FUNCTIONS ///////////////////////////////////////////////////////////////
 ;https://autohotkey.com/board/topic/80587-how-to-find-internet-connection-status/page-2
 ;- Should be compatible with Win XP or higher, 32/64 bit, Unicode or ANSI, latest version.
@@ -1711,6 +1961,7 @@ RestoreBackup:
 	TBR13RestorePath = %RestorePath%\TBR13 Restored
 	TBR21RestorePath = %RestorePath%\TBR21 Restored
 	TEVERestorePath = %RestorePath%\TEVE Restored
+	GOHRestorePath = %RestorePath%\GOH Restored
 	
 	If (RestorePath)
 	{		
@@ -1800,6 +2051,23 @@ RestoreBackup:
 		}
 		Progress, Off
 		
+		name = GOH
+		IniRead, GOHNum, %BackupPath%, GOH, Count
+		
+		Loop, %GOHNum%
+		{
+			IniRead, GOHFile, %BackupPath%, GOH, File%A_Index%
+			IniRead, GOHTxt, %BackupPath%, GOH, Txt%A_Index%
+			IniRead, GOHSubPath, %BackupPath%, GOH, SubPath%A_Index%
+			GOHTxt := StrReplace(GOHTxt, "LINEBREAK" , "`n")
+			GOHTxt := StrReplace(GOHTxt, "TABBREAK" , "`t")
+			FileCreateDir, %GOHRestorePath%%GOHSubPath%
+			FileDelete, %GOHRestorePath%%GOHSubPath%\%GOHFile%
+			FileAppend, %GOHTxt%, %GOHRestorePath%%GOHSubPath%\%GOHFile%
+			GOHperc := (A_Index / %name%Num) * 100
+			Progress, %GOHperc%, %GOHFile%, Restoring %name% Backup..., %name% Backup
+		}
+		Progress, Off
 		MsgBox, 262208, Restoration Done, Backup Restored at %RestorePath%\
 	}
 }
@@ -1963,6 +2231,35 @@ CreateBackup:
 			IniWrite, %TEVEcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
 			Progress, Off
 		}
+		If (GOHBuddyPath)
+		{
+			name = GOH
+			SetWorkingDir, %GOHBuddyPath%
+			GOHcurrent := 0
+			GOHmax := 0
+			Loop, Files, *.txt, D F R
+			{
+				GOHmax++
+			}
+			Loop, Files, *.txt, D F R
+			{
+				GOHcurrent++
+				FileRead, GOHcurrBackup, %A_LoopFileLongPath%
+				GOHcurrBackup := StrReplace(GOHcurrBackup, "`r`n" , "LINEBREAK")
+				GOHcurrBackup := StrReplace(GOHcurrBackup, "`t" , "TABBREAK")
+				GOHcurrBackup := StrReplace(GOHcurrBackup, "`n" , "LINEBREAK")
+				GOHcurrBackup := StrReplace(GOHcurrBackup, "`r" , "LINEBREAK")
+				GOHcurrSubPath := StrReplace(A_LoopFileLongPath, GOHBuddyPath, "")
+				GOHcurrSubPath := StrReplace(GOHcurrSubPath, A_LoopFileName, "")
+				IniWrite, %GOHcurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%GOHcurrent%
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%GOHcurrent%
+				IniWrite, %GOHcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%GOHcurrent%
+				GOHperc := (A_Index / GOHmax) * 100
+				Progress, %GOHperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %GOHcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
+		}
 		MsgBox, 262208, Backup Done, Backup Saved at %CreateBackupPath%\Backup.ini
 	}
 }
@@ -2090,14 +2387,11 @@ IfWinActive ahk_id %wID%	; Only when the window is active will this run
 		GUIColorY := Y
 		if (StrLen(sColor) = 8) ; Trim the 0x from the beginning if its there
 			StringTrimLeft, sColor, sColor, 2
-		Gui, MainBuddy:Color, %sColor%
-		Gui, UpdateBuddy:Color, %sColor%
-		Gui, GaiaBuddy:Color, %sColor%
-		Gui, HMBuddy:Color, %sColor%
-		Gui, TBR13Buddy:Color, %sColor%
-		Gui, TBR21Buddy:Color, %sColor%
-		Gui, TEVEBuddy:Color, %sColor%
-		Gui, CPBuddy:Color, %sColor%
+		For i in GUIList
+		{
+			GuiName := GUIList[i]
+			Gui, %GuiName%Buddy:Color, %sColor%
+		}
 		GuiControl, CPBuddy:Focus, vSlider
 	}
 }
@@ -2169,7 +2463,6 @@ Return
 ;============== GUI ===================
 GuiHideAllBut(ThisOne)
 {
-	GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "Update", "CP"]
 	For i in GuiList
 	{
 		GUICurrent := GuiList[i]
@@ -2245,6 +2538,16 @@ GUITEVE:
 }
 return
 
+GUIGOH:
+{
+	CurrentGUI = GOH
+	GuiHideAllBut(CurrentGUI)
+	IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame%, Settings, GOHPath
+	SetWorkingDir, %GOHBuddyPath%
+	GoSub, GOHRefresh
+}
+return
+
 MainBuddyGuiClose:
 {
 	%CurrentGUI%GUI = 0
@@ -2293,6 +2596,14 @@ TEVEBuddyGuiClose:
 }
 return
 
+GOHBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+}
+return
+
 UpdateBuddyGuiClose:
 {
 	%CurrentGUI%GUI = 0
@@ -2329,6 +2640,7 @@ ChangeGaiaPath:
 	}
 	IniWrite, %GaiaBuddyPath%, %A_ScriptDir%\%ININame%, Settings, GaiaPath
 	GuiControl, GaiaBuddy:, GaiaPathText, %GaiaBuddyPath%
+	GoSub, GaiaRefresh
 }
 return
 
@@ -2345,6 +2657,7 @@ ChangeHMPath:
 	}
 	IniWrite, %HMBuddyPath%, %A_ScriptDir%\%ININame%, Settings, HMPath
 	GuiControl, HMBuddy:, HMPathText, %HMBuddyPath%
+	GoSub, HMRefresh
 }
 return
 
@@ -2361,6 +2674,7 @@ ChangeTBR13Path:
 	}
 	IniWrite, %TBR13BuddyPath%, %A_ScriptDir%\%ININame%, Settings, TBR13Path
 	GuiControl, TBR13Buddy:, TBR13PathText, %TBR13BuddyPath%
+	GoSub, TBR13Refresh
 }
 return
 
@@ -2377,6 +2691,7 @@ ChangeTBR21Path:
 	}
 	IniWrite, %TBR21BuddyPath%, %A_ScriptDir%\%ININame%, Settings, TBR21Path
 	GuiControl, TBR21Buddy:, TBR21PathText, %TBR21BuddyPath%
+	GoSub, TBR21Refresh
 }
 return
 
@@ -2393,6 +2708,24 @@ ChangeTEVEPath:
 	}
 	IniWrite, %TEVEBuddyPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
 	GuiControl, TEVEBuddy:, TEVEPathText, %TEVEBuddyPath%
+	GoSub, TEVERefresh
+}
+return
+
+ChangeGOHPath:
+{
+	Gui GOHBuddy:+OwnDialogs
+	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\Savegames\GoH RPG\
+	{
+		FileSelectFolder, GOHBuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\Savegames\GoH RPG\,, Choose The Folder with GoH Saves
+	}
+	else
+	{
+		FileSelectFolder, GOHBuddyPath,,, Choose The Folder with GoH Saves
+	}
+	IniWrite, %GOHBuddyPath%, %A_ScriptDir%\%ININame%, Settings, GOHPath
+	GuiControl, GOHBuddy:, GOHPathText, %GOHBuddyPath%
+	GoSub, GOHRefresh
 }
 return
 
