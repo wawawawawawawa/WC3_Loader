@@ -26,3 +26,5 @@
 
 1.8 : Added Theme
       Writting "-save" automatically refresh current opened loader
+
+1.9 : Added GoH RPG
