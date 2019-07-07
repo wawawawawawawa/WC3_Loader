@@ -21,6 +21,9 @@ It allows you to load your characters in :
 - TeveF (Twilight Eve Final RPG) :
 
 ![TeveF](https://i.imgur.com/NZ6IXal.png)
+- GoH (Guild of Hyppos) :
+
+![GoH](https://i.imgur.com/DWvG3h5.png)
 
 Cheers and have fun with it :)
 
