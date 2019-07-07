@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.9"
+Global currentversion := "1.9a"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -2827,7 +2827,7 @@ Loop, % tmp0
 return ini_name ".ini"
 }
 ;============== HOTSTRING =================
-#IfWinActive "Warcraft III"
+#IfWinActive Warcraft III
 :B0:-save::
 If (CurrentGUI != "Main" && CurrentGUI != "Update")
 {
