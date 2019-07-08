@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "1.9a"
+Global currentversion := "2.0"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -23,6 +23,11 @@ Global ININame := BuildIniName()
 Global TrayIcon := "0"
 Global switch := "1"
 Global GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "GOH", "Update", "CP"]
+
+Global HMSortVar := "Level"
+Global TBR21SortVar := "Level"
+Global TEVESortVar := "Level"
+Global GOHSortVar := "Level"
 RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
 
 ;=============== INI FILE ====================
@@ -168,7 +173,8 @@ Gui, HMBuddy:Add, ListBox, x5 y20 w150 h300 vhmclasschoice gHMChoice ,
 Gui, HMBuddy:Add, ListBox, x160 y20 w200 h300 vhmclasslist gHMCharChoice AltSubmit, 
 Gui, HMBuddy:Add, ListBox, x365 y20 w400 h300 vhmclassinfo gHMStatChoice AltSubmit, 
 Gui, HMBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
-Gui, HMBuddy:Add, Button, x300 y320 w130 h40 gHMRefresh, Refresh
+Gui, HMBuddy:Add, Button, x275 y320 w130 h40 gHMRefresh, Refresh
+Gui, HMBuddy:Add, Button, x410 y320 w130 h40 vHMSortChoice gHMSort, Sorting : Level
 Gui, HMBuddy:Add, Button, x630 y320 w130 h40 gLoadHM, Load
 Gui, HMBuddy:Add, Button, x5 y370 h40 gChangeHMPath, Change Save Folder
 Gui, HMBuddy:Add, Edit, x155 y370 w300 h40 vHMPathText ReadOnly, %HMBuddyPath%
@@ -207,6 +213,7 @@ Gui, TBR21Buddy:Add, ListBox, x160 y20 w200 h300 vtbr21classlist gTBR21CharChoic
 Gui, TBR21Buddy:Add, ListBox, x365 y20 w400 h300 vtbr21classinfo gTBR21StatChoice AltSubmit, 
 Gui, TBR21Buddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, TBR21Buddy:Add, Button, x275 y320 w130 h40 gTBR21Refresh, Refresh
+Gui, TBR21Buddy:Add, Button, x410 y320 w130 h40 vTBR21SortChoice gTBR21Sort, Sorting : Level
 Gui, TBR21Buddy:Add, Button, x636 y320 w130 h40 gLoadTBR21, Load
 Gui, TBR21Buddy:Add, Button, x5 y370 h40 gChangeTBR21Path, Change Save Folder
 Gui, TBR21Buddy:Add, Edit, x155 y370 w300 h40 vTBR21PathText ReadOnly, %TBR21BuddyPath%
@@ -227,6 +234,7 @@ Gui, TEVEBuddy:Add, ListBox, x160 y20 w200 h300 vteveclasslist gTEVECharChoice A
 Gui, TEVEBuddy:Add, ListBox, x365 y20 w400 h300 vteveclassinfo gTEVEStatChoice AltSubmit, 
 Gui, TEVEBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, TEVEBuddy:Add, Button, x275 y320 w130 h40 gTEVERefresh, Refresh
+Gui, TEVEBuddy:Add, Button, x410 y320 w130 h40 vTEVESortChoice gTEVESort, Sorting : Level
 Gui, TEVEBuddy:Add, Button, x636 y320 w130 h40 gLoadTEVE, Load
 Gui, TEVEBuddy:Add, Button, x5 y370 h40 gChangeTEVEPath, Change Save Folder
 Gui, TEVEBuddy:Add, Edit, x155 y370 w300 h40 vTEVEPathText ReadOnly, %TEVEBuddyPath%
@@ -248,6 +256,7 @@ Gui, GOHBuddy:Add, ListBox, x160 y20 w200 h300 vgohclasslist gGOHCharChoice AltS
 Gui, GOHBuddy:Add, ListBox, x365 y20 w400 h300 vgohclassinfo gGOHStatChoice AltSubmit, 
 Gui, GOHBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, GOHBuddy:Add, Button, x275 y320 w130 h40 gGOHRefresh, Refresh
+Gui, GOHBuddy:Add, Button, x410 y320 w130 h40 vGOHSortChoice gGOHSort, Sorting : Level
 Gui, GOHBuddy:Add, Button, x636 y320 w130 h40 gLoadGOH, Load
 Gui, GOHBuddy:Add, Button, x5 y370 h40 gChangeGOHPath, Change Save Folder
 Gui, GOHBuddy:Add, Edit, x155 y370 w300 h40 vGOHPathText ReadOnly, %GOHBuddyPath%
@@ -655,6 +664,23 @@ return
 
 ;////////////////////////////////////////// HM //////////////////////////////////////////////////////////////////
 ;=============== HM CODE ====================
+HMSort:
+{
+	GuiControlGet, HMCurrentSort,, HMSortChoice,
+	If (HMCurrentSort = "Sorting : Last Time Modified")
+	{
+		GuiControl, HMBuddy:, HMSortChoice, Sorting : Level
+		HMSortVar := "Level"
+		GoSub, HMChoice
+	}
+	else
+	{
+		GuiControl, HMBuddy:, HMSortChoice, Sorting : Last Time Modified
+		HMSortVar := "Time"
+		GoSub, HMChoice
+	}
+}
+return
 HMRefresh:
 {
 	; Empty Old Var
@@ -669,11 +695,15 @@ HMRefresh:
 	HMCodes := []
 	HMStats := []
 	HMLvl := []
+	HMTime := []
 	
 	If (HMBuddyPath)
 	{
 		Loop, Files, *.txt
 		{
+			HMLastModif=%A_LoopFileTimeModified%
+			HMTime.Push(HMLastModif)
+			FormatTime, HMTimeFormat, %A_LoopFileTimeModified%
 			HMstart = 0
 			Loop, 50
 			{
@@ -688,7 +718,7 @@ HMRefresh:
 				if InStr(HMfileline, "Chat Message")
 				{
 					HMstart = 0
-					HMfull = | FileName: %A_LoopFileName% %HMfull% | Code: %HMcurrCode%
+					HMfull = | FileName: %A_LoopFileName% | LastModified: %HMTimeFormat% %HMfull% | Code: %HMcurrCode%
 					HMStats.Push(HMfull)
 					GuiControl, HMBuddy:, hmclasschoice, %HMClassOption%
 					GuiControl, HMBuddy:Choose, hmclasschoice, 1
@@ -752,6 +782,7 @@ HMChoice:
 	HMCurrentStat := []
 	HMCurrentCodes := []
 	HMCurrentLvls := []
+	HMCurrentTime := []
 	for i in HMClass
 	{
 		HMcurr := HMClasses[i]
@@ -764,6 +795,8 @@ HMChoice:
 			HMCurrentCodes.Push(HMCurrCodes)
 			HMCurrLvls := HMLvl[i]
 			HMCurrentLvls.Push(HMCurrLvls)
+			HMCurrTime := HMTime[i]
+			HMCurrentTime.Push(HMCurrTime)
 		}
 	}
 	;;;; freaking sorting issue ;;;;;;;;
@@ -796,15 +829,38 @@ HMChoice:
 		{
 			HMstatlist=%HMstatlist%`n%HMnewstat%
 		}
+		HMnewtime := HMCurrentTime[i]
+		if (!HMtimelist)
+		{
+			HMtimelist=%HMnewtime%
+		}
+		else
+		{
+			HMtimelist=%HMtimelist%`n%HMnewtime%
+		}
 	}
-	HMObj := [HMlvllist, HMcodelist, HMstatlist]
-	HMlvllist=
-	HMsortingnonsense := new GroupSort(HMObj, "N R")
-	HMArrLvls := StrSplit(HMsortingnonsense.fetch("1") , "`n")
-	HMArrCodes := StrSplit(HMsortingnonsense.fetch("2") , "`n")
-	HMArrStat := StrSplit(HMsortingnonsense.fetch("3") , "`n")
+	If (HMSortVar = "Level")
+	{
+		HMObj := [HMlvllist, HMcodelist, HMstatlist]
+		HMlvllist=
+		HMsortingnonsense := new GroupSort(HMObj, "N R")
+		HMArrLvls := StrSplit(HMsortingnonsense.fetch("1") , "`n")
+		HMArrCodes := StrSplit(HMsortingnonsense.fetch("2") , "`n")
+		HMArrStat := StrSplit(HMsortingnonsense.fetch("3") , "`n")
+	}
+	else
+	{
+		HMObj := [HMtimelist, HMlvllist, HMcodelist, HMstatlist]
+		HMlvllist=
+		HMsortingnonsense := new GroupSort(HMObj, "R")
+		HMArrLvls := StrSplit(HMsortingnonsense.fetch("2") , "`n")
+		HMArrCodes := StrSplit(HMsortingnonsense.fetch("3") , "`n")
+		HMArrStat := StrSplit(HMsortingnonsense.fetch("4") , "`n")
+		HMArrTime := StrSplit(HMsortingnonsense.fetch("1") , "`n")
+	}
 	for i in HMArrLvls {
 		HMnewlvlvar := HMArrLvls[i]
+		HMnewtimevar := HMArrTime[i]
 		if (!HMlvllist)
 		{
 			HMlvllist = | Level: %HMnewlvlvar%
@@ -823,6 +879,7 @@ HMChoice:
 	HMlvllist=
 	HMcodelist=
 	HMstatlist=
+	HMtimelist=
 }
 return
 
@@ -1038,6 +1095,23 @@ return
 
 ;////////////////////////////////////////// TBR 2.1//////////////////////////////////////////////////////////////////
 ;=============== TBR 2.1 CODE ====================
+TBR21Sort:
+{
+	GuiControlGet, TBR21CurrentSort,, TBR21SortChoice,
+	If (TBR21CurrentSort = "Sorting : Last Time Modified")
+	{
+		GuiControl, TBR21Buddy:, TBR21SortChoice, Sorting : Level
+		TBR21SortVar := "Level"
+		GoSub, TBR21Choice
+	}
+	else
+	{
+		GuiControl, TBR21Buddy:, TBR21SortChoice, Sorting : Last Time Modified
+		TBR21SortVar := "Time"
+		GoSub, TBR21Choice
+	}
+}
+return
 TBR21Refresh:
 {
 	; Empty Old Var
@@ -1053,11 +1127,15 @@ TBR21Refresh:
 	TBR21Code := []
 	TBR21CharTXT := []
 	TBR21ClassList=
+	TBR21Time := []
 	
 	If (TBR21BuddyPath)
 	{
 		Loop, Files, *.txt
 		{
+			TBR21LastModif=%A_LoopFileTimeModified%
+			TBR21Time.Push(TBR21LastModif)
+			FormatTime, TBR21TimeFormat, %A_LoopFileTimeModified%
 			TBR21CharTXT.Push(A_LoopFileName)
 			Loop, 10
 			{
@@ -1118,21 +1196,24 @@ TBR21Choice:
 	TBR21CodeCurr := []
 	TBR21CharTXTCurr := []
 	TBR21StatCurr := []
+	TBR21TimeCurr := []
 	for i in TBR21Class
 	{
 		TBR21curr := TBR21Class[i]
 		If(TBR21curr = TBR21CurrentClass)
 		{
+			TBR21CurrTime := TBR21Time[i]
 			TBR21CurrTXT := TBR21CharTXT[i]
 			TBR21CurrLvl := TBR21Lvl[i]
 			TBR21CurrXP := TBR21XP[i]
 			TBR21CurrCode := TBR21Code[i]
-			TBR21CurrentStat = | FileName: %TBR21CurrTXT% | Level: %TBR21CurrLvl% | XP: %TBR21CurrXP% | Code: %TBR21CurrCode%
+			TBR21CurrentStat = | FileName: %TBR21CurrTXT% | LastModified: %TBR21TimeFormat% | Level: %TBR21CurrLvl% | XP: %TBR21CurrXP% | Code: %TBR21CurrCode%
 			TBR21CharTXTCurr.Push(TBR21CharTXT[i])
 			TBR21LvlCurr.Push(TBR21Lvl[i])
 			TBR21XPCurr.Push(TBR21XP[i])
 			TBR21CodeCurr.Push(TBR21Code[i])
 			TBR21StatCurr.Push(TBR21CurrentStat)
+			TBR21TimeCurr.Push(TBR21CurrTime)
 		}
 	}
 	;;;; freaking sorting issue ;;;;;;;;
@@ -1184,19 +1265,48 @@ TBR21Choice:
 		{
 			TBR21txtlist=%TBR21txtlist%`n%TBR21newtxt%
 		}
+		TBR21newtime := TBR21TimeCurr[i]
+		if (!TBR21timelist)
+		{
+			TBR21timelist=%TBR21newtime%
+		}
+		else
+		{
+			TBR21timelist=%TBR21timelist%`n%TBR21newtime%
+		}
 	}
-	TBR21Obj := [TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
+	If (TBR21SortVar = "Level")
+	{
+		TBR21Obj := [TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
+	}
+	else
+	{
+		TBR21Obj := [TBR21timelist, TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
+	}
 	TBR21lvllist=
 	TBR21codelist=
 	TBR21statlist=
 	TBR21xplist=
 	TBR21txtlist=
-	TBR21sortingnonsense := new GroupSort(TBR21Obj, "N R")
-	TBR21ArrXP := StrSplit(TBR21sortingnonsense.fetch("1") , "`n")
-	TBR21ArrCodes := StrSplit(TBR21sortingnonsense.fetch("2") , "`n")
-	TBR21ArrStat := StrSplit(TBR21sortingnonsense.fetch("3") , "`n")
-	TBR21ArrLvls := StrSplit(TBR21sortingnonsense.fetch("4") , "`n")
-	TBR21ArrTXT := StrSplit(TBR21sortingnonsense.fetch("5") , "`n")
+	TBR21timelist=
+	If (TBR21SortVar = "Level")
+	{
+		TBR21sortingnonsense := new GroupSort(TBR21Obj, "N R")
+		TBR21ArrXP := StrSplit(TBR21sortingnonsense.fetch("1") , "`n")
+		TBR21ArrCodes := StrSplit(TBR21sortingnonsense.fetch("2") , "`n")
+		TBR21ArrStat := StrSplit(TBR21sortingnonsense.fetch("3") , "`n")
+		TBR21ArrLvls := StrSplit(TBR21sortingnonsense.fetch("4") , "`n")
+		TBR21ArrTXT := StrSplit(TBR21sortingnonsense.fetch("5") , "`n")
+	}
+	else
+	{
+		TBR21sortingnonsense := new GroupSort(TBR21Obj, "R")
+		TBR21ArrXP := StrSplit(TBR21sortingnonsense.fetch("2") , "`n")
+		TBR21ArrCodes := StrSplit(TBR21sortingnonsense.fetch("3") , "`n")
+		TBR21ArrStat := StrSplit(TBR21sortingnonsense.fetch("4") , "`n")
+		TBR21ArrLvls := StrSplit(TBR21sortingnonsense.fetch("5") , "`n")
+		TBR21ArrTXT := StrSplit(TBR21sortingnonsense.fetch("6") , "`n")
+	}
 	for i in TBR21ArrLvls {
 		TBR21newlvlvar := TBR21ArrLvls[i]
 		TBR21newxpvar := TBR21ArrXP[i]
@@ -1216,6 +1326,7 @@ TBR21Choice:
 	GuiControl, TBR21Buddy:, tbr21classinfo, %TBR21DefaultStat%
 	GuiControl, TBR21Buddy:Choose, tbr21classinfo, 1
 	TBR21lvllist=
+	TBR21timelist=
 }
 return
 TBR21CharChoice:
@@ -1288,6 +1399,23 @@ return
 
 ;////////////////////////////////////////// TeveF //////////////////////////////////////////////////////////////////
 ;=============== TeveF ====================
+TEVESort:
+{
+	GuiControlGet, TEVECurrentSort,, TEVESortChoice,
+	If (TEVECurrentSort = "Sorting : Last Time Modified")
+	{
+		GuiControl, TEVEBuddy:, TEVESortChoice, Sorting : Level
+		TEVESortVar := "Level"
+		GoSub, TEVEChoice
+	}
+	else
+	{
+		GuiControl, TEVEBuddy:, TEVESortChoice, Sorting : Last Time Modified
+		TEVESortVar := "Time"
+		GoSub, TEVEChoice
+	}
+}
+return
 TEVERefresh:
 {
 	; Empty Old Var
@@ -1303,6 +1431,7 @@ TEVERefresh:
 	TEVECodes1 := []
 	TEVECodes2 := []
 	TEVEClassList=
+	TEVETime := []
 	
 	If (TEVEBuddyPath)
 	{
@@ -1312,13 +1441,16 @@ TEVERefresh:
 			TEVEClassList = %TEVEClassList%|%A_LoopFileName%
 			Loop, Files, %A_LoopFileLongPath%\*.txt
 			{
+				TEVELastModif=%A_LoopFileTimeModified%
+				TEVETime.Push(TEVELastModif)
+				FormatTime, TEVETimeFormat, %A_LoopFileTimeModified%
 				TEVEFilePath.Push(A_LoopFileLongPath)
 				TEVEFileName.Push(A_LoopFileName)
 				TEVEClasses.Push(TEVECurrClass)
 				Loop, 35
 				{
 					FileReadLine, TEVEfileline, %A_LoopFileLongPath%, A_Index
-					If InStr(TEVEfileline, "call Preload(")
+					If InStr(TEVEfileline, "call Preload")
 					{
 						TEVEcurrentline = %TEVEfileline%
 						StringTrimLeft, TEVEcurrentline, TEVEcurrentline, 15
@@ -1332,13 +1464,13 @@ TEVERefresh:
 						{
 							TEVECodes2.Push(TEVEcurrentline)
 						}
-						If (TEVEcurrentline != "        ")
+						If (InStr(TEVEfileline, "call PreloadEnd(") = 0)
 						{
 							TEVEfull = %TEVEfull% | %TEVEcurrentline%
 						}
-						Else
+						If (InStr(TEVEfileline, "call PreloadEnd("))
 						{
-							TEVEfull = | FileName: %A_LoopFileName% %TEVEfull%
+							TEVEfull = | FileName: %A_LoopFileName% | LastModified: %TEVETimeFormat% %TEVEfull%
 							TEVEStats.Push(TEVEfull)
 							TEVEfull=
 							Break
@@ -1363,6 +1495,7 @@ TEVEChoice:
 	TEVELvlCurr := []
 	TEVECurrentCode1 := []
 	TEVECurrentCode2 := []
+	TEVECurrentTime := []
 	
 	for i in TEVEClasses
 	{
@@ -1378,6 +1511,8 @@ TEVEChoice:
 			TEVECurrentCode1.Push(TEVECurrCode1)
 			TEVECurrCode2 := TEVECodes2[i]
 			TEVECurrentCode2.Push(TEVECurrCode2)
+			TEVETimeChar := TEVETime[i]
+			TEVECurrentTime.Push(TEVETimeChar)
 		}
 	}
 	
@@ -1420,17 +1555,45 @@ TEVEChoice:
 		{
 			TEVEcode2list=%TEVEcode2list%`n%TEVEnewcode2%
 		}
+		TEVEnewtime := TEVECurrentTime[i]
+		if (!TEVEtimelist)
+		{
+			TEVEtimelist=%TEVEnewtime%
+		}
+		else
+		{
+			TEVEtimelist=%TEVEtimelist%`n%TEVEnewtime%
+		}
 	}
-	TEVEObj := [TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
+	If (TEVESortVar = "Level")
+	{
+		TEVEObj := [TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
+	}
+	else
+	{
+		TEVEObj := [TEVEtimelist, TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
+	}
 	TEVElvllist=
 	TEVEstatlist=
 	TEVEcode1list=
 	TEVEcode2list=
-	TEVEsortingnonsense := new GroupSort(TEVEObj, "N R")
-	TEVEArrLvls := StrSplit(TEVEsortingnonsense.fetch("1") , "`n")
-	TEVEArrStat := StrSplit(TEVEsortingnonsense.fetch("2") , "`n")
-	TEVEArrCode1 := StrSplit(TEVEsortingnonsense.fetch("3") , "`n")
-	TEVEArrCode2 := StrSplit(TEVEsortingnonsense.fetch("4") , "`n")
+	TEVEtimelist=
+	If (TEVESortVar = "Level")
+	{
+		TEVEsortingnonsense := new GroupSort(TEVEObj, "N R")
+		TEVEArrLvls := StrSplit(TEVEsortingnonsense.fetch("1") , "`n")
+		TEVEArrStat := StrSplit(TEVEsortingnonsense.fetch("2") , "`n")
+		TEVEArrCode1 := StrSplit(TEVEsortingnonsense.fetch("3") , "`n")
+		TEVEArrCode2 := StrSplit(TEVEsortingnonsense.fetch("4") , "`n")
+	}
+	else
+	{
+		TEVEsortingnonsense := new GroupSort(TEVEObj, "R")
+		TEVEArrLvls := StrSplit(TEVEsortingnonsense.fetch("2") , "`n")
+		TEVEArrStat := StrSplit(TEVEsortingnonsense.fetch("3") , "`n")
+		TEVEArrCode1 := StrSplit(TEVEsortingnonsense.fetch("4") , "`n")
+		TEVEArrCode2 := StrSplit(TEVEsortingnonsense.fetch("5") , "`n")
+	}
 	for i in TEVEArrLvls 
 	{
 		TEVEnewlvlvar := TEVEArrLvls[i]
@@ -1455,6 +1618,7 @@ TEVEChoice:
 	TEVEstatlist=
 	TEVEcode1list=
 	TEVEcode2list=
+	TEVEtimelist=
 }
 return
 TEVECharChoice:
@@ -1530,7 +1694,25 @@ LoadTEVE:
 	}
 }
 return
-
+;////////////////////////////////////////// GoH //////////////////////////////////////////////////////////////////
+;=============== GoH ====================
+GOHSort:
+{
+	GuiControlGet, GOHCurrentSort,, GOHSortChoice,
+	If (GOHCurrentSort = "Sorting : Last Time Modified")
+	{
+		GuiControl, GOHBuddy:, GOHSortChoice, Sorting : Level
+		GOHSortVar=Level
+		GoSub, GOHChoice
+	}
+	else
+	{
+		GuiControl, GOHBuddy:, GOHSortChoice, Sorting : Last Time Modified
+		GOHSortVar=Time
+		GoSub, GOHChoice
+	}
+}
+return
 GOHRefresh:
 {
 	; Empty Old Var
@@ -1544,11 +1726,15 @@ GOHRefresh:
 	GOHCode := []
 	GOHStats := []
 	GOHClassList=
+	GOHTime := []
 	
 	If (GOHBuddyPath)
 	{
 		Loop, Files, *.txt
 		{
+			GOHLastModif=%A_LoopFileTimeModified%
+			GOHTime.Push(GOHLastModif)
+			FormatTime, GOHTimeFormat, %A_LoopFileTimeModified%
 			FileReadLine, GOHfileline, %A_LoopFileLongPath%, 4
 			StringTrimLeft, GOHfileline, GOHfileline, 2
 			GOHCode.Push(GOHfileline)
@@ -1563,7 +1749,7 @@ GOHRefresh:
 			{
 				GOHcurrLvl = Lv.60 - %GOHcurrLvl%
 			}
-			GOHcurrStat = | FileName: %A_LoopFileName% | TimePlayed: %GOHcurrStat% | Code: %GOHfileline%
+			GOHcurrStat = | FileName: %A_LoopFileName% | LastModified: %GOHTimeFormat% | TimePlayed: %GOHcurrStat% | Code: %GOHfileline%
 			GOHClasses.Push(GOHcurrClass)
 			GOHStats.Push(GOHcurrStat)
 			GOHLvl.Push(GOHcurrLvl)
@@ -1602,48 +1788,78 @@ GOHChoice:
 			GOHLvlChar := GOHLvl[i]
 			GOHCodeChar := GOHCode[i]
 			GOHStatChar := GOHStats[i]
-			If InStr(GOHLvlChar, "MP")
+			GOHTimeChar := GOHTime[i]
+			If (GOHSortVar = "Level")
 			{
-				if (!GOHLvlCharMaxList)
+				If InStr(GOHLvlChar, "MP")
+				{
+					if (!GOHLvlCharMaxList)
+					{
+						GOHLvlCharMaxList=%GOHLvlChar%
+						GOHStatCharMaxList=%GOHStatChar%
+						StringTrimLeft, GOHLvlChar, GOHLvlChar, 11
+						GOHLvlCharMaxNum=%GOHLvlChar%
+						GOHCodeCharMaxList=%GOHCodeChar%
+					}
+					else
+					{
+						GOHLvlCharMaxList=%GOHLvlCharMaxList%`n%GOHLvlChar%
+						GOHStatCharMaxList=%GOHStatCharMaxList%`n%GOHStatChar%
+						StringTrimLeft, GOHLvlChar, GOHLvlChar, 11
+						GOHLvlCharMaxNum=%GOHLvlCharMaxNum%`n%GOHLvlChar%
+						GOHCodeCharMaxList=%GOHCodeCharMaxList%`n%GOHCodeChar%
+					}
+				}
+				else
+				{
+					if (!GOHLvlCharLvlList)
+					{
+						GOHLvlCharLvlList=%GOHLvlChar%
+						GOHStatCharLvlList=%GOHStatChar%
+						StringTrimLeft, GOHLvlChar, GOHLvlChar, 3
+						GOHLvlCharLvlNum=%GOHLvlChar%
+						GOHCodeCharLvlList=%GOHCodeChar%
+					}
+					else
+					{
+						GOHLvlCharLvlList=%GOHLvlCharLvlList%`n%GOHLvlChar%
+						GOHStatCharLvlList=%GOHStatCharLvlList%`n%GOHStatChar%
+						StringTrimLeft, GOHLvlChar, GOHLvlChar, 3
+						GOHLvlCharLvlNum=%GOHLvlCharLvlNum%`n%GOHLvlChar%
+						GOHCodeCharLvlList=%GOHCodeCharLvlList%`n%GOHCodeChar%
+					}
+				}
+			}
+			else
+			{
+				if (!GOHTimeList)
 				{
 					GOHLvlCharMaxList=%GOHLvlChar%
 					GOHStatCharMaxList=%GOHStatChar%
-					StringTrimLeft, GOHLvlChar, GOHLvlChar, 11
 					GOHLvlCharMaxNum=%GOHLvlChar%
 					GOHCodeCharMaxList=%GOHCodeChar%
+					GOHTimeList=%GOHTimeChar%
 				}
 				else
 				{
 					GOHLvlCharMaxList=%GOHLvlCharMaxList%`n%GOHLvlChar%
 					GOHStatCharMaxList=%GOHStatCharMaxList%`n%GOHStatChar%
-					StringTrimLeft, GOHLvlChar, GOHLvlChar, 11
 					GOHLvlCharMaxNum=%GOHLvlCharMaxNum%`n%GOHLvlChar%
 					GOHCodeCharMaxList=%GOHCodeCharMaxList%`n%GOHCodeChar%
-				}
-			}
-			else
-			{
-				if (!GOHLvlCharLvlList)
-				{
-					GOHLvlCharLvlList=%GOHLvlChar%
-					GOHStatCharLvlList=%GOHStatChar%
-					StringTrimLeft, GOHLvlChar, GOHLvlChar, 3
-					GOHLvlCharLvlNum=%GOHLvlChar%
-					GOHCodeCharLvlList=%GOHCodeChar%
-				}
-				else
-				{
-					GOHLvlCharLvlList=%GOHLvlCharLvlList%`n%GOHLvlChar%
-					GOHStatCharLvlList=%GOHStatCharLvlList%`n%GOHStatChar%
-					StringTrimLeft, GOHLvlChar, GOHLvlChar, 3
-					GOHLvlCharLvlNum=%GOHLvlCharLvlNum%`n%GOHLvlChar%
-					GOHCodeCharLvlList=%GOHCodeCharLvlList%`n%GOHCodeChar%
+					GOHTimeList=%GOHTimeList%`n%GOHTimeChar%
 				}
 			}
 		}
 	}
-	GOHLvlObj := [GOHLvlCharLvlNum, GOHLvlCharLvlList, GOHStatCharLvlList, GOHCodeCharLvlList]
-	GOHMaxObj := [GOHLvlCharMaxNum, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
+	If (GOHSortVar = "Level")
+	{
+		GOHLvlObj := [GOHLvlCharLvlNum, GOHLvlCharLvlList, GOHStatCharLvlList, GOHCodeCharLvlList]
+		GOHMaxObj := [GOHLvlCharMaxNum, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
+	}
+	else
+	{
+		GOHMaxObj := [GOHTimeList, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
+	}
 	GOHLvlCharLvlList=
 	GOHStatCharLvlList=
 	GOHLvlCharLvlNum=
@@ -1652,30 +1868,43 @@ GOHChoice:
 	GOHStatCharMaxList=
 	GOHLvlCharMaxNum=
 	GOHCodeCharMaxList=
+	GOHTimeList=
 	
-	GOHsortingnonsenseLvl := new GroupSort(GOHLvlObj, "N R")
-	GOHArrLvlLvl := StrSplit(GOHsortingnonsenseLvl.fetch("2") , "`n")
-	GOHArrStatLvl := StrSplit(GOHsortingnonsenseLvl.fetch("3") , "`n")
-	GOHArrCodeLvl := StrSplit(GOHsortingnonsenseLvl.fetch("4") , "`n")
-	
-	GOHsortingnonsenseMax := new GroupSort(GOHMaxObj, "N R")
+	If (GOHSortVar = "Level")
+	{
+		GOHsortingnonsenseLvl := new GroupSort(GOHLvlObj, "N R")
+		GOHArrLvlLvl := StrSplit(GOHsortingnonsenseLvl.fetch("2") , "`n")
+		GOHArrStatLvl := StrSplit(GOHsortingnonsenseLvl.fetch("3") , "`n")
+		GOHArrCodeLvl := StrSplit(GOHsortingnonsenseLvl.fetch("4") , "`n")
+		
+		GOHsortingnonsenseMax := new GroupSort(GOHMaxObj, "N R")
+	}
+	else
+	{
+		GOHsortingnonsenseMax := new GroupSort(GOHMaxObj, "R")
+	}
 	GOHArrLvlMax := StrSplit(GOHsortingnonsenseMax.fetch("2") , "`n")
 	GOHArrStatMax := StrSplit(GOHsortingnonsenseMax.fetch("3") , "`n")
 	GOHArrCodeMax := StrSplit(GOHsortingnonsenseMax.fetch("4") , "`n")
+	GOHArrTimeMax := StrSplit(GOHsortingnonsenseMax.fetch("1") , "`n")
 	
-	For i in GOHArrLvlLvl
+	If (GOHSortVar = "Level")
 	{
-		GOHNewLvl := GOHArrLvlLvl[i]
-		GOHArrLvlMax.Push(GOHNewLvl)
-		GOHNewStat := GOHArrStatLvl[i]
-		GOHArrStatMax.Push(GOHNewStat)
-		GOHNewCode := GOHArrCodeLvl[i]
-		GOHArrCodeMax.Push(GOHNewCode)
+		For i in GOHArrLvlLvl
+		{
+			GOHNewLvl := GOHArrLvlLvl[i]
+			GOHArrLvlMax.Push(GOHNewLvl)
+			GOHNewStat := GOHArrStatLvl[i]
+			GOHArrStatMax.Push(GOHNewStat)
+			GOHNewCode := GOHArrCodeLvl[i]
+			GOHArrCodeMax.Push(GOHNewCode)
+		}
 	}
 	
 	For i in GOHArrLvlMax
 	{
 		GOHThisLvl := GOHArrLvlMax[i]
+		GOHThisTime := GOHArrTimeMax[i]
 		 If (GOHlvllist)
 		{
 			GOHlvllist=%GOHlvllist%| %GOHThisLvl%
