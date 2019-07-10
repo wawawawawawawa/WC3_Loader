@@ -30,3 +30,5 @@
 1.9 : Added GoH RPG
 
 2.0 : Added Sort by Last Time Modified
+
+2.1 : Added Sort by Creation Date
