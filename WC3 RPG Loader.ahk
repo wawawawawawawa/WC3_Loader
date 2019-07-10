@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.0"
+Global currentversion := "2.1"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -327,6 +327,7 @@ Menu, Tray, Standard
 Menu, Tray, Click, 1
 
 ;=============== STARTUP ====================
+SetWorkingDir, %A_ScriptDir%
 If FileExist("WC3 RPG Loader.ico")
 {
 	Menu, Tray, Icon , WC3 RPG Loader.ico
@@ -673,6 +674,12 @@ HMSort:
 		HMSortVar := "Level"
 		GoSub, HMChoice
 	}
+	else if (HMCurrentSort = "Sorting : Level")
+	{
+		GuiControl, HMBuddy:, HMSortChoice, Sorting : Creation Time
+		HMSortVar=Creation
+		GoSub, HMChoice
+	}	
 	else
 	{
 		GuiControl, HMBuddy:, HMSortChoice, Sorting : Last Time Modified
@@ -696,11 +703,15 @@ HMRefresh:
 	HMStats := []
 	HMLvl := []
 	HMTime := []
+	HMCreatTime := []
 	
 	If (HMBuddyPath)
 	{
 		Loop, Files, *.txt
 		{
+			HMCreat=%A_LoopFileTimeCreated%
+			HMCreatTime.Push(HMCreat)
+			FormatTime, HMCreatTimeFormat, %A_LoopFileTimeCreated%
 			HMLastModif=%A_LoopFileTimeModified%
 			HMTime.Push(HMLastModif)
 			FormatTime, HMTimeFormat, %A_LoopFileTimeModified%
@@ -718,7 +729,7 @@ HMRefresh:
 				if InStr(HMfileline, "Chat Message")
 				{
 					HMstart = 0
-					HMfull = | FileName: %A_LoopFileName% | LastModified: %HMTimeFormat% %HMfull% | Code: %HMcurrCode%
+					HMfull = | FileName: %A_LoopFileName% | CreationTime: %HMCreatTimeFormat% | LastModified: %HMTimeFormat% %HMfull% | Code: %HMcurrCode%
 					HMStats.Push(HMfull)
 					GuiControl, HMBuddy:, hmclasschoice, %HMClassOption%
 					GuiControl, HMBuddy:Choose, hmclasschoice, 1
@@ -783,6 +794,7 @@ HMChoice:
 	HMCurrentCodes := []
 	HMCurrentLvls := []
 	HMCurrentTime := []
+	HMCurrentCreatTime := []
 	for i in HMClass
 	{
 		HMcurr := HMClasses[i]
@@ -797,6 +809,8 @@ HMChoice:
 			HMCurrentLvls.Push(HMCurrLvls)
 			HMCurrTime := HMTime[i]
 			HMCurrentTime.Push(HMCurrTime)
+			HMCurrCreatTime := HMCreatTime[i]
+			HMCurrentCreatTime.Push(HMCurrCreatTime)
 		}
 	}
 	;;;; freaking sorting issue ;;;;;;;;
@@ -838,6 +852,15 @@ HMChoice:
 		{
 			HMtimelist=%HMtimelist%`n%HMnewtime%
 		}
+		HMnewcreattime := HMCurrentCreatTime[i]
+		if (!HMcreattimelist)
+		{
+			HMcreattimelist=%HMnewcreattime%
+		}
+		else
+		{
+			HMcreattimelist=%HMcreattimelist%`n%HMnewcreattime%
+		}
 	}
 	If (HMSortVar = "Level")
 	{
@@ -850,13 +873,19 @@ HMChoice:
 	}
 	else
 	{
-		HMObj := [HMtimelist, HMlvllist, HMcodelist, HMstatlist]
+		if (HMSortVar = "Time")
+		{
+			HMObj := [HMtimelist, HMlvllist, HMcodelist, HMstatlist]
+		}
+		else
+		{
+			HMObj := [HMcreattimelist, HMlvllist, HMcodelist, HMstatlist]
+		}
 		HMlvllist=
 		HMsortingnonsense := new GroupSort(HMObj, "R")
 		HMArrLvls := StrSplit(HMsortingnonsense.fetch("2") , "`n")
 		HMArrCodes := StrSplit(HMsortingnonsense.fetch("3") , "`n")
 		HMArrStat := StrSplit(HMsortingnonsense.fetch("4") , "`n")
-		HMArrTime := StrSplit(HMsortingnonsense.fetch("1") , "`n")
 	}
 	for i in HMArrLvls {
 		HMnewlvlvar := HMArrLvls[i]
@@ -880,6 +909,7 @@ HMChoice:
 	HMcodelist=
 	HMstatlist=
 	HMtimelist=
+	HMcreattimelist=
 }
 return
 
@@ -1104,6 +1134,12 @@ TBR21Sort:
 		TBR21SortVar := "Level"
 		GoSub, TBR21Choice
 	}
+	else if (TBR21CurrentSort = "Sorting : Level")
+	{
+		GuiControl, TBR21Buddy:, TBR21SortChoice, Sorting : Creation Time
+		TBR21SortVar=Creation
+		GoSub, TBR21Choice
+	}	
 	else
 	{
 		GuiControl, TBR21Buddy:, TBR21SortChoice, Sorting : Last Time Modified
@@ -1128,11 +1164,15 @@ TBR21Refresh:
 	TBR21CharTXT := []
 	TBR21ClassList=
 	TBR21Time := []
+	TBR21CreatTime := []
 	
 	If (TBR21BuddyPath)
 	{
 		Loop, Files, *.txt
 		{
+			TBR21Creat=%A_LoopFileTimeCreated%
+			TBR21CreatTime.Push(TBR21Creat)
+			FormatTime, TBR21CreatTimeFormat, %A_LoopFileTimeCreated%
 			TBR21LastModif=%A_LoopFileTimeModified%
 			TBR21Time.Push(TBR21LastModif)
 			FormatTime, TBR21TimeFormat, %A_LoopFileTimeModified%
@@ -1197,23 +1237,26 @@ TBR21Choice:
 	TBR21CharTXTCurr := []
 	TBR21StatCurr := []
 	TBR21TimeCurr := []
+	TBR21CreatTimeCurr := []
 	for i in TBR21Class
 	{
 		TBR21curr := TBR21Class[i]
 		If(TBR21curr = TBR21CurrentClass)
 		{
 			TBR21CurrTime := TBR21Time[i]
+			TBR21CurrCreatTime := TBR21CreatTime[i]
 			TBR21CurrTXT := TBR21CharTXT[i]
 			TBR21CurrLvl := TBR21Lvl[i]
 			TBR21CurrXP := TBR21XP[i]
 			TBR21CurrCode := TBR21Code[i]
-			TBR21CurrentStat = | FileName: %TBR21CurrTXT% | LastModified: %TBR21TimeFormat% | Level: %TBR21CurrLvl% | XP: %TBR21CurrXP% | Code: %TBR21CurrCode%
+			TBR21CurrentStat = | FileName: %TBR21CurrTXT% | CreationTime: %TBR21CreatTimeFormat% | LastModified: %TBR21TimeFormat% | Level: %TBR21CurrLvl% | XP: %TBR21CurrXP% | Code: %TBR21CurrCode%
 			TBR21CharTXTCurr.Push(TBR21CharTXT[i])
 			TBR21LvlCurr.Push(TBR21Lvl[i])
 			TBR21XPCurr.Push(TBR21XP[i])
 			TBR21CodeCurr.Push(TBR21Code[i])
 			TBR21StatCurr.Push(TBR21CurrentStat)
 			TBR21TimeCurr.Push(TBR21CurrTime)
+			TBR21CreatTimeCurr.Push(TBR21CurrCreatTime)
 		}
 	}
 	;;;; freaking sorting issue ;;;;;;;;
@@ -1274,14 +1317,27 @@ TBR21Choice:
 		{
 			TBR21timelist=%TBR21timelist%`n%TBR21newtime%
 		}
+		TBR21newcreattime := TBR21CreatTimeCurr[i]
+		if (!TBR21creattimelist)
+		{
+			TBR21creattimelist=%TBR21newcreattime%
+		}
+		else
+		{
+			TBR21creattimelist=%TBR21creattimelist%`n%TBR21newcreattime%
+		}
 	}
 	If (TBR21SortVar = "Level")
 	{
 		TBR21Obj := [TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
 	}
-	else
+	else If (TBR21SortVar = "Time")
 	{
 		TBR21Obj := [TBR21timelist, TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
+	}
+	else 
+	{
+		TBR21Obj := [TBR21creattimelist, TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
 	}
 	TBR21lvllist=
 	TBR21codelist=
@@ -1289,6 +1345,7 @@ TBR21Choice:
 	TBR21xplist=
 	TBR21txtlist=
 	TBR21timelist=
+	TBR21creattimelist=
 	If (TBR21SortVar = "Level")
 	{
 		TBR21sortingnonsense := new GroupSort(TBR21Obj, "N R")
@@ -1298,7 +1355,7 @@ TBR21Choice:
 		TBR21ArrLvls := StrSplit(TBR21sortingnonsense.fetch("4") , "`n")
 		TBR21ArrTXT := StrSplit(TBR21sortingnonsense.fetch("5") , "`n")
 	}
-	else
+	else 
 	{
 		TBR21sortingnonsense := new GroupSort(TBR21Obj, "R")
 		TBR21ArrXP := StrSplit(TBR21sortingnonsense.fetch("2") , "`n")
@@ -1327,6 +1384,7 @@ TBR21Choice:
 	GuiControl, TBR21Buddy:Choose, tbr21classinfo, 1
 	TBR21lvllist=
 	TBR21timelist=
+	TBR21creattimelist=
 }
 return
 TBR21CharChoice:
@@ -1408,6 +1466,12 @@ TEVESort:
 		TEVESortVar := "Level"
 		GoSub, TEVEChoice
 	}
+	else if (TEVECurrentSort = "Sorting : Level")
+	{
+		GuiControl, TEVEBuddy:, TEVESortChoice, Sorting : Creation Time
+		TEVESortVar=Creation
+		GoSub, TEVEChoice
+	}	
 	else
 	{
 		GuiControl, TEVEBuddy:, TEVESortChoice, Sorting : Last Time Modified
@@ -1432,15 +1496,23 @@ TEVERefresh:
 	TEVECodes2 := []
 	TEVEClassList=
 	TEVETime := []
+	TEVECreatTime := []
 	
 	If (TEVEBuddyPath)
 	{
 		Loop, Files, *, D
 		{
+			if (A_LoopFileName = "backups")
+			{
+				continue
+			}
 			TEVECurrClass := A_LoopFileName
 			TEVEClassList = %TEVEClassList%|%A_LoopFileName%
 			Loop, Files, %A_LoopFileLongPath%\*.txt
 			{
+				TEVECreat=%A_LoopFileTimeCreated%
+				TEVECreatTime.Push(TEVECreat)
+				FormatTime, TEVECreatTimeFormat, %A_LoopFileTimeCreated%
 				TEVELastModif=%A_LoopFileTimeModified%
 				TEVETime.Push(TEVELastModif)
 				FormatTime, TEVETimeFormat, %A_LoopFileTimeModified%
@@ -1470,7 +1542,7 @@ TEVERefresh:
 						}
 						If (InStr(TEVEfileline, "call PreloadEnd("))
 						{
-							TEVEfull = | FileName: %A_LoopFileName% | LastModified: %TEVETimeFormat% %TEVEfull%
+							TEVEfull = | FileName: %A_LoopFileName% | CreationTime: %TEVECreatTimeFormat% | LastModified: %TEVETimeFormat% %TEVEfull%
 							TEVEStats.Push(TEVEfull)
 							TEVEfull=
 							Break
@@ -1496,6 +1568,7 @@ TEVEChoice:
 	TEVECurrentCode1 := []
 	TEVECurrentCode2 := []
 	TEVECurrentTime := []
+	TEVECurrentCreatTime := []
 	
 	for i in TEVEClasses
 	{
@@ -1513,6 +1586,8 @@ TEVEChoice:
 			TEVECurrentCode2.Push(TEVECurrCode2)
 			TEVETimeChar := TEVETime[i]
 			TEVECurrentTime.Push(TEVETimeChar)
+			TEVECreatTimeChar := TEVECreatTime[i]
+			TEVECurrentCreatTime.Push(TEVECreatTimeChar)
 		}
 	}
 	
@@ -1564,20 +1639,34 @@ TEVEChoice:
 		{
 			TEVEtimelist=%TEVEtimelist%`n%TEVEnewtime%
 		}
+		TEVEnewcreattime := TEVECurrentCreatTime[i]
+		if (!TEVEcreattimelist)
+		{
+			TEVEcreattimelist=%TEVEnewcreattime%
+		}
+		else
+		{
+			TEVEcreattimelist=%TEVEcreattimelist%`n%TEVEnewcreattime%
+		}
 	}
 	If (TEVESortVar = "Level")
 	{
 		TEVEObj := [TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
 	}
-	else
+	else if (TEVESortVar = "Time")
 	{
 		TEVEObj := [TEVEtimelist, TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
+	}
+	else 
+	{
+		TEVEObj := [TEVEcreattimelist, TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
 	}
 	TEVElvllist=
 	TEVEstatlist=
 	TEVEcode1list=
 	TEVEcode2list=
 	TEVEtimelist=
+	TEVEcreattimelist=
 	If (TEVESortVar = "Level")
 	{
 		TEVEsortingnonsense := new GroupSort(TEVEObj, "N R")
@@ -1619,6 +1708,7 @@ TEVEChoice:
 	TEVEcode1list=
 	TEVEcode2list=
 	TEVEtimelist=
+	TEVEcreattimelist=
 }
 return
 TEVECharChoice:
@@ -1705,7 +1795,13 @@ GOHSort:
 		GOHSortVar=Level
 		GoSub, GOHChoice
 	}
-	else
+	else if (GOHCurrentSort = "Sorting : Level")
+	{
+		GuiControl, GOHBuddy:, GOHSortChoice, Sorting : Creation Time
+		GOHSortVar=Creation
+		GoSub, GOHChoice
+	}	
+	else 
 	{
 		GuiControl, GOHBuddy:, GOHSortChoice, Sorting : Last Time Modified
 		GOHSortVar=Time
@@ -1727,11 +1823,15 @@ GOHRefresh:
 	GOHStats := []
 	GOHClassList=
 	GOHTime := []
+	GOHCreatTime := []
 	
 	If (GOHBuddyPath)
 	{
 		Loop, Files, *.txt
 		{
+			GOHCreat=%A_LoopFileTimeCreated%
+			GOHCreatTime.Push(GOHCreat)
+			FormatTime, GOHCreatTimeFormat, %A_LoopFileTimeCreated%
 			GOHLastModif=%A_LoopFileTimeModified%
 			GOHTime.Push(GOHLastModif)
 			FormatTime, GOHTimeFormat, %A_LoopFileTimeModified%
@@ -1749,7 +1849,7 @@ GOHRefresh:
 			{
 				GOHcurrLvl = Lv.60 - %GOHcurrLvl%
 			}
-			GOHcurrStat = | FileName: %A_LoopFileName% | LastModified: %GOHTimeFormat% | TimePlayed: %GOHcurrStat% | Code: %GOHfileline%
+			GOHcurrStat = | FileName: %A_LoopFileName% | CreationTime: %GOHCreatTimeFormat% | LastModified: %GOHTimeFormat% | TimePlayed: %GOHcurrStat% | Code: %GOHfileline%
 			GOHClasses.Push(GOHcurrClass)
 			GOHStats.Push(GOHcurrStat)
 			GOHLvl.Push(GOHcurrLvl)
@@ -1789,6 +1889,7 @@ GOHChoice:
 			GOHCodeChar := GOHCode[i]
 			GOHStatChar := GOHStats[i]
 			GOHTimeChar := GOHTime[i]
+			GOHCreatTimeChar := GOHCreatTime[i]
 			If (GOHSortVar = "Level")
 			{
 				If InStr(GOHLvlChar, "MP")
@@ -1839,6 +1940,7 @@ GOHChoice:
 					GOHLvlCharMaxNum=%GOHLvlChar%
 					GOHCodeCharMaxList=%GOHCodeChar%
 					GOHTimeList=%GOHTimeChar%
+					GOHCreatTimeList=%GOHCreatTimeChar%
 				}
 				else
 				{
@@ -1847,6 +1949,7 @@ GOHChoice:
 					GOHLvlCharMaxNum=%GOHLvlCharMaxNum%`n%GOHLvlChar%
 					GOHCodeCharMaxList=%GOHCodeCharMaxList%`n%GOHCodeChar%
 					GOHTimeList=%GOHTimeList%`n%GOHTimeChar%
+					GOHCreatTimeList=%GOHCreatTimeList%`n%GOHCreatTimeChar%
 				}
 			}
 		}
@@ -1856,9 +1959,13 @@ GOHChoice:
 		GOHLvlObj := [GOHLvlCharLvlNum, GOHLvlCharLvlList, GOHStatCharLvlList, GOHCodeCharLvlList]
 		GOHMaxObj := [GOHLvlCharMaxNum, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
 	}
-	else
+	else if (GOHSortVar = "Time")
 	{
 		GOHMaxObj := [GOHTimeList, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
+	}
+	else
+	{
+		GOHMaxObj := [GOHCreatTimeList, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
 	}
 	GOHLvlCharLvlList=
 	GOHStatCharLvlList=
@@ -1869,6 +1976,7 @@ GOHChoice:
 	GOHLvlCharMaxNum=
 	GOHCodeCharMaxList=
 	GOHTimeList=
+	GOHCreatTimeList=
 	
 	If (GOHSortVar = "Level")
 	{
