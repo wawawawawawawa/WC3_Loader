@@ -32,3 +32,6 @@
 2.0 : Added Sort by Last Time Modified
 
 2.1 : Added Sort by Creation Date
+
+2.2 : Sort Option is now saved
+      Added new Options on load (GOH/HM)
