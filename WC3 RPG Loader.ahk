@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.2"
+Global currentversion := "2.2a"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -61,10 +61,12 @@ IniRead, HMSortVar, %A_ScriptDir%\%ININame% , Settings, HMSort
 IniRead, TBR21SortVar, %A_ScriptDir%\%ININame% , Settings, TBR21Sort
 IniRead, TEVESortVar, %A_ScriptDir%\%ININame% , Settings, TEVESort
 IniRead, GOHSortVar, %A_ScriptDir%\%ININame% , Settings, GOHSort
+IniRead, Xaction, %A_ScriptDir%\%ININame% , Settings, Xaction
 IniRead, GOHC1, %A_ScriptDir%\%ININame% , Settings, GOHC1
 IniRead, GOHC2, %A_ScriptDir%\%ININame% , Settings, GOHC2
 IniRead, GOHC3, %A_ScriptDir%\%ININame% , Settings, GOHC3
 IniRead, GOHC4, %A_ScriptDir%\%ININame% , Settings, GOHC4
+IniRead, GOHC5, %A_ScriptDir%\%ININame% , Settings, GOHC5
 IniRead, HMC1, %A_ScriptDir%\%ININame% , Settings, HMC1
 IniRead, HMC2, %A_ScriptDir%\%ININame% , Settings, HMC2
 IniRead, HMC3, %A_ScriptDir%\%ININame% , Settings, HMC3
@@ -98,12 +100,15 @@ Gui, MainBuddy:Font, cBlack s12
 Gui, MainBuddy:Add, GroupBox, section h120 w265, Settings : 
 Gui, MainBuddy:Font, 
 Gui, MainBuddy:Add, CheckBox, xp10 yp25 vGetContentBox gContentSetting Checked%RetrieveContent%, Allow Retrieve Content (Char Information Panel)
-Gui, MainBuddy:Add, CheckBox, yp20 vCheckUpdatesBox gUpdateSetting Checked%CheckUpdates%, Check for updates on launch
-Gui, MainBuddy:Add, CheckBox, yp20 vCheckTrayBox gTraySetting Checked%TrayOption%, Enable Launch Wc3 (Taskbar)
-Gui, MainBuddy:Add, Button, x+5 yp-5 vSetPathButton gSetWC3Path Checked%TrayOption%, Set WC3 Path
-Gui, MainBuddy:Add, Text, xs+10 yp30 , GUI Theme :
-Gui, MainBuddy:Add, Button, yp-4 x+5 w100 gChangeColor vColorChoice, Choose Color
+Gui, MainBuddy:Add, CheckBox, yp15 vCheckUpdatesBox gUpdateSetting Checked%CheckUpdates%, Check for updates on launch
+Gui, MainBuddy:Add, CheckBox, yp15 vCheckTrayBox gTraySetting Checked%TrayOption%, Launch Wc3 (Taskbar) :
+Gui, MainBuddy:Add, Button, x+3 yp-2 h17 vSetPathButton gSetWC3Path Checked%TrayOption%, Set WC3 Path
+Gui, MainBuddy:Add, Text, xs+10 yp20 , GUI Theme :
+Gui, MainBuddy:Add, Button, x+3 yp-2 h17 gChangeColor vColorChoice, Choose Color
+Gui, MainBuddy:Add, Text, xs+10 yp20, X button action :
+Gui, MainBuddy:Add, DropDownList, w80 x+3 yp-2 gCheckBoxOptions vXaction hwndhcbx Choose%Xaction% AltSubmit, Hide GUI|Close Script
 
+; PostMessage, 0x153, -1, 15,, ahk_id %hcbx%  ; Set height of selection field.
 
 Gui, MainBuddy:Tab, 
 Gui, MainBuddy:Add, Button, xs-10 yp200 gUpdate, Check for updates
@@ -282,6 +287,7 @@ Gui, GOHBuddy:Add, Checkbox, x460 y370 vGOHC1 Checked%GOHC1% gCheckBoxOptions, -
 Gui, GOHBuddy:Add, Checkbox, x460 y385 vGOHC2 Checked%GOHC2% gCheckBoxOptions, -autoselect off
 Gui, GOHBuddy:Add, Checkbox, x460 y400 vGOHC3 Checked%GOHC3% gCheckBoxOptions, -farcam on
 Gui, GOHBuddy:Add, Checkbox, x560 y370 vGOHC4 Checked%GOHC4% gCheckBoxOptions, -questmessages off
+Gui, GOHBuddy:Add, Checkbox, x560 y385 vGOHC5 Checked%GOHC5% gCheckBoxOptions, -clear
 Gui, GOHBuddy:Show, Hide Center, GoH Buddy (Press CTRL + F1 to Show/Hide)
 
 GOHGUI = 0
@@ -994,27 +1000,27 @@ LoadHM:
 			if (HMC1 = 1)
 			{
 				Send {enter}-cam 180{enter}
-				Sleep 500
+				Sleep 300
 			}
 			if (HMC2 = 1)
 			{
 				Send {esc}{Enter}-c{Enter}
-				Sleep 500
+				Sleep 300
 			}
 			if (HMC3 = 1)
 			{
 				Send {esc}{Enter}-b{Enter}
-				Sleep 500
+				Sleep 300
 			}
 			if (HMC4 = 1)
 			{
 				Send {esc}{Enter}-a{Enter}
-				Sleep 500
+				Sleep 300
 			}
 			if (HMC5 = 1)
 			{
 				Send {esc}{Enter}-e{Enter}
-				Sleep 500
+				Sleep 300
 			}
 		}
 		else
@@ -2127,30 +2133,35 @@ LoadGOH:
 			WinActivate, Warcraft III
 			ClipWait, 500
 			Send {esc}{Enter}^v{Enter}
-			Sleep 500
+			Sleep 300
 			if (GOHC1 = 1)
 			{
 				Send {esc}{Enter}-new{Enter}
-				Sleep 500
+				Sleep 300
 			}
 			Clipboard := GOHCurrCode
 			ClipWait, 500
 			Send {esc}{Enter}^v{Enter}
-			Sleep 500
+			Sleep 300
 			if (GOHC3 = 1)
 			{
 				Send {esc}{Enter}-farcam on{Enter}
-				Sleep 500
+				Sleep 300
 			}
 			if (GOHC2 = 1)
 			{
 				Send {esc}{Enter}-autoselect off{Enter}
-				Sleep 500
+				Sleep 300
 			}
 			if (GOHC4 = 1)
 			{
 				Send {esc}{Enter}-questmessages off{Enter}
-				Sleep 500
+				Sleep 300
+			}
+			if (GOHC5 = 1)
+			{
+				Send {esc}{Enter}-clear{Enter}
+				Sleep 300
 			}
 		}
 		else
@@ -2966,6 +2977,10 @@ MainBuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -2974,6 +2989,10 @@ GaiaBuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -2982,6 +3001,10 @@ HMBuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -2990,6 +3013,10 @@ TBR13BuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -2998,6 +3025,10 @@ TBR21BuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -3006,6 +3037,10 @@ TEVEBuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -3014,6 +3049,10 @@ GOHBuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -3022,6 +3061,10 @@ UpdateBuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
@@ -3030,6 +3073,10 @@ CPBuddyGuiClose:
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
 	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
 }
 return
 
