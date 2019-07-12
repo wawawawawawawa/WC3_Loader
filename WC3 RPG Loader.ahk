@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.1"
+Global currentversion := "2.2"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -24,10 +24,6 @@ Global TrayIcon := "0"
 Global switch := "1"
 Global GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "GOH", "Update", "CP"]
 
-Global HMSortVar := "Level"
-Global TBR21SortVar := "Level"
-Global TEVESortVar := "Level"
-Global GOHSortVar := "Level"
 RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
 
 ;=============== INI FILE ====================
@@ -45,6 +41,10 @@ ifNotExist, %A_ScriptDir%\%ININame%
 	IniWrite, Default, %A_ScriptDir%\%ININame%, Loader, GUIColor
 	IniWrite, 0, %A_ScriptDir%\%ININame%, Loader, TrayOption
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Loader, WC3Path
+	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, HMSort
+	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, TBR21Sort
+	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, TEVESort
+	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, GOHSort
 }
 IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
 IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
@@ -57,6 +57,19 @@ IniRead, CheckUpdates, %A_ScriptDir%\%ININame% , Loader, CheckUpdates, 1
 IniRead, GUIColor, %A_ScriptDir%\%ININame% , Loader, GUIColor, Default
 IniRead, TrayOption, %A_ScriptDir%\%ININame% , Loader, TrayOption, 0
 IniRead, WC3Path, %A_ScriptDir%\%ININame% , Loader, WC3Path
+IniRead, HMSortVar, %A_ScriptDir%\%ININame% , Settings, HMSort
+IniRead, TBR21SortVar, %A_ScriptDir%\%ININame% , Settings, TBR21Sort
+IniRead, TEVESortVar, %A_ScriptDir%\%ININame% , Settings, TEVESort
+IniRead, GOHSortVar, %A_ScriptDir%\%ININame% , Settings, GOHSort
+IniRead, GOHC1, %A_ScriptDir%\%ININame% , Settings, GOHC1
+IniRead, GOHC2, %A_ScriptDir%\%ININame% , Settings, GOHC2
+IniRead, GOHC3, %A_ScriptDir%\%ININame% , Settings, GOHC3
+IniRead, GOHC4, %A_ScriptDir%\%ININame% , Settings, GOHC4
+IniRead, HMC1, %A_ScriptDir%\%ININame% , Settings, HMC1
+IniRead, HMC2, %A_ScriptDir%\%ININame% , Settings, HMC2
+IniRead, HMC3, %A_ScriptDir%\%ININame% , Settings, HMC3
+IniRead, HMC4, %A_ScriptDir%\%ININame% , Settings, HMC4
+IniRead, HMC5, %A_ScriptDir%\%ININame% , Settings, HMC5
 
 ;////////////////////////////////////////// GUI //////////////////////////////////////////////////////////////////
 ;=============== MAIN GUI ====================
@@ -174,10 +187,15 @@ Gui, HMBuddy:Add, ListBox, x160 y20 w200 h300 vhmclasslist gHMCharChoice AltSubm
 Gui, HMBuddy:Add, ListBox, x365 y20 w400 h300 vhmclassinfo gHMStatChoice AltSubmit, 
 Gui, HMBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, HMBuddy:Add, Button, x275 y320 w130 h40 gHMRefresh, Refresh
-Gui, HMBuddy:Add, Button, x410 y320 w130 h40 vHMSortChoice gHMSort, Sorting : Level
+Gui, HMBuddy:Add, Button, x410 y320 w130 h40 vHMSortChoice gHMSort, Sorting : %HMSortVar%
 Gui, HMBuddy:Add, Button, x630 y320 w130 h40 gLoadHM, Load
 Gui, HMBuddy:Add, Button, x5 y370 h40 gChangeHMPath, Change Save Folder
 Gui, HMBuddy:Add, Edit, x155 y370 w300 h40 vHMPathText ReadOnly, %HMBuddyPath%
+Gui, HMBuddy:Add, Checkbox, x460 y370 vHMC1 Checked%HMC1% gCheckBoxOptions, -cam 180
+Gui, HMBuddy:Add, Checkbox, x460 y385 vHMC2 Checked%HMC2% gCheckBoxOptions, -c
+Gui, HMBuddy:Add, Checkbox, x460 y400 vHMC3 Checked%HMC3% gCheckBoxOptions, -b
+Gui, HMBuddy:Add, Checkbox, x560 y370 vHMC4 Checked%HMC4% gCheckBoxOptions, -a
+Gui, HMBuddy:Add, Checkbox, x560 y385 vHMC5 Checked%HMC5% gCheckBoxOptions, -e
 Gui, HMBuddy:Show, Hide Center, HM Buddy (Press CTRL + F1 to Show/Hide)
 
 HMGUI = 0
@@ -213,7 +231,7 @@ Gui, TBR21Buddy:Add, ListBox, x160 y20 w200 h300 vtbr21classlist gTBR21CharChoic
 Gui, TBR21Buddy:Add, ListBox, x365 y20 w400 h300 vtbr21classinfo gTBR21StatChoice AltSubmit, 
 Gui, TBR21Buddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, TBR21Buddy:Add, Button, x275 y320 w130 h40 gTBR21Refresh, Refresh
-Gui, TBR21Buddy:Add, Button, x410 y320 w130 h40 vTBR21SortChoice gTBR21Sort, Sorting : Level
+Gui, TBR21Buddy:Add, Button, x410 y320 w130 h40 vTBR21SortChoice gTBR21Sort, Sorting : %TBR21SortVar%
 Gui, TBR21Buddy:Add, Button, x636 y320 w130 h40 gLoadTBR21, Load
 Gui, TBR21Buddy:Add, Button, x5 y370 h40 gChangeTBR21Path, Change Save Folder
 Gui, TBR21Buddy:Add, Edit, x155 y370 w300 h40 vTBR21PathText ReadOnly, %TBR21BuddyPath%
@@ -234,7 +252,7 @@ Gui, TEVEBuddy:Add, ListBox, x160 y20 w200 h300 vteveclasslist gTEVECharChoice A
 Gui, TEVEBuddy:Add, ListBox, x365 y20 w400 h300 vteveclassinfo gTEVEStatChoice AltSubmit, 
 Gui, TEVEBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, TEVEBuddy:Add, Button, x275 y320 w130 h40 gTEVERefresh, Refresh
-Gui, TEVEBuddy:Add, Button, x410 y320 w130 h40 vTEVESortChoice gTEVESort, Sorting : Level
+Gui, TEVEBuddy:Add, Button, x410 y320 w130 h40 vTEVESortChoice gTEVESort, Sorting : %TEVESortVar%
 Gui, TEVEBuddy:Add, Button, x636 y320 w130 h40 gLoadTEVE, Load
 Gui, TEVEBuddy:Add, Button, x5 y370 h40 gChangeTEVEPath, Change Save Folder
 Gui, TEVEBuddy:Add, Edit, x155 y370 w300 h40 vTEVEPathText ReadOnly, %TEVEBuddyPath%
@@ -256,10 +274,14 @@ Gui, GOHBuddy:Add, ListBox, x160 y20 w200 h300 vgohclasslist gGOHCharChoice AltS
 Gui, GOHBuddy:Add, ListBox, x365 y20 w400 h300 vgohclassinfo gGOHStatChoice AltSubmit, 
 Gui, GOHBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
 Gui, GOHBuddy:Add, Button, x275 y320 w130 h40 gGOHRefresh, Refresh
-Gui, GOHBuddy:Add, Button, x410 y320 w130 h40 vGOHSortChoice gGOHSort, Sorting : Level
+Gui, GOHBuddy:Add, Button, x410 y320 w130 h40 vGOHSortChoice gGOHSort, Sorting : %GOHSortVar%
 Gui, GOHBuddy:Add, Button, x636 y320 w130 h40 gLoadGOH, Load
 Gui, GOHBuddy:Add, Button, x5 y370 h40 gChangeGOHPath, Change Save Folder
 Gui, GOHBuddy:Add, Edit, x155 y370 w300 h40 vGOHPathText ReadOnly, %GOHBuddyPath%
+Gui, GOHBuddy:Add, Checkbox, x460 y370 vGOHC1 Checked%GOHC1% gCheckBoxOptions, -new
+Gui, GOHBuddy:Add, Checkbox, x460 y385 vGOHC2 Checked%GOHC2% gCheckBoxOptions, -autoselect off
+Gui, GOHBuddy:Add, Checkbox, x460 y400 vGOHC3 Checked%GOHC3% gCheckBoxOptions, -farcam on
+Gui, GOHBuddy:Add, Checkbox, x560 y370 vGOHC4 Checked%GOHC4% gCheckBoxOptions, -questmessages off
 Gui, GOHBuddy:Show, Hide Center, GoH Buddy (Press CTRL + F1 to Show/Hide)
 
 GOHGUI = 0
@@ -672,18 +694,21 @@ HMSort:
 	{
 		GuiControl, HMBuddy:, HMSortChoice, Sorting : Level
 		HMSortVar := "Level"
+		IniWrite, %HMSortVar%, %A_ScriptDir%\%ININame%, Settings, HMSort
 		GoSub, HMChoice
 	}
 	else if (HMCurrentSort = "Sorting : Level")
 	{
 		GuiControl, HMBuddy:, HMSortChoice, Sorting : Creation Time
-		HMSortVar=Creation
+		HMSortVar := "Creation Time"
+		IniWrite, %HMSortVar%, %A_ScriptDir%\%ININame%, Settings, HMSort
 		GoSub, HMChoice
 	}	
 	else
 	{
 		GuiControl, HMBuddy:, HMSortChoice, Sorting : Last Time Modified
-		HMSortVar := "Time"
+		HMSortVar := "Last Time Modified"
+		IniWrite, %HMSortVar%, %A_ScriptDir%\%ININame%, Settings, HMSort
 		GoSub, HMChoice
 	}
 }
@@ -873,7 +898,7 @@ HMChoice:
 	}
 	else
 	{
-		if (HMSortVar = "Time")
+		if (HMSortVar = "Last Time Modified")
 		{
 			HMObj := [HMtimelist, HMlvllist, HMcodelist, HMstatlist]
 		}
@@ -966,16 +991,31 @@ LoadHM:
 			ClipWait, 200
 			Send {esc}{Enter}^v{Enter}
 			Sleep 1500
-			Send {enter}-cam 180{enter}
-			Sleep 500
-			Send {esc}{Enter}-c{Enter}
-			Sleep 500
-			Send {esc}{Enter}-b{Enter}
-			Sleep 500
-			Send {esc}{Enter}-a{Enter}
-			Sleep 500
-			Send {esc}{Enter}-e{Enter}
-			Sleep 500
+			if (HMC1 = 1)
+			{
+				Send {enter}-cam 180{enter}
+				Sleep 500
+			}
+			if (HMC2 = 1)
+			{
+				Send {esc}{Enter}-c{Enter}
+				Sleep 500
+			}
+			if (HMC3 = 1)
+			{
+				Send {esc}{Enter}-b{Enter}
+				Sleep 500
+			}
+			if (HMC4 = 1)
+			{
+				Send {esc}{Enter}-a{Enter}
+				Sleep 500
+			}
+			if (HMC5 = 1)
+			{
+				Send {esc}{Enter}-e{Enter}
+				Sleep 500
+			}
 		}
 		else
 		{
@@ -1132,18 +1172,21 @@ TBR21Sort:
 	{
 		GuiControl, TBR21Buddy:, TBR21SortChoice, Sorting : Level
 		TBR21SortVar := "Level"
+		IniWrite, %TBR21SortVar%, %A_ScriptDir%\%ININame%, Settings, TBR21Sort
 		GoSub, TBR21Choice
 	}
 	else if (TBR21CurrentSort = "Sorting : Level")
 	{
 		GuiControl, TBR21Buddy:, TBR21SortChoice, Sorting : Creation Time
-		TBR21SortVar=Creation
+		TBR21SortVar := "Creation Time"
+		IniWrite, %TBR21SortVar%, %A_ScriptDir%\%ININame%, Settings, TBR21Sort
 		GoSub, TBR21Choice
 	}	
 	else
 	{
 		GuiControl, TBR21Buddy:, TBR21SortChoice, Sorting : Last Time Modified
-		TBR21SortVar := "Time"
+		TBR21SortVar := "Last Time Modified"
+		IniWrite, %TBR21SortVar%, %A_ScriptDir%\%ININame%, Settings, TBR21Sort
 		GoSub, TBR21Choice
 	}
 }
@@ -1331,7 +1374,7 @@ TBR21Choice:
 	{
 		TBR21Obj := [TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
 	}
-	else If (TBR21SortVar = "Time")
+	else If (TBR21SortVar = "Last Time Modified")
 	{
 		TBR21Obj := [TBR21timelist, TBR21xplist, TBR21codelist, TBR21statlist, TBR21lvllist, TBR21txtlist]
 	}
@@ -1464,18 +1507,21 @@ TEVESort:
 	{
 		GuiControl, TEVEBuddy:, TEVESortChoice, Sorting : Level
 		TEVESortVar := "Level"
+		IniWrite, %TEVESortVar%, %A_ScriptDir%\%ININame%, Settings, TEVESort
 		GoSub, TEVEChoice
 	}
 	else if (TEVECurrentSort = "Sorting : Level")
 	{
 		GuiControl, TEVEBuddy:, TEVESortChoice, Sorting : Creation Time
-		TEVESortVar=Creation
+		TEVESortVar := "Creation Time"
+		IniWrite, %TEVESortVar%, %A_ScriptDir%\%ININame%, Settings, TEVESort
 		GoSub, TEVEChoice
 	}	
 	else
 	{
 		GuiControl, TEVEBuddy:, TEVESortChoice, Sorting : Last Time Modified
-		TEVESortVar := "Time"
+		TEVESortVar := "Last Time Modified"
+		IniWrite, %TEVESortVar%, %A_ScriptDir%\%ININame%, Settings, TEVESort
 		GoSub, TEVEChoice
 	}
 }
@@ -1653,7 +1699,7 @@ TEVEChoice:
 	{
 		TEVEObj := [TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
 	}
-	else if (TEVESortVar = "Time")
+	else if (TEVESortVar = "Last Time Modified")
 	{
 		TEVEObj := [TEVEtimelist, TEVElvllist, TEVEstatlist, TEVEcode1list, TEVEcode2list]
 	}
@@ -1792,19 +1838,22 @@ GOHSort:
 	If (GOHCurrentSort = "Sorting : Last Time Modified")
 	{
 		GuiControl, GOHBuddy:, GOHSortChoice, Sorting : Level
-		GOHSortVar=Level
+		GOHSortVar := "Level"
+		IniWrite, %GOHSortVar%, %A_ScriptDir%\%ININame%, Settings, GOHSort
 		GoSub, GOHChoice
 	}
 	else if (GOHCurrentSort = "Sorting : Level")
 	{
 		GuiControl, GOHBuddy:, GOHSortChoice, Sorting : Creation Time
-		GOHSortVar=Creation
+		GOHSortVar := "Creation Time"
+		IniWrite, %GOHSortVar%, %A_ScriptDir%\%ININame%, Settings, GOHSort
 		GoSub, GOHChoice
 	}	
 	else 
 	{
 		GuiControl, GOHBuddy:, GOHSortChoice, Sorting : Last Time Modified
-		GOHSortVar=Time
+		GOHSortVar := "Last Time Modified"
+		IniWrite, %GOHSortVar%, %A_ScriptDir%\%ININame%, Settings, GOHSort
 		GoSub, GOHChoice
 	}
 }
@@ -1959,7 +2008,7 @@ GOHChoice:
 		GOHLvlObj := [GOHLvlCharLvlNum, GOHLvlCharLvlList, GOHStatCharLvlList, GOHCodeCharLvlList]
 		GOHMaxObj := [GOHLvlCharMaxNum, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
 	}
-	else if (GOHSortVar = "Time")
+	else if (GOHSortVar = "Last Time Modified")
 	{
 		GOHMaxObj := [GOHTimeList, GOHLvlCharMaxList, GOHStatCharMaxList, GOHCodeCharMaxList]
 	}
@@ -2076,15 +2125,33 @@ LoadGOH:
 		{
 			Clipboard := "Loading : " . GOHCurrentClass . " - Level " . GOHCurrLvl
 			WinActivate, Warcraft III
-			ClipWait, 200
+			ClipWait, 500
 			Send {esc}{Enter}^v{Enter}
-			Sleep 200
+			Sleep 500
+			if (GOHC1 = 1)
+			{
+				Send {esc}{Enter}-new{Enter}
+				Sleep 500
+			}
 			Clipboard := GOHCurrCode
-			ClipWait, 200
+			ClipWait, 500
 			Send {esc}{Enter}^v{Enter}
-			Sleep 200
-			Send {esc}{Enter}-farcam on{Enter}
-			Sleep 200
+			Sleep 500
+			if (GOHC3 = 1)
+			{
+				Send {esc}{Enter}-farcam on{Enter}
+				Sleep 500
+			}
+			if (GOHC2 = 1)
+			{
+				Send {esc}{Enter}-autoselect off{Enter}
+				Sleep 500
+			}
+			if (GOHC4 = 1)
+			{
+				Send {esc}{Enter}-questmessages off{Enter}
+				Sleep 500
+			}
 		}
 		else
 		{
@@ -2825,6 +2892,15 @@ Back:
 }
 return
 
+
+CheckBoxOptions:
+{
+	GuiControlGet, IniOption , , %A_GuiControl%, 
+	IniWrite, %IniOption%, %A_ScriptDir%\%ININame%, Settings, %A_GuiControl%
+	IniRead, %A_GuiControl%, %A_ScriptDir%\%ININame%, Settings, %A_GuiControl%
+}
+return
+
 GUIGaia:
 {
 	CurrentGUI = Gaia
@@ -3165,6 +3241,7 @@ return ini_name ".ini"
 }
 ;============== HOTSTRING =================
 #IfWinActive Warcraft III
+::!gohasoff::-autoselect off
 :B0:-save::
 If (CurrentGUI != "Main" && CurrentGUI != "Update")
 {
