@@ -3241,7 +3241,6 @@ return ini_name ".ini"
 }
 ;============== HOTSTRING =================
 #IfWinActive Warcraft III
-::!gohasoff::-autoselect off
 :B0:-save::
 If (CurrentGUI != "Main" && CurrentGUI != "Update")
 {
