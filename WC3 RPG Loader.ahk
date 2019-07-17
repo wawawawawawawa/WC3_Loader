@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.2a"
+Global currentversion := "2.2b"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -103,15 +103,13 @@ Gui, MainBuddy:Add, CheckBox, xp10 yp25 vGetContentBox gContentSetting Checked%R
 Gui, MainBuddy:Add, CheckBox, yp15 vCheckUpdatesBox gUpdateSetting Checked%CheckUpdates%, Check for updates on launch
 Gui, MainBuddy:Add, CheckBox, yp15 vCheckTrayBox gTraySetting Checked%TrayOption%, Launch Wc3 (Taskbar) :
 Gui, MainBuddy:Add, Button, x+3 yp-2 h17 vSetPathButton gSetWC3Path Checked%TrayOption%, Set WC3 Path
-Gui, MainBuddy:Add, Text, xs+10 yp20 , GUI Theme :
+Gui, MainBuddy:Add, Text, xs+10 yp23 , GUI Theme :
 Gui, MainBuddy:Add, Button, x+3 yp-2 h17 gChangeColor vColorChoice, Choose Color
-Gui, MainBuddy:Add, Text, xs+10 yp20, X button action :
+Gui, MainBuddy:Add, Text, xs+10 yp23, X button action :
 Gui, MainBuddy:Add, DropDownList, w80 x+3 yp-2 gCheckBoxOptions vXaction hwndhcbx Choose%Xaction% AltSubmit, Hide GUI|Close Script
 
-; PostMessage, 0x153, -1, 15,, ahk_id %hcbx%  ; Set height of selection field.
-
 Gui, MainBuddy:Tab, 
-Gui, MainBuddy:Add, Button, xs-10 yp200 gUpdate, Check for updates
+Gui, MainBuddy:Add, Button, xs-10 yp180 gUpdate, Check for updates
 Gui, MainBuddy:Add, Link, xp180 yp5, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa</a>
 Gui, MainBuddy:+AlwaysOnTop
 
@@ -3296,5 +3294,14 @@ If (CurrentGUI != "Main" && CurrentGUI != "Update")
 	ActivePath := CurrentGUI "BuddyPath"
 	SetWorkingDir, %ActivePath%
 	GoSub, %CurrentGUI%Refresh
+}
+return
+::!refresh::
+{
+	Send {Raw}!closeall
+	Send {Enter}
+	Sleep 500
+	Send {Raw}!openall
+	Send {Enter}
 }
 return
