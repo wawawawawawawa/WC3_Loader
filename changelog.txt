@@ -35,3 +35,4 @@
 
 2.2 : Sort Option is now saved
       Added new Options on load (GOH/HM)
+      !refresh => !closeall then !openall
