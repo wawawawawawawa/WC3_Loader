@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.3a"
+Global currentversion := "2.3b"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -2247,6 +2247,7 @@ TKOKRefresh:
 	TKOKFilePath := []
 	TKOKFileName := []
 	TKOKStats := []
+	TKOKStats2 := []
 	TKOKCodes1 := []
 	TKOKCodes2 := []
 	TKOKClassList=
@@ -2257,12 +2258,53 @@ TKOKRefresh:
 	
 	If (TKOKBuddyPath)
 	{
+		Loop, Files, *.txt
+		{
+			TKOKClassList = Account
+			TKOKCurrClass := "Account"
+			TKOKClasses.Push(A_LoopFileName)
+			
+			TKOKCreat=%A_LoopFileTimeCreated%
+			TKOKCreatTime.Push(TKOKCreat)
+			FormatTime, TKOKCreatTimeFormat, %A_LoopFileTimeCreated%
+			TKOKLastModif=%A_LoopFileTimeModified%
+			TKOKTime.Push(TKOKLastModif)
+			FormatTime, TKOKTimeFormat, %A_LoopFileTimeModified%
+			TKOKFilePath.Push(A_LoopFileLongPath)
+			TKOKFileName.Push(A_LoopFileName)
+			
+			Loop, 35
+			{
+				FileReadLine, TKOKfileline, %A_LoopFileLongPath%, A_Index
+				If InStr(TKOKfileline, "Name: ")
+				{
+					TKOKfull = %TKOKfull% | %TKOKfileline%
+				}
+				If InStr(TKOKfileline, "APT: ")
+				{
+					TKOKfull = %TKOKfull% | %TKOKfileline%
+					TKOKcurrentline = %TKOKfileline%
+					StringTrimLeft, TKOKcurrentline, TKOKcurrentline, 5
+					TKOKLVL.Push(TKOKfileline)
+					TKOKXP.Push(TKOKcurrentline)
+				}
+				If InStr(TKOKfileline, "DEDI PTS: ")
+				{
+					TKOKfull = %TKOKfull% | %TKOKfileline%
+				}
+				If InStr(TKOKfileline, "-la ")
+				{
+					TKOKCodes1.Push(TKOKfileline)
+					TKOKCodes2.Push(TKOKfileline)
+					TKOKfull = | FileName: %A_LoopFileName% | CreationTime: %TKOKCreatTimeFormat% | LastModified: %TKOKTimeFormat% %TKOKfull% | %TKOKfileline%
+					TKOKStats.Push(TKOKfull)
+					TKOKfull=
+					Break
+				}
+			}
+		}
 		Loop, Files, *, D
 		{
-			if (A_LoopFileName = "backups")
-			{
-				continue
-			}
 			TKOKCurrClass := A_LoopFileName
 			TKOKClassList = %TKOKClassList%|%A_LoopFileName%
 			Loop, Files, %A_LoopFileLongPath%\*.txt
@@ -2287,10 +2329,12 @@ TKOKRefresh:
 						TKOKcurrentline := StrReplace(TKOKcurrentline, "|" , " ")
 						If InStr(TKOKcurrentline, "-l ")
 						{
+							StringTrimLeft, TKOKcurrentline, TKOKcurrentline, 6
 							TKOKCodes1.Push(TKOKcurrentline)
 						}
 						If InStr(TKOKcurrentline, "-l2 ")
 						{
+							StringTrimLeft, TKOKcurrentline, TKOKcurrentline, 6
 							TKOKCodes2.Push(TKOKcurrentline)
 						}
 						If InStr(TKOKcurrentline, "Level: ")
@@ -2365,7 +2409,7 @@ TKOKChoice:
 	for i in TKOKLvlCurr
 	{
 		TKOKnewlvl := TKOKLvlCurr[i]
-		if (!TKOKlvllist)
+		if (TKOKlvllist="")
 		{
 			TKOKlvllist=%TKOKnewlvl%
 		}
@@ -2374,7 +2418,7 @@ TKOKChoice:
 			TKOKlvllist=%TKOKlvllist%`n%TKOKnewlvl%
 		}
 		TKOKnewxp := TKOKXPCurr[i]
-		if (!TKOKxplist)
+		if (TKOKxplist="")
 		{
 			TKOKxplist=%TKOKnewxp%
 		}
@@ -2383,7 +2427,7 @@ TKOKChoice:
 			TKOKxplist=%TKOKxplist%`n%TKOKnewxp%
 		}
 		TKOKnewstat := TKOKStatCurr[i]
-		if (!TKOKstatlist)
+		if (TKOKstatlist="")
 		{
 			TKOKstatlist=%TKOKnewstat%
 		}
@@ -2392,7 +2436,7 @@ TKOKChoice:
 			TKOKstatlist=%TKOKstatlist%`n%TKOKnewstat%
 		}
 		TKOKnewcode1 := TKOKCurrentCode1[i]
-		if (!TKOKcode1list)
+		if (TKOKcode1list="")
 		{
 			TKOKcode1list=%TKOKnewcode1%
 		}
@@ -2401,7 +2445,7 @@ TKOKChoice:
 			TKOKcode1list=%TKOKcode1list%`n%TKOKnewcode1%
 		}
 		TKOKnewcode2 := TKOKCurrentCode2[i]
-		if (!TKOKcode2list)
+		if (TKOKcode2list="")
 		{
 			TKOKcode2list=%TKOKnewcode2%
 		}
@@ -2410,7 +2454,7 @@ TKOKChoice:
 			TKOKcode2list=%TKOKcode2list%`n%TKOKnewcode2%
 		}
 		TKOKnewtime := TKOKCurrentTime[i]
-		if (!TKOKtimelist)
+		if (TKOKtimelist="")
 		{
 			TKOKtimelist=%TKOKnewtime%
 		}
@@ -2419,7 +2463,7 @@ TKOKChoice:
 			TKOKtimelist=%TKOKtimelist%`n%TKOKnewtime%
 		}
 		TKOKnewcreattime := TKOKCurrentCreatTime[i]
-		if (!TKOKcreattimelist)
+		if (TKOKcreattimelist="")
 		{
 			TKOKcreattimelist=%TKOKnewcreattime%
 		}
@@ -2530,9 +2574,7 @@ LoadTKOK:
 	if (TKOKCurrentClass && TKOKCurrentCharNum)
 	{
 		TKOKCurrCode1 := TKOKArrCode1[TKOKCurrentCharNum]
-		StringTrimLeft, TKOKCurrCode1, TKOKCurrCode1, 6
 		TKOKCurrCode2 := TKOKArrCode2[TKOKCurrentCharNum]
-		StringTrimLeft, TKOKCurrCode2, TKOKCurrCode2, 6
 		TKOKCurrLvl := TKOKArrLvls[TKOKCurrentCharNum]
 		If WinExist("Warcraft III")
 		{
@@ -2545,9 +2587,12 @@ LoadTKOK:
 			ClipWait, 500
 			Send {Enter}^v{Enter}
 			Sleep 300
-			Clipboard := TKOKCurrCode2
-			ClipWait, 500
-			Send {Enter}^v{Enter}
+			if (TKOKCurrentClass != "Account")
+			{
+				Clipboard := TKOKCurrCode2
+				ClipWait, 500
+				Send {Enter}^v{Enter}
+			}
 		}
 		else
 		{
