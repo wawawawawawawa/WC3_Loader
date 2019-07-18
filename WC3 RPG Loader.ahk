@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.2b"
+Global currentversion := "2.3"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -22,7 +22,7 @@ Global URLDownloadColor := "https://github.com/wawawawawawawa/WC3_Loader/raw/mas
 Global ININame := BuildIniName()
 Global TrayIcon := "0"
 Global switch := "1"
-Global GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "GOH", "Update", "CP"]
+Global GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "GOH", "TKOK", "Update", "CP"]
 
 RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
 
@@ -36,6 +36,7 @@ ifNotExist, %A_ScriptDir%\%ININame%
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TBR21Path
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, GOHPath
+	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TKOKPath
 	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, RetrieveContent
 	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
 	IniWrite, Default, %A_ScriptDir%\%ININame%, Loader, GUIColor
@@ -52,6 +53,7 @@ IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
 IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
+IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
 IniRead, RetrieveContent, %A_ScriptDir%\%ININame% , Loader, RetrieveContent, 1
 IniRead, CheckUpdates, %A_ScriptDir%\%ININame% , Loader, CheckUpdates, 1
 IniRead, GUIColor, %A_ScriptDir%\%ININame% , Loader, GUIColor, Default
@@ -61,6 +63,7 @@ IniRead, HMSortVar, %A_ScriptDir%\%ININame% , Settings, HMSort
 IniRead, TBR21SortVar, %A_ScriptDir%\%ININame% , Settings, TBR21Sort
 IniRead, TEVESortVar, %A_ScriptDir%\%ININame% , Settings, TEVESort
 IniRead, GOHSortVar, %A_ScriptDir%\%ININame% , Settings, GOHSort
+IniRead, TKOKSortVar, %A_ScriptDir%\%ININame% , Settings, TKOKSort
 IniRead, Xaction, %A_ScriptDir%\%ININame% , Settings, Xaction
 IniRead, GOHC1, %A_ScriptDir%\%ININame% , Settings, GOHC1
 IniRead, GOHC2, %A_ScriptDir%\%ININame% , Settings, GOHC2
@@ -77,9 +80,9 @@ IniRead, HMC5, %A_ScriptDir%\%ININame% , Settings, HMC5
 ;=============== MAIN GUI ====================
 Gui 99:+LabelMainBuddy
 Gui, MainBuddy:Font, cBlack s12
-Gui, MainBuddy:Add, Tab3, vMainTab, Loaders|Backup|Settings
+Gui, MainBuddy:Add, Tab3, vMainTab, Loader|Backup|Settings|Commands
 Gui, MainBuddy:Tab, 1
-Gui, MainBuddy:Add, GroupBox, section h120 w265, Loaders : 
+Gui, MainBuddy:Add, GroupBox, section h150 w265, Loader : 
 Gui, MainBuddy:Font, 
 Gui, MainBuddy:Add, Button, xp10 yp25 w120 gGUIGaia, Gaia Loader
 Gui, MainBuddy:Add, Button, xp125 w120 gGUIHM, HM Loader
@@ -87,17 +90,18 @@ Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITBR13, TBR 1.38 Loader
 Gui, MainBuddy:Add, Button, xp125 w120 gGUITBR21, TBR 2.1 Loader
 Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITEVE, TeveF Loader
 Gui, MainBuddy:Add, Button, xp125 w120 gGUIGOH, GoH Loader
+Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITKOK, TKoK Loader
 
 Gui, MainBuddy:Tab, 2
 Gui, MainBuddy:Font, cBlack s12
-Gui, MainBuddy:Add, GroupBox, section h120 w265, Backup : 
+Gui, MainBuddy:Add, GroupBox, section h150 w265, Backup : 
 Gui, MainBuddy:Font, 
 Gui, MainBuddy:Add, Button, xp10 yp25 w120 gCreateBackup, Create Backup
 Gui, MainBuddy:Add, Button, xp125 w120 gRestoreBackup, Restore Backup
 
 Gui, MainBuddy:Tab, 3
 Gui, MainBuddy:Font, cBlack s12
-Gui, MainBuddy:Add, GroupBox, section h120 w265, Settings : 
+Gui, MainBuddy:Add, GroupBox, section h150 w265, Settings : 
 Gui, MainBuddy:Font, 
 Gui, MainBuddy:Add, CheckBox, xp10 yp25 vGetContentBox gContentSetting Checked%RetrieveContent%, Allow Retrieve Content (Char Information Panel)
 Gui, MainBuddy:Add, CheckBox, yp15 vCheckUpdatesBox gUpdateSetting Checked%CheckUpdates%, Check for updates on launch
@@ -108,8 +112,14 @@ Gui, MainBuddy:Add, Button, x+3 yp-2 h17 gChangeColor vColorChoice, Choose Color
 Gui, MainBuddy:Add, Text, xs+10 yp23, X button action :
 Gui, MainBuddy:Add, DropDownList, w80 x+3 yp-2 gCheckBoxOptions vXaction hwndhcbx Choose%Xaction% AltSubmit, Hide GUI|Close Script
 
+Gui, MainBuddy:Tab, 4
+Gui, MainBuddy:Font, cBlack s12
+Gui, MainBuddy:Add, GroupBox, section h150 w265, Commands : 
+Gui, MainBuddy:Font, 
+Gui, MainBuddy:Add, Text, xp10 yp25, !refresh : !closeall then !openall
+
 Gui, MainBuddy:Tab, 
-Gui, MainBuddy:Add, Button, xs-10 yp180 gUpdate, Check for updates
+Gui, MainBuddy:Add, Button, xs-10 yp210 gUpdate, Check for updates
 Gui, MainBuddy:Add, Link, xp180 yp5, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa</a>
 Gui, MainBuddy:+AlwaysOnTop
 
@@ -293,6 +303,28 @@ GOHGUI = 0
 Gui 6a:+LabelGOHBuddyStat
 Gui, GOHBuddyStat:Add, Edit,vGOHdata ReadOnly w600, 
 Gui, GOHBuddyStat:Show, Hide Center, Retrieve content
+
+;=============== TKOK GUI ====================
+Gui 7:+LabelTKOKBuddy
+Gui, TKOKBuddy:Add, Text, x40 y5, Class Selection :
+Gui, TKOKBuddy:Add, Text, x205 y5, Characters Available :
+Gui, TKOKBuddy:Add, Text, x500 y5, Character Information :
+Gui, TKOKBuddy:Add, ListBox, x5 y20 w150 h300 vTKOKclasschoice gTKOKChoice , 
+Gui, TKOKBuddy:Add, ListBox, x160 y20 w200 h300 vTKOKclasslist gTKOKCharChoice AltSubmit, 
+Gui, TKOKBuddy:Add, ListBox, x365 y20 w400 h300 vTKOKclassinfo gTKOKStatChoice AltSubmit, 
+Gui, TKOKBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
+Gui, TKOKBuddy:Add, Button, x275 y320 w130 h40 gTKOKRefresh, Refresh
+Gui, TKOKBuddy:Add, Button, x410 y320 w130 h40 vTKOKSortChoice gTKOKSort, Sorting : %TKOKSortVar%
+Gui, TKOKBuddy:Add, Button, x636 y320 w130 h40 gLoadTKOK, Load
+Gui, TKOKBuddy:Add, Button, x5 y370 h40 gChangeTKOKPath, Change Save Folder
+Gui, TKOKBuddy:Add, Edit, x155 y370 w300 h40 vTKOKPathText ReadOnly, %TKOKBuddyPath%
+Gui, TKOKBuddy:Show, Hide Center, TKOK Buddy (Press CTRL + F1 to Show/Hide)
+
+TKOKGUI = 0
+
+Gui 7a:+LabelTKOKBuddyStat
+Gui, TKOKBuddyStat:Add, Edit,vTKOKdata ReadOnly w600, 
+Gui, TKOKBuddyStat:Show, Hide Center, Retrieve content
 ;=============== GUI COLOR PICKER ====================
 DPI := getDPImultiplier()
 FontScaler := 2/DPI
@@ -2174,6 +2206,361 @@ LoadGOH:
 	}
 }
 return
+
+;////////////////////////////////////////// TKOK //////////////////////////////////////////////////////////////////
+;=============== TKOK ====================
+TKOKSort:
+{
+	GuiControlGet, TKOKCurrentSort,, TKOKSortChoice,
+	If (TKOKCurrentSort = "Sorting : Last Time Modified")
+	{
+		GuiControl, TKOKBuddy:, TKOKSortChoice, Sorting : Level
+		TKOKSortVar := "Level"
+		IniWrite, %TKOKSortVar%, %A_ScriptDir%\%ININame%, Settings, TKOKSort
+		GoSub, TKOKChoice
+	}
+	else if (TKOKCurrentSort = "Sorting : Level")
+	{
+		GuiControl, TKOKBuddy:, TKOKSortChoice, Sorting : Creation Time
+		TKOKSortVar := "Creation Time"
+		IniWrite, %TKOKSortVar%, %A_ScriptDir%\%ININame%, Settings, TKOKSort
+		GoSub, TKOKChoice
+	}	
+	else 
+	{
+		GuiControl, TKOKBuddy:, TKOKSortChoice, Sorting : Last Time Modified
+		TKOKSortVar := "Last Time Modified"
+		IniWrite, %TKOKSortVar%, %A_ScriptDir%\%ININame%, Settings, TKOKSort
+		GoSub, TKOKChoice
+	}
+}
+return
+TKOKRefresh:
+{
+	; Empty Old Var
+	IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
+	SetWorkingDir, %TKOKBuddyPath%
+	GuiControl, TKOKBuddy:, TKOKclassinfo, |
+	GuiControl, TKOKBuddy:, TKOKclasslist, |
+	GuiControl, TKOKBuddy:, TKOKclasschoice, |
+	TKOKClasses := []
+	TKOKFilePath := []
+	TKOKFileName := []
+	TKOKStats := []
+	TKOKCodes1 := []
+	TKOKCodes2 := []
+	TKOKClassList=
+	TKOKTime := []
+	TKOKCreatTime := []
+	TKOKLVL := []
+	TKOKXP := []
+	
+	If (TKOKBuddyPath)
+	{
+		Loop, Files, *, D
+		{
+			if (A_LoopFileName = "backups")
+			{
+				continue
+			}
+			TKOKCurrClass := A_LoopFileName
+			TKOKClassList = %TKOKClassList%|%A_LoopFileName%
+			Loop, Files, %A_LoopFileLongPath%\*.txt
+			{
+				TKOKCreat=%A_LoopFileTimeCreated%
+				TKOKCreatTime.Push(TKOKCreat)
+				FormatTime, TKOKCreatTimeFormat, %A_LoopFileTimeCreated%
+				TKOKLastModif=%A_LoopFileTimeModified%
+				TKOKTime.Push(TKOKLastModif)
+				FormatTime, TKOKTimeFormat, %A_LoopFileTimeModified%
+				TKOKFilePath.Push(A_LoopFileLongPath)
+				TKOKFileName.Push(A_LoopFileName)
+				TKOKClasses.Push(TKOKCurrClass)
+				Loop, 35
+				{
+					FileReadLine, TKOKfileline, %A_LoopFileLongPath%, A_Index
+					If InStr(TKOKfileline, "call Preload")
+					{
+						TKOKcurrentline = %TKOKfileline%
+						StringTrimLeft, TKOKcurrentline, TKOKcurrentline, 16
+						StringTrimRight, TKOKcurrentline, TKOKcurrentline, 3
+						TKOKcurrentline := StrReplace(TKOKcurrentline, "|" , " ")
+						If InStr(TKOKcurrentline, "-l ")
+						{
+							TKOKCodes1.Push(TKOKcurrentline)
+						}
+						If InStr(TKOKcurrentline, "-l2 ")
+						{
+							TKOKCodes2.Push(TKOKcurrentline)
+						}
+						If InStr(TKOKcurrentline, "Level: ")
+						{
+							TKOKLVL.Push(TKOKcurrentline)
+						}
+						If InStr(TKOKcurrentline, "EXP: ")
+						{
+							StringTrimLeft, TKOKcurrentline, TKOKcurrentline, 5
+							TKOKXP.Push(TKOKcurrentline)
+						}
+						If (InStr(TKOKfileline, "call PreloadEnd(") = 0)
+						{
+							TKOKfull = %TKOKfull% | %TKOKcurrentline%
+						}
+						If (InStr(TKOKfileline, "call PreloadEnd("))
+						{
+							TKOKfull = | FileName: %A_LoopFileName% | CreationTime: %TKOKCreatTimeFormat% | LastModified: %TKOKTimeFormat% %TKOKfull%
+							TKOKStats.Push(TKOKfull)
+							TKOKfull=
+							Break
+						}
+					}
+				}
+			}
+		}
+		GuiControl, TKOKBuddy:, TKOKclasschoice, %TKOKClassList%
+		GuiControl, TKOKBuddy:Choose, TKOKclasschoice, 1
+	}
+}
+return
+TKOKChoice:
+{	
+	IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
+	SetWorkingDir, %TKOKBuddyPath%
+	GuiControlGet, TKOKCurrentClass,, TKOKclasschoice, 
+	TKOKStatCurr := []
+	TKOKCurrName=
+	TKOKCurrPath=
+	TKOKLvlCurr := []
+	TKOKXPCurr := []
+	TKOKCurrentCode1 := []
+	TKOKCurrentCode2 := []
+	TKOKCurrentTime := []
+	TKOKCurrentCreatTime := []
+	
+	for i in TKOKClasses
+	{
+		TKOKcurr := TKOKClasses[i]
+		TKOKCurrentClass=%TKOKCurrentClass%
+		If InStr(TKOKcurr, TKOKCurrentClass)
+		{
+			TKOKCurrStats := TKOKStats[i]
+			TKOKStatCurr.Push(TKOKCurrStats)
+			TKOKCurrName := TKOKFileName[i]
+			TKOKCurrXP := TKOKXP[i]
+			TKOKXPCurr.Push(TKOKCurrXP)
+			TKOKCurrLvl := TKOKLVL[i]
+			TKOKLvlCurr.Push(TKOKCurrLvl)
+			TKOKCurrCode1 := TKOKCodes1[i]
+			TKOKCurrentCode1.Push(TKOKCurrCode1)
+			TKOKCurrCode2 := TKOKCodes2[i]
+			TKOKCurrentCode2.Push(TKOKCurrCode2)
+			TKOKTimeChar := TKOKTime[i]
+			TKOKCurrentTime.Push(TKOKTimeChar)
+			TKOKCreatTimeChar := TKOKCreatTime[i]
+			TKOKCurrentCreatTime.Push(TKOKCreatTimeChar)
+		}
+	}
+	
+	;;;; freaking sorting issue ;;;;;;;;
+	for i in TKOKLvlCurr
+	{
+		TKOKnewlvl := TKOKLvlCurr[i]
+		if (!TKOKlvllist)
+		{
+			TKOKlvllist=%TKOKnewlvl%
+		}
+		else
+		{
+			TKOKlvllist=%TKOKlvllist%`n%TKOKnewlvl%
+		}
+		TKOKnewxp := TKOKXPCurr[i]
+		if (!TKOKxplist)
+		{
+			TKOKxplist=%TKOKnewxp%
+		}
+		else
+		{
+			TKOKxplist=%TKOKxplist%`n%TKOKnewxp%
+		}
+		TKOKnewstat := TKOKStatCurr[i]
+		if (!TKOKstatlist)
+		{
+			TKOKstatlist=%TKOKnewstat%
+		}
+		else
+		{
+			TKOKstatlist=%TKOKstatlist%`n%TKOKnewstat%
+		}
+		TKOKnewcode1 := TKOKCurrentCode1[i]
+		if (!TKOKcode1list)
+		{
+			TKOKcode1list=%TKOKnewcode1%
+		}
+		else
+		{
+			TKOKcode1list=%TKOKcode1list%`n%TKOKnewcode1%
+		}
+		TKOKnewcode2 := TKOKCurrentCode2[i]
+		if (!TKOKcode2list)
+		{
+			TKOKcode2list=%TKOKnewcode2%
+		}
+		else
+		{
+			TKOKcode2list=%TKOKcode2list%`n%TKOKnewcode2%
+		}
+		TKOKnewtime := TKOKCurrentTime[i]
+		if (!TKOKtimelist)
+		{
+			TKOKtimelist=%TKOKnewtime%
+		}
+		else
+		{
+			TKOKtimelist=%TKOKtimelist%`n%TKOKnewtime%
+		}
+		TKOKnewcreattime := TKOKCurrentCreatTime[i]
+		if (!TKOKcreattimelist)
+		{
+			TKOKcreattimelist=%TKOKnewcreattime%
+		}
+		else
+		{
+			TKOKcreattimelist=%TKOKcreattimelist%`n%TKOKnewcreattime%
+		}
+	}
+	If (TKOKSortVar = "Level")
+	{
+		TKOKObj := [TKOKxplist, TKOKlvllist, TKOKstatlist, TKOKcode1list, TKOKcode2list]
+	}
+	else if (TKOKSortVar = "Last Time Modified")
+	{
+		TKOKObj := [TKOKtimelist, TKOKlvllist, TKOKstatlist, TKOKcode1list, TKOKcode2list]
+	}
+	else 
+	{
+		TKOKObj := [TKOKcreattimelist, TKOKlvllist, TKOKstatlist, TKOKcode1list, TKOKcode2list]
+	}
+	TKOKlvllist=
+	TKOKxplist=
+	TKOKstatlist=
+	TKOKcode1list=
+	TKOKcode2list=
+	TKOKtimelist=
+	TKOKcreattimelist=
+	If (TKOKSortVar = "Level")
+	{
+		TKOKsortingnonsense := new GroupSort(TKOKObj, "N R")
+		TKOKArrLvls := StrSplit(TKOKsortingnonsense.fetch("2") , "`n")
+		TKOKArrStat := StrSplit(TKOKsortingnonsense.fetch("3") , "`n")
+		TKOKArrCode1 := StrSplit(TKOKsortingnonsense.fetch("4") , "`n")
+		TKOKArrCode2 := StrSplit(TKOKsortingnonsense.fetch("5") , "`n")
+	}
+	else
+	{
+		TKOKsortingnonsense := new GroupSort(TKOKObj, "R")
+		TKOKArrLvls := StrSplit(TKOKsortingnonsense.fetch("2") , "`n")
+		TKOKArrStat := StrSplit(TKOKsortingnonsense.fetch("3") , "`n")
+		TKOKArrCode1 := StrSplit(TKOKsortingnonsense.fetch("4") , "`n")
+		TKOKArrCode2 := StrSplit(TKOKsortingnonsense.fetch("5") , "`n")
+	}
+	for i in TKOKArrLvls 
+	{
+		TKOKnewlvlvar := TKOKArrLvls[i]
+		if (!TKOKlvllist)
+		{
+			TKOKlvllist = | %TKOKnewlvlvar%
+		}
+		else
+		{
+			TKOKlvllist = %TKOKlvllist% | %TKOKnewlvlvar%
+		}
+	}
+	
+	TKOKDefaultStat := TKOKArrStat[1]
+	TKOKCurrentCode1 := TKOKArrCode1[1]
+	TKOKCurrentCode2 := TKOKArrCode2[1]
+	GuiControl, TKOKBuddy:, TKOKclasslist, %TKOKlvllist%
+	GuiControl, TKOKBuddy:Choose, TKOKclasslist, 1
+	GuiControl, TKOKBuddy:, TKOKclassinfo, %TKOKDefaultStat%
+	GuiControl, TKOKBuddy:Choose, TKOKclassinfo, 1
+	TKOKlvllist=
+	TKOKxplist=
+	TKOKstatlist=
+	TKOKcode1list=
+	TKOKcode2list=
+	TKOKtimelist=
+	TKOKcreattimelist=
+}
+return
+TKOKCharChoice:
+{
+	IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
+	SetWorkingDir, %TKOKBuddyPath%
+	GuiControlGet, TKOKCurrentCharNum,, TKOKclasslist, 
+	TKOKChosenStat := TKOKArrStat[TKOKCurrentCharNum]
+	TKOKCurrentCode := TKOKArrCode[TKOKCurrentCharNum]
+	GuiControl, TKOKBuddy:, TKOKclassinfo, %TKOKChosenStat%
+	GuiControl, TKOKBuddy:Choose, TKOKclassinfo, 1
+}
+return
+TKOKStatChoice:
+{
+	If (RetrieveContent == 1)
+	{
+		IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
+		SetWorkingDir, %TKOKBuddyPath%
+		GuiControlGet, TKOKCurrentStatNum,, TKOKclassinfo,
+		GuiControlGet, TKOKCurrentCharNum,, TKOKclasslist,
+		TKOKChosenStat := TKOKArrStat[TKOKCurrentCharNum]
+		StringTrimLeft, TKOKChosenStat, TKOKChosenStat, 2
+		TKOKArrStat2 := StrSplit(TKOKChosenStat , " | ")
+		TKOKGetStat := TKOKArrStat2[TKOKCurrentStatNum]
+		GuiControl, TKOKBuddyStat:, TKOKdata, %TKOKGetStat%
+		Gui, TKOKBuddyStat:Show
+		Gui, TKOKBuddyStat:+AlwaysOnTop
+	}
+}
+return
+LoadTKOK:
+{
+	IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
+	SetWorkingDir, %TKOKBuddyPath%
+	GuiControlGet, TKOKCurrentClass,, TKOKclasschoice, 
+	GuiControlGet, TKOKCurrentCharNum,, TKOKclasslist,
+	if (TKOKCurrentClass && TKOKCurrentCharNum)
+	{
+		TKOKCurrCode1 := TKOKArrCode1[TKOKCurrentCharNum]
+		StringTrimLeft, TKOKCurrCode1, TKOKCurrCode1, 6
+		TKOKCurrCode2 := TKOKArrCode2[TKOKCurrentCharNum]
+		StringTrimLeft, TKOKCurrCode2, TKOKCurrCode2, 6
+		TKOKCurrLvl := TKOKArrLvls[TKOKCurrentCharNum]
+		If WinExist("Warcraft III")
+		{
+			Clipboard := "Loading : " . TKOKCurrentClass . " - " . TKOKCurrLvl
+			WinActivate, Warcraft III
+			ClipWait, 500
+			Send {Enter}^v{Enter}
+			Sleep 300
+			Clipboard := TKOKCurrCode1
+			ClipWait, 500
+			Send {Enter}^v{Enter}
+			Sleep 300
+			Clipboard := TKOKCurrCode2
+			ClipWait, 500
+			Send {Enter}^v{Enter}
+		}
+		else
+		{
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
+		}
+		SetTitleMatchMode, 2
+	}
+	else
+	{
+		MsgBox, 262208, Invalid Save File, You need to choose a Save !
+	}
+}
+return
 ;////////////////////////////////////////// UPDATER FUNCTIONS ///////////////////////////////////////////////////////////////
 ;https://autohotkey.com/board/topic/80587-how-to-find-internet-connection-status/page-2
 ;- Should be compatible with Win XP or higher, 32/64 bit, Unicode or ANSI, latest version.
@@ -2960,6 +3347,16 @@ GUITEVE:
 }
 return
 
+GUITKOK:
+{
+	CurrentGUI = TKOK
+	GuiHideAllBut(CurrentGUI)
+	IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame%, Settings, TKOKPath
+	SetWorkingDir, %TKOKBuddyPath%
+	GoSub, TKOKRefresh
+}
+return
+
 GUIGOH:
 {
 	CurrentGUI = GOH
@@ -3043,6 +3440,18 @@ TEVEBuddyGuiClose:
 return
 
 GOHBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
+}
+return
+
+TKOKBuddyGuiClose:
 {
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
@@ -3184,6 +3593,23 @@ ChangeGOHPath:
 	IniWrite, %GOHBuddyPath%, %A_ScriptDir%\%ININame%, Settings, GOHPath
 	GuiControl, GOHBuddy:, GOHPathText, %GOHBuddyPath%
 	GoSub, GOHRefresh
+}
+return
+
+ChangeTKOKPath:
+{
+	Gui TKOKBuddy:+OwnDialogs
+	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\TKoK_Save_Files\
+	{
+		FileSelectFolder, TKOKBuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\TKoK_Save_Files\,, Choose The Folder with TKoK Saves
+	}
+	else
+	{
+		FileSelectFolder, TKOKBuddyPath,,, Choose The Folder with TKoK Saves
+	}
+	IniWrite, %TKOKBuddyPath%, %A_ScriptDir%\%ININame%, Settings, TKOKPath
+	GuiControl, TKOKBuddy:, TKOKPathText, %TKOKBuddyPath%
+	GoSub, TKOKRefresh
 }
 return
 
