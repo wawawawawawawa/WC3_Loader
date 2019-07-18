@@ -24,6 +24,9 @@ It allows you to load your characters in :
 - GoH (Guild of Hyppos) :
 
 ![GoH](https://i.imgur.com/DWvG3h5.png)
+- TKOK (The Kingdom of Kaliron) :
+
+![TKOK](https://i.imgur.com/9ooQ2SD.png)
 
 Cheers and have fun with it :)
 
