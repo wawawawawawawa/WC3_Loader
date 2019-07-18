@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.3b"
+Global currentversion := "2.4"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -75,6 +75,7 @@ IniRead, HMC2, %A_ScriptDir%\%ININame% , Settings, HMC2
 IniRead, HMC3, %A_ScriptDir%\%ININame% , Settings, HMC3
 IniRead, HMC4, %A_ScriptDir%\%ININame% , Settings, HMC4
 IniRead, HMC5, %A_ScriptDir%\%ININame% , Settings, HMC5
+IniRead, Refresh, %A_ScriptDir%\%ININame% , Settings, Refresh
 
 ;////////////////////////////////////////// GUI //////////////////////////////////////////////////////////////////
 ;=============== MAIN GUI ====================
@@ -116,7 +117,7 @@ Gui, MainBuddy:Tab, 4
 Gui, MainBuddy:Font, cBlack s12
 Gui, MainBuddy:Add, GroupBox, section h150 w265, Commands : 
 Gui, MainBuddy:Font, 
-Gui, MainBuddy:Add, Text, xp10 yp25, !refresh : !closeall then !openall
+Gui, MainBuddy:Add, CheckBox, xp10 yp25 vRefresh Checked%Refresh% gCheckBoxOptions, !refresh : !closeall then !openall
 
 Gui, MainBuddy:Tab, 
 Gui, MainBuddy:Add, Button, xs-10 yp210 gUpdate, Check for updates
@@ -2343,8 +2344,8 @@ TKOKRefresh:
 						}
 						If InStr(TKOKcurrentline, "EXP: ")
 						{
-							StringTrimLeft, TKOKcurrentline, TKOKcurrentline, 5
-							TKOKXP.Push(TKOKcurrentline)
+							StringTrimLeft, TKOKcurrentline2, TKOKcurrentline, 5
+							TKOKXP.Push(TKOKcurrentline2)
 						}
 						If (InStr(TKOKfileline, "call PreloadEnd(") = 0)
 						{
@@ -3818,12 +3819,33 @@ If (CurrentGUI != "Main" && CurrentGUI != "Update")
 	GoSub, %CurrentGUI%Refresh
 }
 return
-::!refresh::
+:*:!refresh::
 {
+	if (Refresh = 1)
+	{
 	Send {Raw}!closeall
 	Send {Enter}
 	Sleep 500
 	Send {Raw}!openall
 	Send {Enter}
+	}
+	else
+	{
+		Send {Raw}!refresh
+	}
+}
+return
+
+~^v::
+{
+	if (Clipboard = "!refresh" && Refresh = 1)
+	{
+		Send {BS 8}
+		Send {Raw}!closeall
+		Send {Enter}
+		Sleep 500
+		Send {Raw}!openall
+		Send {Enter}
+	}
 }
 return
