@@ -7,7 +7,7 @@ SetBatchLines -1
 FileEncoding UTF-8
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.3"
+Global currentversion := "2.3a"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -2762,6 +2762,7 @@ RestoreBackup:
 	TBR21RestorePath = %RestorePath%\TBR21 Restored
 	TEVERestorePath = %RestorePath%\TEVE Restored
 	GOHRestorePath = %RestorePath%\GOH Restored
+	TKOKRestorePath = %RestorePath%\TKOK Restored
 	
 	If (RestorePath)
 	{		
@@ -2868,6 +2869,24 @@ RestoreBackup:
 			Progress, %GOHperc%, %GOHFile%, Restoring %name% Backup..., %name% Backup
 		}
 		Progress, Off
+		
+		name = TKOK
+		IniRead, TKOKNum, %BackupPath%, TKOK, Count
+		
+		Loop, %TKOKNum%
+		{
+			IniRead, TKOKFile, %BackupPath%, TKOK, File%A_Index%
+			IniRead, TKOKTxt, %BackupPath%, TKOK, Txt%A_Index%
+			IniRead, TKOKSubPath, %BackupPath%, TKOK, SubPath%A_Index%
+			TKOKTxt := StrReplace(TKOKTxt, "LINEBREAK" , "`n")
+			TKOKTxt := StrReplace(TKOKTxt, "TABBREAK" , "`t")
+			FileCreateDir, %TKOKRestorePath%%TKOKSubPath%
+			FileDelete, %TKOKRestorePath%%TKOKSubPath%\%TKOKFile%
+			FileAppend, %TKOKTxt%, %TKOKRestorePath%%TKOKSubPath%\%TKOKFile%
+			GOHperc := (A_Index / %name%Num) * 100
+			Progress, %TKOKperc%, %TKOKFile%, Restoring %name% Backup..., %name% Backup
+		}
+		Progress, Off
 		MsgBox, 262208, Restoration Done, Backup Restored at %RestorePath%\
 	}
 }
@@ -2879,6 +2898,9 @@ CreateBackup:
 	IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
 	IniRead, TBR13BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR13Path
 	IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
+	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
+	IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
+	IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
 	CreateBackupPath=
 	FileSelectFolder, CreateBackupPath, 3,, Where do you want your Backup.ini to be created?
 	If (CreateBackupPath)
@@ -3058,6 +3080,35 @@ CreateBackup:
 				Progress, %GOHperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
 			IniWrite, %GOHcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
+		}
+		If (TKOKBuddyPath)
+		{
+			name = TKOK
+			SetWorkingDir, %TKOKBuddyPath%
+			TKOKcurrent := 0
+			TKOKmax := 0
+			Loop, Files, *.txt, D F R
+			{
+				TKOKmax++
+			}
+			Loop, Files, *.txt, D F R
+			{
+				TKOKcurrent++
+				FileRead, TKOKcurrBackup, %A_LoopFileLongPath%
+				TKOKcurrBackup := StrReplace(TKOKcurrBackup, "`r`n" , "LINEBREAK")
+				TKOKcurrBackup := StrReplace(TKOKcurrBackup, "`t" , "TABBREAK")
+				TKOKcurrBackup := StrReplace(TKOKcurrBackup, "`n" , "LINEBREAK")
+				TKOKcurrBackup := StrReplace(TKOKcurrBackup, "`r" , "LINEBREAK")
+				TKOKcurrSubPath := StrReplace(A_LoopFileLongPath, TKOKBuddyPath, "")
+				TKOKcurrSubPath := StrReplace(TKOKcurrSubPath, A_LoopFileName, "")
+				IniWrite, %TKOKcurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TKOKcurrent%
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TKOKcurrent%
+				IniWrite, %TKOKcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TKOKcurrent%
+				TKOKperc := (A_Index / TKOKmax) * 100
+				Progress, %TKOKperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %TKOKcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
 			Progress, Off
 		}
 		MsgBox, 262208, Backup Done, Backup Saved at %CreateBackupPath%\Backup.ini
