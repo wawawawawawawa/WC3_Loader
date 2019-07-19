@@ -1,13 +1,13 @@
 #SingleInstance force
 SetTitleMatchMode, 2
 #NoEnv
-SendMode Input
 SetBatchLines -1
 #MaxThreadsPerHotkey 2
 FileEncoding UTF-8
+SetKeyDelay , 10
 
 ;=============== GLOBAL VAR ==================
-Global currentversion := "2.4"
+Global currentversion := "2.5"
 Global URLDownloadUpdaterAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.ahk"
 Global URLDownloadUpdaterEXE := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/AutoUpdater.exe"
 Global URLDownloadAHK := "https://github.com/wawawawawawawa/WC3_Loader/raw/master/WC3 RPG Loader.ahk"
@@ -22,7 +22,7 @@ Global URLDownloadColor := "https://github.com/wawawawawawawa/WC3_Loader/raw/mas
 Global ININame := BuildIniName()
 Global TrayIcon := "0"
 Global switch := "1"
-Global GuiList := ["Main", "Gaia", "HM", "TBR13", "TBR21", "TEVE", "GOH", "TKOK", "Update", "CP"]
+Global GuiList := ["Main", "Gaia", "HM", "HMStat", "TBR13", "TBR13Stat", "TBR21", "TBR21Stat", "TEVE", "TEVEStat", "GOH", "GOHStat", "GOHSkills", "TKOK", "TKOKStat", "TW", "TWStat", "Update", "CP"]
 
 RegRead, AHKInstallPath, HKLM, SOFTWARE\AutoHotkey, InstallDir ; AHK Installation Path
 
@@ -37,15 +37,20 @@ ifNotExist, %A_ScriptDir%\%ININame%
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TEVEPath
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, GOHPath
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TKOKPath
+	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Settings, TWPath
 	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, RetrieveContent
 	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
+	IniWrite, 1, %A_ScriptDir%\%ININame%, Loader, AOT
 	IniWrite, Default, %A_ScriptDir%\%ININame%, Loader, GUIColor
 	IniWrite, 0, %A_ScriptDir%\%ININame%, Loader, TrayOption
+	IniWrite, 0, %A_ScriptDir%\%ININame%, Settings, SaveOption
 	IniWrite, %NoPath%, %A_ScriptDir%\%ININame%, Loader, WC3Path
 	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, HMSort
 	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, TBR21Sort
 	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, TEVESort
 	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, GOHSort
+	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, TKOKSort
+	IniWrite, Level, %A_ScriptDir%\%ININame%, Settings, TWSort
 }
 IniRead, HMBuddyPath, %A_ScriptDir%\%ININame% , Settings, HMPath
 IniRead, GaiaBuddyPath, %A_ScriptDir%\%ININame% , Settings, GaiaPath
@@ -54,17 +59,22 @@ IniRead, TBR21BuddyPath, %A_ScriptDir%\%ININame% , Settings, TBR21Path
 IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
 IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
 IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
+IniRead, TWBuddyPath, %A_ScriptDir%\%ININame% , Settings, TWPath
 IniRead, RetrieveContent, %A_ScriptDir%\%ININame% , Loader, RetrieveContent, 1
 IniRead, CheckUpdates, %A_ScriptDir%\%ININame% , Loader, CheckUpdates, 1
+IniRead, AOT, %A_ScriptDir%\%ININame% , Loader, AOT, 1
 IniRead, GUIColor, %A_ScriptDir%\%ININame% , Loader, GUIColor, Default
 IniRead, TrayOption, %A_ScriptDir%\%ININame% , Loader, TrayOption, 0
 IniRead, WC3Path, %A_ScriptDir%\%ININame% , Loader, WC3Path
+IniRead, SaveOption, %A_ScriptDir%\%ININame% , Settings, SaveOption, 0
 IniRead, HMSortVar, %A_ScriptDir%\%ININame% , Settings, HMSort
 IniRead, TBR21SortVar, %A_ScriptDir%\%ININame% , Settings, TBR21Sort
 IniRead, TEVESortVar, %A_ScriptDir%\%ININame% , Settings, TEVESort
 IniRead, GOHSortVar, %A_ScriptDir%\%ININame% , Settings, GOHSort
 IniRead, TKOKSortVar, %A_ScriptDir%\%ININame% , Settings, TKOKSort
+IniRead, TWSortVar, %A_ScriptDir%\%ININame% , Settings, TWSort
 IniRead, Xaction, %A_ScriptDir%\%ININame% , Settings, Xaction
+IniRead, GOHLoadSkillList, %A_ScriptDir%\%ININame% , GOHSkills, GOHLoadSkillList, %A_Space%
 IniRead, GOHC1, %A_ScriptDir%\%ININame% , Settings, GOHC1
 IniRead, GOHC2, %A_ScriptDir%\%ININame% , Settings, GOHC2
 IniRead, GOHC3, %A_ScriptDir%\%ININame% , Settings, GOHC3
@@ -92,6 +102,7 @@ Gui, MainBuddy:Add, Button, xp125 w120 gGUITBR21, TBR 2.1 Loader
 Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITEVE, TeveF Loader
 Gui, MainBuddy:Add, Button, xp125 w120 gGUIGOH, GoH Loader
 Gui, MainBuddy:Add, Button, xp-125 yp30 w120 gGUITKOK, TKoK Loader
+Gui, MainBuddy:Add, Button, xp125 w120 gGUITW, TW Loader
 
 Gui, MainBuddy:Tab, 2
 Gui, MainBuddy:Font, cBlack s12
@@ -106,6 +117,7 @@ Gui, MainBuddy:Add, GroupBox, section h150 w265, Settings :
 Gui, MainBuddy:Font, 
 Gui, MainBuddy:Add, CheckBox, xp10 yp25 vGetContentBox gContentSetting Checked%RetrieveContent%, Allow Retrieve Content (Char Information Panel)
 Gui, MainBuddy:Add, CheckBox, yp15 vCheckUpdatesBox gUpdateSetting Checked%CheckUpdates%, Check for updates on launch
+Gui, MainBuddy:Add, CheckBox, yp15 vAOTBox gAOTSetting Checked%AOT%, Always On Top
 Gui, MainBuddy:Add, CheckBox, yp15 vCheckTrayBox gTraySetting Checked%TrayOption%, Launch Wc3 (Taskbar) :
 Gui, MainBuddy:Add, Button, x+3 yp-2 h17 vSetPathButton gSetWC3Path Checked%TrayOption%, Set WC3 Path
 Gui, MainBuddy:Add, Text, xs+10 yp23 , GUI Theme :
@@ -118,11 +130,12 @@ Gui, MainBuddy:Font, cBlack s12
 Gui, MainBuddy:Add, GroupBox, section h150 w265, Commands : 
 Gui, MainBuddy:Font, 
 Gui, MainBuddy:Add, CheckBox, xp10 yp25 vRefresh Checked%Refresh% gCheckBoxOptions, !refresh : !closeall then !openall
+Gui, MainBuddy:Add, CheckBox, yp15 vSaveOption Checked%SaveOption% gCheckBoxOptions, -save : -clear afterwards
 
 Gui, MainBuddy:Tab, 
 Gui, MainBuddy:Add, Button, xs-10 yp210 gUpdate, Check for updates
 Gui, MainBuddy:Add, Link, xp180 yp5, Created by <a href="https://github.com/wawawawawawawa/WC3_Loader">Wawawa</a>
-Gui, MainBuddy:+AlwaysOnTop
+
 
 MainGUI = 1
 CurrentGUI = Main
@@ -143,6 +156,7 @@ Gui, UpdateBuddy:Add, Button, gManualDownload xs+10 yp25 , Manual Download
 Gui, UpdateBuddy:Add, Button, gAutoUpdate x+15 vGreyedButton, Automatic Install
 Gui, UpdateBuddy:Add, Button, xs yp40 w50 h30 gBack, Back
 Gui, UpdateBuddy:Add, Button, xp158 h30 gChangelog, Changelog
+
 ;=============== GAIA GUI ====================
 Gui 1:+LabelGaiaBuddy
 Gui, GaiaBuddy:Add, DropDownList, x5 y5 w120 vThiefchoice AltSubmit, |Thief
@@ -217,6 +231,7 @@ HMGUI = 0
 Gui 2a:+LabelHMBuddyStat
 Gui, HMBuddyStat:Add, Edit,vdata ReadOnly w600, 
 Gui, HMBuddyStat:Show, Hide Center, Retrieve content
+
 ;=============== TBR GUI 1.38 ====================
 Gui 3:+LabelTBR13Buddy
 Gui, TBR13Buddy:Add, Text, x40 y5, Class Selection :
@@ -274,9 +289,9 @@ Gui, TEVEBuddy:Show, Hide Center, TeveF Buddy (Press CTRL + F1 to Show/Hide)
 
 TEVEGUI = 0
 
-Gui 5a:+LabelTEVEBuddyStat
-Gui, TEVEBuddyStat:Add, Edit,vTEVEdata ReadOnly w600, 
-Gui, TEVEBuddyStat:Show, Hide Center, Retrieve content
+Gui 5a:+LabelTEVEStatBuddy
+Gui, TEVEStatBuddy:Add, Edit,vTEVEdata ReadOnly w600, 
+Gui, TEVEStatBuddy:Show, Hide Center, Retrieve content
 
 ;=============== GOH GUI ====================
 Gui 6:+LabelGOHBuddy
@@ -287,6 +302,7 @@ Gui, GOHBuddy:Add, ListBox, x5 y20 w150 h300 vGOHclasschoice gGOHChoice ,
 Gui, GOHBuddy:Add, ListBox, x160 y20 w200 h300 vgohclasslist gGOHCharChoice AltSubmit, 
 Gui, GOHBuddy:Add, ListBox, x365 y20 w400 h300 vgohclassinfo gGOHStatChoice AltSubmit, 
 Gui, GOHBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
+Gui, GOHBuddy:Add, Button, x60 y320 w50 h40 gGUIGOHSkills, Skills
 Gui, GOHBuddy:Add, Button, x275 y320 w130 h40 gGOHRefresh, Refresh
 Gui, GOHBuddy:Add, Button, x410 y320 w130 h40 vGOHSortChoice gGOHSort, Sorting : %GOHSortVar%
 Gui, GOHBuddy:Add, Button, x636 y320 w130 h40 gLoadGOH, Load
@@ -301,9 +317,40 @@ Gui, GOHBuddy:Show, Hide Center, GoH Buddy (Press CTRL + F1 to Show/Hide)
 
 GOHGUI = 0
 
-Gui 6a:+LabelGOHBuddyStat
-Gui, GOHBuddyStat:Add, Edit,vGOHdata ReadOnly w600, 
-Gui, GOHBuddyStat:Show, Hide Center, Retrieve content
+Gui 6a:+LabelGOHStatBuddy
+Gui, GOHStatBuddy:Add, Edit,vGOHdata ReadOnly w600, 
+Gui, GOHStatBuddy:Show, Hide Center, Retrieve content
+
+Gui 6b:+LabelGOHSkillsBuddy
+Gui, GOHSkillsBuddy:Add, Text, yp10, Q :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS1 Range0-10 ToolTip NoTicks, %GOHS1%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, W :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS2 Range0-10 ToolTip NoTicks, %GOHS2%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, E :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS3 Range0-10 ToolTip NoTicks, %GOHS3%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, R :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS4 Range0-10 ToolTip NoTicks, %GOHS4%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, A :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS5 Range0-10 ToolTip NoTicks, %GOHS5%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, S :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS6 Range0-10 ToolTip NoTicks, %GOHS6%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, D :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS7 Range0-10 ToolTip NoTicks, %GOHS7%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, F :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS8 Range0-10 ToolTip NoTicks, %GOHS8%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, Y :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS9 Range0-10 ToolTip NoTicks, %GOHS9%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, X :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS10 Range0-10 ToolTip NoTicks, %GOHS10%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, C :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS11 Range0-10 ToolTip NoTicks, %GOHS11%
+Gui, GOHSkillsBuddy:Add, Text, xp-20 yp30, V :
+Gui, GOHSkillsBuddy:Add, Slider, xp20 yp-3 vGOHS12 Range0-10 ToolTip NoTicks, %GOHS12%
+Gui, GOHSkillsBuddy:Add, Button, y10 x160 gGOHSaveSkills, Save
+Gui, GOHSkillsBuddy:Add, Button, y10 x210 gGOHDeleteSkillSet, Delete
+Gui, GOHSkillsBuddy:Add, ListBox, y40 x150 h250 vGOHLoadSkills gGOHShowLoadSkill, %GOHLoadSkillList%
+Gui, GOHSkillsBuddy:Add, Button, y285 x180 w50 h40 gGOHSkills, Put Skills
+Gui, GOHSkillsBuddy:Show, Hide Center, Skills Selection
 
 ;=============== TKOK GUI ====================
 Gui 7:+LabelTKOKBuddy
@@ -323,9 +370,31 @@ Gui, TKOKBuddy:Show, Hide Center, TKOK Buddy (Press CTRL + F1 to Show/Hide)
 
 TKOKGUI = 0
 
-Gui 7a:+LabelTKOKBuddyStat
-Gui, TKOKBuddyStat:Add, Edit,vTKOKdata ReadOnly w600, 
-Gui, TKOKBuddyStat:Show, Hide Center, Retrieve content
+Gui 7a:+LabelTKOKStatBuddy
+Gui, TKOKStatBuddy:Add, Edit,vTKOKdata ReadOnly w600, 
+Gui, TKOKStatBuddy:Show, Hide Center, Retrieve content
+
+;=============== TW GUI ====================
+Gui 7:+LabelTWBuddy
+Gui, TWBuddy:Add, Text, x40 y5, Class Selection :
+Gui, TWBuddy:Add, Text, x205 y5, Characters Available :
+Gui, TWBuddy:Add, Text, x500 y5, Character Information :
+Gui, TWBuddy:Add, ListBox, x5 y20 w150 h300 vTWclasschoice gTWChoice , 
+Gui, TWBuddy:Add, ListBox, x160 y20 w200 h300 vTWclasslist gTWCharChoice AltSubmit, 
+Gui, TWBuddy:Add, ListBox, x365 y20 w400 h300 vTWclassinfo gTWStatChoice AltSubmit, 
+Gui, TWBuddy:Add, Button, x5 y320 w50 h40 gBack, Back
+Gui, TWBuddy:Add, Button, x275 y320 w130 h40 gTWRefresh, Refresh
+Gui, TWBuddy:Add, Button, x410 y320 w130 h40 vTWSortChoice gTWSort, Sorting : %TWSortVar%
+Gui, TWBuddy:Add, Button, x636 y320 w130 h40 gLoadTW, Load
+Gui, TWBuddy:Add, Button, x5 y370 h40 gChangeTWPath, Change Save Folder
+Gui, TWBuddy:Add, Edit, x155 y370 w300 h40 vTWPathText ReadOnly, %TWBuddyPath%
+Gui, TWBuddy:Show, Hide Center, TW Buddy (Press CTRL + F1 to Show/Hide)
+
+TWGUI = 0
+
+Gui 7a:+LabelTWStatBuddy
+Gui, TWStatBuddy:Add, Edit,vTWdata ReadOnly w600, 
+Gui, TWStatBuddy:Show, Hide Center, Retrieve content
 ;=============== GUI COLOR PICKER ====================
 DPI := getDPImultiplier()
 FontScaler := 2/DPI
@@ -409,6 +478,7 @@ If (TrayOption = 0)
 	Menu, Tray, Disable, Launch Warcraft III
 	GuiControl, MainBuddy:Disable, SetPathButton
 }
+AOTChange(AOT)
 
 return
 
@@ -999,9 +1069,9 @@ HMStatChoice:
 		StringTrimLeft, HMChosenStat, HMChosenStat, 2
 		HMArrStat2 := StrSplit(HMChosenStat , " | ")
 		HMGetStat := HMArrStat2[HMCurrentStatNum]
-		GuiControl, HMBuddyStat:, data, %HMGetStat%
-		Gui, HMBuddyStat:Show
-		Gui, HMBuddyStat:+AlwaysOnTop
+		GuiControl, HMStatBuddy:, data, %HMGetStat%
+		Gui, HMStatBuddy:Show
+		Gui, HMStatBuddy:+AlwaysOnTop
 	}
 }
 return
@@ -1148,9 +1218,9 @@ TBR13StatChoice:
 		GuiControlGet, TBR13CurrentStatNum,, tbr13classinfo,
 		GuiControlGet, TBR13CurrentCharNum,, tbr13classchoice,
 		TBR13ChosenStat := TBR13CharStat[TBR13CurrentStatNum]
-		GuiControl, TBR13BuddyStat:, TBR13data, %TBR13ChosenStat%
-		Gui, TBR13BuddyStat:Show
-		Gui, TBR13BuddyStat:+AlwaysOnTop
+		GuiControl, TBR13StatBuddy:, TBR13data, %TBR13ChosenStat%
+		Gui, TBR13StatBuddy:Show
+		Gui, TBR13StatBuddy:+AlwaysOnTop
 	}
 }
 return
@@ -1490,9 +1560,9 @@ TBR21StatChoice:
 		StringTrimLeft, TBR21ChosenStat, TBR21ChosenStat, 2
 		TBR21ArrStat2 := StrSplit(TBR21ChosenStat , " | ")
 		TBR21GetStat := TBR21ArrStat2[TBR21CurrentStatNum]
-		GuiControl, TBR21BuddyStat:, TBR21data, %TBR21GetStat%
-		Gui, TBR21BuddyStat:Show
-		Gui, TBR21BuddyStat:+AlwaysOnTop
+		GuiControl, TBR21StatBuddy:, TBR21data, %TBR21GetStat%
+		Gui, TBR21StatBuddy:Show
+		Gui, TBR21StatBuddy:+AlwaysOnTop
 	}
 }
 return
@@ -1818,9 +1888,9 @@ TEVEStatChoice:
 		StringTrimLeft, TEVEChosenStat, TEVEChosenStat, 2
 		TEVEArrStat2 := StrSplit(TEVEChosenStat , " | ")
 		TEVEGetStat := TEVEArrStat2[TEVECurrentStatNum]
-		GuiControl, TEVEBuddyStat:, TEVEdata, %TEVEGetStat%
-		Gui, TEVEBuddyStat:Show
-		Gui, TEVEBuddyStat:+AlwaysOnTop
+		GuiControl, TEVEStatBuddy:, TEVEdata, %TEVEGetStat%
+		Gui, TEVEStatBuddy:Show
+		Gui, TEVEStatBuddy:+AlwaysOnTop
 	}
 }
 return
@@ -1869,6 +1939,99 @@ LoadTEVE:
 return
 ;////////////////////////////////////////// GoH //////////////////////////////////////////////////////////////////
 ;=============== GoH ====================
+GOHSkills:
+{
+	Gui, GOHSkillsBuddy:Show, Hide Center, Skills Selection
+	WinActivate, Warcraft III
+	KeyList := ["q", "w", "e", "r", "a", "s", "d", "f", "y", "x", "c", "v"]
+	Loop, 12
+	{
+		SetKeyDelay , 50
+		GuiControlGet, GOHS,, GOHS%A_Index%,
+		CurrKey := KeyList[A_Index]
+		Send {%CurrKey% %GOHS%}
+	}
+}
+return
+
+GOHSaveSkills:
+{
+	Gui, GOHSkillsBuddy:+OwnDialogs
+	InputBox, SkillName, Skill Save, Choose a name for your Skill Set
+	If (!ErrorLevel)
+	{
+		If (SkillName = "")
+		{
+			msgbox You need a name!
+		}
+		else
+		{
+			SaveList=
+			KeyList := ["q", "w", "e", "r", "a", "s", "d", "f", "y", "x", "c", "v"]
+			Loop, 12
+			{
+				GuiControlGet, GOHS,, GOHS%A_Index%,
+				CurrKey := KeyList[A_Index]
+				SaveList=%SaveList%, %GOHS%
+			}
+			StringTrimLeft, SaveList, SaveList, 2
+			SaveList=%SaveList%
+			IniWrite, %SaveList%, %A_ScriptDir%\%ININame%, GOHSkills, %SkillName%
+			
+			GuiControlGet, GOHCurrentLoadList,, GOHLoadSkills,
+			ControlGet, GOHSkillItems, List,, ListBox1, Skills Selection
+			GOHLoadSkillList=%SkillName%
+			Loop, Parse, GOHSkillItems, `n
+			{
+				If (A_LoopField != SkillName)
+				{
+					GOHLoadSkillList=%GOHLoadSkillList%|%A_LoopField%
+				}
+			}
+			IniWrite, %GOHLoadSkillList%, %A_ScriptDir%\%ININame%, GOHSkills, GOHLoadSkillList
+			GOHLoadSkillList=|%GOHLoadSkillList%
+			GuiControl, GOHSkillsBuddy:, GOHLoadSkills, %GOHLoadSkillList%
+		}
+	}
+}
+return
+
+GOHShowLoadSkill:
+{
+	GuiControlGet, GOHCurrentLoadList,, GOHLoadSkills,
+	IniRead, GOHKeyList, %A_ScriptDir%\%ININame%, GOHSkills, %GOHCurrentLoadList%
+	Loop, Parse, GOHKeyList, `,
+	{
+		GuiControl, GOHSkillsBuddy:, GOHS%A_Index%, %A_LoopField%
+	}
+}
+return
+
+GOHDeleteSkillSet:
+{
+	GuiControlGet, GOHCurrentLoadList,, GOHLoadSkills,
+	IniDelete, %A_ScriptDir%\%ININame%, GOHSkills, %GOHCurrentLoadList%
+	IniRead, GOHLoadSkillList, %A_ScriptDir%\%ININame%, GOHSkills, GOHLoadSkillList
+	Loop, Parse, GOHLoadSkillList, |
+	{
+		If(A_LoopField != GOHCurrentLoadList)
+		{
+			If (!NewLoadList)
+			{
+				NewLoadList=%A_LoopField%
+			}
+			else
+			{
+				NewLoadList=%NewLoadList%|%A_LoopField%
+			}
+		}
+	}
+	IniWrite, %NewLoadList%, %A_ScriptDir%\%ININame%, GOHSkills, GOHLoadSkillList
+	GuiControl, GOHSkillsBuddy:, GOHLoadSkills, |%NewLoadList%
+	NewLoadList=
+}
+return
+
 GOHSort:
 {
 	GuiControlGet, GOHCurrentSort,, GOHSortChoice,
@@ -2142,9 +2305,9 @@ GOHStatChoice:
 		StringTrimLeft, GOHChosenStat, GOHChosenStat, 2
 		GOHArrStat2 := StrSplit(GOHChosenStat , " | ")
 		GOHGetStat := GOHArrStat2[GOHCurrentStatNum]
-		GuiControl, GOHBuddyStat:, GOHdata, %GOHGetStat%
-		Gui, GOHBuddyStat:Show
-		Gui, GOHBuddyStat:+AlwaysOnTop
+		GuiControl, GOHStatBuddy:, GOHdata, %GOHGetStat%
+		Gui, GOHStatBuddy:Show
+		Gui, GOHStatBuddy:+AlwaysOnTop
 	}
 }
 return
@@ -2560,9 +2723,9 @@ TKOKStatChoice:
 		StringTrimLeft, TKOKChosenStat, TKOKChosenStat, 2
 		TKOKArrStat2 := StrSplit(TKOKChosenStat , " | ")
 		TKOKGetStat := TKOKArrStat2[TKOKCurrentStatNum]
-		GuiControl, TKOKBuddyStat:, TKOKdata, %TKOKGetStat%
-		Gui, TKOKBuddyStat:Show
-		Gui, TKOKBuddyStat:+AlwaysOnTop
+		GuiControl, TKOKStatBuddy:, TKOKdata, %TKOKGetStat%
+		Gui, TKOKStatBuddy:Show
+		Gui, TKOKStatBuddy:+AlwaysOnTop
 	}
 }
 return
@@ -2594,6 +2757,347 @@ LoadTKOK:
 				ClipWait, 500
 				Send {Enter}^v{Enter}
 			}
+		}
+		else
+		{
+			MsgBox, 262208, No Warcraft III, You need to open Warcraft III before loading !
+		}
+		SetTitleMatchMode, 2
+	}
+	else
+	{
+		MsgBox, 262208, Invalid Save File, You need to choose a Save !
+	}
+}
+return
+
+;////////////////////////////////////////// TW //////////////////////////////////////////////////////////////////
+;=============== TW ====================
+TWSort:
+{
+	GuiControlGet, TWCurrentSort,, TWSortChoice,
+	If (TWCurrentSort = "Sorting : Last Time Modified")
+	{
+		GuiControl, TWBuddy:, TWSortChoice, Sorting : Level
+		TWSortVar := "Level"
+		IniWrite, %TWSortVar%, %A_ScriptDir%\%ININame%, Settings, TWSort
+		GoSub, TWChoice
+	}
+	else if (TWCurrentSort = "Sorting : Level")
+	{
+		GuiControl, TWBuddy:, TWSortChoice, Sorting : Creation Time
+		TWSortVar := "Creation Time"
+		IniWrite, %TWSortVar%, %A_ScriptDir%\%ININame%, Settings, TWSort
+		GoSub, TWChoice
+	}	
+	else 
+	{
+		GuiControl, TWBuddy:, TWSortChoice, Sorting : Last Time Modified
+		TWSortVar := "Last Time Modified"
+		IniWrite, %TWSortVar%, %A_ScriptDir%\%ININame%, Settings, TWSort
+		GoSub, TWChoice
+	}
+}
+return
+TWRefresh:
+{
+	; Empty Old Var
+	IniRead, TWBuddyPath, %A_ScriptDir%\%ININame% , Settings, TWPath
+	SetWorkingDir, %TWBuddyPath%
+	GuiControl, TWBuddy:, TWclassinfo, |
+	GuiControl, TWBuddy:, TWclasslist, |
+	GuiControl, TWBuddy:, TWclasschoice, |
+	TWClasses := []
+	TWFilePath := []
+	TWFileName := []
+	TWStats := []
+	TWStats2 := []
+	TWCodes1 := []
+	TWCodes2 := []
+	TWClassList=
+	TWTime := []
+	TWCreatTime := []
+	TWLVL := []
+	TWXP := []
+	
+	If (TWBuddyPath)
+	{
+		Loop, Files, *.txt
+		{
+			TWCreat=%A_LoopFileTimeCreated%
+			TWCreatTime.Push(TWCreat)
+			FormatTime, TWCreatTimeFormat, %A_LoopFileTimeCreated%
+			TWLastModif=%A_LoopFileTimeModified%
+			TWTime.Push(TWLastModif)
+			FormatTime, TWTimeFormat, %A_LoopFileTimeModified%
+			TWFilePath.Push(A_LoopFileLongPath)
+			TWFileName.Push(A_LoopFileName)
+			
+			Loop, 50
+			{
+				FileReadLine, TWfileline, %A_LoopFileLongPath%, A_Index
+				StringTrimLeft, TWcurrentline2, TWfileline, 16
+				StringTrimRight, TWcurrentline2, TWcurrentline2, 3
+				If InStr(TWcurrentline2, "Class: ")
+				{
+					StringTrimLeft, TWcurrentline, TWcurrentline2, 7
+					TWClasses.Push(TWcurrentline)
+					TWcurrClass := TWcurrentline
+				}
+				If InStr(TWcurrentline2, "Level: ", true)
+				{
+					TWLVL.Push(TWcurrentline2)
+				}
+				If InStr(TWcurrentline2, "Current EXP / EXP needed to level: ")
+				{
+					StringTrimLeft, TWcurrentline, TWcurrentline2, 35
+					TWcut := InStr(TWcurrentline, " / ")
+					TWNewStrXP := SubStr(TWcurrentline, 1 , TWcut)
+					TWXP.Push(TWNewStrXP)
+				}
+				If InStr(TWcurrentline2, "Load Code: ")
+				{
+					TWcurrentline = %TWcurrentline2%
+					StringTrimLeft, TWcurrentline, TWcurrentline2, 11
+					TWCodes1.Push(TWcurrentline)
+				}
+				If InStr(TWfileline, "call Preload(")
+				{
+					TWfull = %TWfull% | %TWcurrentline2%
+				}
+				If InStr(TWfileline, "call PreloadEnd(")
+				{
+					TWfull = | FileName: %A_LoopFileName% | CreationTime: %TWCreatTimeFormat% | LastModified: %TWTimeFormat% %TWfull%
+					TWStats.Push(TWfull)
+					TWfull=
+					Break
+				}
+			}
+			if (TWClassList)
+			{
+				TWcurrClass2=|%TWcurrClass%
+				if InStr(TWClassList, TWcurrClass2)
+				{
+					
+				}
+				else
+				{
+					TWClassList = %TWClassList%|%TWcurrClass%
+				}
+			}
+			else
+			{
+				TWClassList = |%TWcurrClass%
+			}
+		}
+		GuiControl, TWBuddy:, TWclasschoice, %TWClassList%
+		GuiControl, TWBuddy:Choose, TWclasschoice, 1
+	}
+}
+return
+TWChoice:
+{	
+	IniRead, TWBuddyPath, %A_ScriptDir%\%ININame% , Settings, TWPath
+	SetWorkingDir, %TWBuddyPath%
+	GuiControlGet, TWCurrentClass,, TWclasschoice, 
+	TWStatCurr := []
+	TWCurrName=
+	TWCurrPath=
+	TWLvlCurr := []
+	TWXPCurr := []
+	TWCurrentCode1 := []
+	TWCurrentTime := []
+	TWCurrentCreatTime := []
+	
+	for i in TWClasses
+	{
+		TWcurr := TWClasses[i]
+		TWCurrentClass=%TWCurrentClass%
+		If TWcurr = %TWCurrentClass%
+		{
+			TWCurrStats := TWStats[i]
+			TWStatCurr.Push(TWCurrStats)
+			TWCurrName := TWFileName[i]
+			TWCurrXP := TWXP[i]
+			TWXPCurr.Push(TWCurrXP)
+			TWCurrLvl := TWLVL[i]
+			TWLvlCurr.Push(TWCurrLvl)
+			TWCurrCode1 := TWCodes1[i]
+			TWCurrentCode1.Push(TWCurrCode1)
+			TWTimeChar := TWTime[i]
+			TWCurrentTime.Push(TWTimeChar)
+			TWCreatTimeChar := TWCreatTime[i]
+			TWCurrentCreatTime.Push(TWCreatTimeChar)
+		}
+	}
+	
+	;;;; freaking sorting issue ;;;;;;;;
+	for i in TWLvlCurr
+	{
+		TWnewlvl := TWLvlCurr[i]
+		if (TWlvllist="")
+		{
+			TWlvllist=%TWnewlvl%
+		}
+		else
+		{
+			TWlvllist=%TWlvllist%`n%TWnewlvl%
+		}
+		TWnewxp := TWXPCurr[i]
+		if (TWxplist="")
+		{
+			TWxplist=%TWnewxp%
+		}
+		else
+		{
+			TWxplist=%TWxplist%`n%TWnewxp%
+		}
+		TWnewstat := TWStatCurr[i]
+		if (TWstatlist="")
+		{
+			TWstatlist=%TWnewstat%
+		}
+		else
+		{
+			TWstatlist=%TWstatlist%`n%TWnewstat%
+		}
+		TWnewcode1 := TWCurrentCode1[i]
+		if (TWcode1list="")
+		{
+			TWcode1list=%TWnewcode1%
+		}
+		else
+		{
+			TWcode1list=%TWcode1list%`n%TWnewcode1%
+		}
+		TWnewtime := TWCurrentTime[i]
+		if (TWtimelist="")
+		{
+			TWtimelist=%TWnewtime%
+		}
+		else
+		{
+			TWtimelist=%TWtimelist%`n%TWnewtime%
+		}
+		TWnewcreattime := TWCurrentCreatTime[i]
+		if (TWcreattimelist="")
+		{
+			TWcreattimelist=%TWnewcreattime%
+		}
+		else
+		{
+			TWcreattimelist=%TWcreattimelist%`n%TWnewcreattime%
+		}
+	}
+	If (TWSortVar = "Level")
+	{
+		TWObj := [TWxplist, TWlvllist, TWstatlist, TWcode1list, TWcode2list]
+	}
+	else if (TWSortVar = "Last Time Modified")
+	{
+		TWObj := [TWtimelist, TWlvllist, TWstatlist, TWcode1list, TWcode2list]
+	}
+	else 
+	{
+		TWObj := [TWcreattimelist, TWlvllist, TWstatlist, TWcode1list, TWcode2list]
+	}
+	TWlvllist=
+	TWxplist=
+	TWstatlist=
+	TWcode1list=
+	TWtimelist=
+	TWcreattimelist=
+	If (TWSortVar = "Level")
+	{
+		TWsortingnonsense := new GroupSort(TWObj, "N R")
+		TWArrLvls := StrSplit(TWsortingnonsense.fetch("2") , "`n")
+		TWArrStat := StrSplit(TWsortingnonsense.fetch("3") , "`n")
+		TWArrCode1 := StrSplit(TWsortingnonsense.fetch("4") , "`n")
+	}
+	else
+	{
+		TWsortingnonsense := new GroupSort(TWObj, "R")
+		TWArrLvls := StrSplit(TWsortingnonsense.fetch("2") , "`n")
+		TWArrStat := StrSplit(TWsortingnonsense.fetch("3") , "`n")
+		TWArrCode1 := StrSplit(TWsortingnonsense.fetch("4") , "`n")
+	}
+	for i in TWArrLvls 
+	{
+		TWnewlvlvar := TWArrLvls[i]
+		if (!TWlvllist)
+		{
+			TWlvllist = | %TWnewlvlvar%
+		}
+		else
+		{
+			TWlvllist = %TWlvllist% | %TWnewlvlvar%
+		}
+	}
+	
+	TWDefaultStat := TWArrStat[1]
+	TWCurrentCode1 := TWArrCode1[1]
+	GuiControl, TWBuddy:, TWclasslist, %TWlvllist%
+	GuiControl, TWBuddy:Choose, TWclasslist, 1
+	GuiControl, TWBuddy:, TWclassinfo, %TWDefaultStat%
+	GuiControl, TWBuddy:Choose, TWclassinfo, 1
+	TWlvllist=
+	TWxplist=
+	TWstatlist=
+	TWcode1list=
+	TWtimelist=
+	TWcreattimelist=
+}
+return
+TWCharChoice:
+{
+	IniRead, TWBuddyPath, %A_ScriptDir%\%ININame% , Settings, TWPath
+	SetWorkingDir, %TWBuddyPath%
+	GuiControlGet, TWCurrentCharNum,, TWclasslist, 
+	TWChosenStat := TWArrStat[TWCurrentCharNum]
+	TWCurrentCode := TWArrCode[TWCurrentCharNum]
+	GuiControl, TWBuddy:, TWclassinfo, %TWChosenStat%
+	GuiControl, TWBuddy:Choose, TWclassinfo, 1
+}
+return
+TWStatChoice:
+{
+	If (RetrieveContent == 1)
+	{
+		IniRead, TWBuddyPath, %A_ScriptDir%\%ININame% , Settings, TWPath
+		SetWorkingDir, %TWBuddyPath%
+		GuiControlGet, TWCurrentStatNum,, TWclassinfo,
+		GuiControlGet, TWCurrentCharNum,, TWclasslist,
+		TWChosenStat := TWArrStat[TWCurrentCharNum]
+		StringTrimLeft, TWChosenStat, TWChosenStat, 2
+		TWArrStat2 := StrSplit(TWChosenStat , " | ")
+		TWGetStat := TWArrStat2[TWCurrentStatNum]
+		GuiControl, TWStatBuddy:, TWdata, %TWGetStat%
+		Gui, TWStatBuddy:Show
+		Gui, TWStatBuddy:+AlwaysOnTop
+	}
+}
+return
+LoadTW:
+{
+	IniRead, TWBuddyPath, %A_ScriptDir%\%ININame% , Settings, TWPath
+	SetWorkingDir, %TWBuddyPath%
+	GuiControlGet, TWCurrentClass,, TWclasschoice, 
+	GuiControlGet, TWCurrentCharNum,, TWclasslist,
+	if (TWCurrentClass && TWCurrentCharNum)
+	{
+		TWCurrCode1 := TWArrCode1[TWCurrentCharNum]
+		TWCurrLvl := TWArrLvls[TWCurrentCharNum]
+		If WinExist("Warcraft III")
+		{
+			Clipboard := "Loading : " . TWCurrentClass . " - " . TWCurrLvl
+			WinActivate, Warcraft III
+			ClipWait, 500
+			Send {Enter}^v{Enter}
+			Sleep 300
+			Clipboard := TWCurrCode1
+			ClipWait, 500
+			Send {Enter}^v{Enter}
+			Sleep 300
 		}
 		else
 		{
@@ -2809,6 +3313,7 @@ RestoreBackup:
 	TEVERestorePath = %RestorePath%\TEVE Restored
 	GOHRestorePath = %RestorePath%\GOH Restored
 	TKOKRestorePath = %RestorePath%\TKOK Restored
+	TWRestorePath = %RestorePath%\TW Restored
 	
 	If (RestorePath)
 	{		
@@ -2933,6 +3438,25 @@ RestoreBackup:
 			Progress, %TKOKperc%, %TKOKFile%, Restoring %name% Backup..., %name% Backup
 		}
 		Progress, Off
+		
+		name = TW
+		IniRead, TWNum, %BackupPath%, TW, Count
+		
+		Loop, %TWNum%
+		{
+			IniRead, TWFile, %BackupPath%, TW, File%A_Index%
+			IniRead, TWTxt, %BackupPath%, TW, Txt%A_Index%
+			IniRead, TWSubPath, %BackupPath%, TW, SubPath%A_Index%
+			TWTxt := StrReplace(TWTxt, "LINEBREAK" , "`n")
+			TWTxt := StrReplace(TWTxt, "TABBREAK" , "`t")
+			FileCreateDir, %TWRestorePath%%TWSubPath%
+			FileDelete, %TWRestorePath%%TWSubPath%\%TWFile%
+			FileAppend, %TWTxt%, %TWRestorePath%%TWSubPath%\%TWFile%
+			GOHperc := (A_Index / %name%Num) * 100
+			Progress, %TWperc%, %TWFile%, Restoring %name% Backup..., %name% Backup
+		}
+		Progress, Off
+		
 		MsgBox, 262208, Restoration Done, Backup Restored at %RestorePath%\
 	}
 }
@@ -2947,6 +3471,7 @@ CreateBackup:
 	IniRead, TEVEBuddyPath, %A_ScriptDir%\%ININame% , Settings, TEVEPath
 	IniRead, GOHBuddyPath, %A_ScriptDir%\%ININame% , Settings, GOHPath
 	IniRead, TKOKBuddyPath, %A_ScriptDir%\%ININame% , Settings, TKOKPath
+	IniRead, TWBuddyPath, %A_ScriptDir%\%ININame% , Settings, TWPath
 	CreateBackupPath=
 	FileSelectFolder, CreateBackupPath, 3,, Where do you want your Backup.ini to be created?
 	If (CreateBackupPath)
@@ -3155,6 +3680,35 @@ CreateBackup:
 				Progress, %TKOKperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
 			}
 			IniWrite, %TKOKcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
+			Progress, Off
+		}
+		If (TWBuddyPath)
+		{
+			name = TW
+			SetWorkingDir, %TWBuddyPath%
+			TWcurrent := 0
+			TWmax := 0
+			Loop, Files, *.txt, D F R
+			{
+				TWmax++
+			}
+			Loop, Files, *.txt, D F R
+			{
+				TWcurrent++
+				FileRead, TWcurrBackup, %A_LoopFileLongPath%
+				TWcurrBackup := StrReplace(TWcurrBackup, "`r`n" , "LINEBREAK")
+				TWcurrBackup := StrReplace(TWcurrBackup, "`t" , "TABBREAK")
+				TWcurrBackup := StrReplace(TWcurrBackup, "`n" , "LINEBREAK")
+				TWcurrBackup := StrReplace(TWcurrBackup, "`r" , "LINEBREAK")
+				TWcurrSubPath := StrReplace(A_LoopFileLongPath, TWBuddyPath, "")
+				TWcurrSubPath := StrReplace(TWcurrSubPath, A_LoopFileName, "")
+				IniWrite, %TWcurrSubPath%, %CreateBackupPath%\Backup.ini, %name%, SubPath%TWcurrent%
+				IniWrite, %A_LoopFileName%, %CreateBackupPath%\Backup.ini, %name%, File%TWcurrent%
+				IniWrite, %TWcurrBackup%, %CreateBackupPath%\Backup.ini, %name%, Txt%TWcurrent%
+				TWperc := (A_Index / TWmax) * 100
+				Progress, %TWperc%, %A_LoopFileName%, Creating %name% Backup..., %name% Backup
+			}
+			IniWrite, %TWcurrent%, %CreateBackupPath%\Backup.ini, %name%, Count
 			Progress, Off
 		}
 		MsgBox, 262208, Backup Done, Backup Saved at %CreateBackupPath%\Backup.ini
@@ -3371,7 +3925,6 @@ GuiHideAllBut(ThisOne)
 		Else
 		{
 			Gui, %ThisOne%Buddy:Show
-			Gui, %CurrentGUI%Buddy:+AlwaysOnTop
 			%ThisOne%GUI = 1
 		}
 	}
@@ -3464,6 +4017,22 @@ GUIGOH:
 }
 return
 
+GUIGOHSkills:
+{
+	Gui, GOHSkillsBuddy:Show, Center, Skills Selection
+}
+return
+
+GUITW:
+{
+	CurrentGUI = TW
+	GuiHideAllBut(CurrentGUI)
+	IniRead, TWBuddyPath, %A_ScriptDir%\%ININame%, Settings, TWPath
+	SetWorkingDir, %TWBuddyPath%
+	GoSub, TWRefresh
+}
+return
+
 MainBuddyGuiClose:
 {
 	%CurrentGUI%GUI = 0
@@ -3549,6 +4118,18 @@ GOHBuddyGuiClose:
 return
 
 TKOKBuddyGuiClose:
+{
+	%CurrentGUI%GUI = 0
+	Gui, %CurrentGUI%Buddy:Show, Hide
+	Menu, Tray, Rename, Hide WC3 RPG Loader, Show WC3 RPG Loader
+	if (Xaction = 2)
+	{
+		ExitApp
+	}
+}
+return
+
+TWBuddyGuiClose:
 {
 	%CurrentGUI%GUI = 0
 	Gui, %CurrentGUI%Buddy:Show, Hide
@@ -3710,6 +4291,23 @@ ChangeTKOKPath:
 }
 return
 
+ChangeTWPath:
+{
+	Gui TWBuddy:+OwnDialogs
+	IfExist, %A_MyDocuments%\Warcraft III\CustomMapData\TWRPG\
+	{
+		FileSelectFolder, TWBuddyPath, *%A_MyDocuments%\Warcraft III\CustomMapData\TWRPG\,, Choose The Folder with TW Saves
+	}
+	else
+	{
+		FileSelectFolder, TWBuddyPath,,, Choose The Folder with TW Saves
+	}
+	IniWrite, %TWBuddyPath%, %A_ScriptDir%\%ININame%, Settings, TWPath
+	GuiControl, TWBuddy:, TWPathText, %TWBuddyPath%
+	GoSub, TWRefresh
+}
+return
+
 ;============== SETTINGS =================
 ContentSetting:
 {
@@ -3723,6 +4321,31 @@ UpdateSetting:
 {
 	GuiControlGet, UpdateOption,, CheckUpdatesBox
 	IniWrite, %UpdateOption%, %A_ScriptDir%\%ININame%, Loader, CheckUpdates
+}
+return
+
+AOTSetting:
+{
+	GuiControlGet, AOT,, AOTBox
+	IniWrite, %AOT%, %A_ScriptDir%\%ININame%, Loader, AOT
+	AOTChange(AOT)
+}
+return
+
+AOTChange(AOTValue)
+{
+	For i in GuiList
+	{
+		GuiName := GUIList[i]
+		if (AOTValue)
+		{
+			Gui, %GuiName%Buddy:+AlwaysOnTop
+		}
+		else
+		{
+			Gui, %GuiName%Buddy:-AlwaysOnTop
+		}
+	}
 }
 return
 
@@ -3810,13 +4433,29 @@ return ini_name ".ini"
 ;============== HOTSTRING =================
 #IfWinActive Warcraft III
 :B0:-save::
+IniRead, SaveOption, %A_ScriptDir%\%ININame% , Settings, SaveOption
+if (SaveOption)
+{
+	Sleep, 100
+	Send {Enter}
+	If (CurrentGUI != "TW")
+	{
+		Send -clear
+	}
+	else
+	{
+		Send -refresh
+	}
+	Send {Enter}
+}
 If (CurrentGUI != "Main" && CurrentGUI != "Update")
 {
+	CurrentGUI2 := CurrentGUI
 	Sleep, 5000
-	IniRead, %CurrentGUI%BuddyPath, %A_ScriptDir%\%ININame%, Settings, %CurrentGUI%Path
-	ActivePath := CurrentGUI "BuddyPath"
+	IniRead, %CurrentGUI2%BuddyPath, %A_ScriptDir%\%ININame%, Settings, %CurrentGUI2%Path
+	ActivePath := CurrentGUI2 "BuddyPath"
 	SetWorkingDir, %ActivePath%
-	GoSub, %CurrentGUI%Refresh
+	GoSub, %CurrentGUI2%Refresh
 }
 return
 :*:!refresh::
@@ -3825,13 +4464,14 @@ return
 	{
 	Send {Raw}!closeall
 	Send {Enter}
-	Sleep 500
+	Sleep 200
+	Send {Enter}
 	Send {Raw}!openall
 	Send {Enter}
 	}
 	else
 	{
-		Send {Raw}!refresh
+		SendInput {Raw}!refresh
 	}
 }
 return
@@ -3843,7 +4483,8 @@ return
 		Send {BS 8}
 		Send {Raw}!closeall
 		Send {Enter}
-		Sleep 500
+		Sleep 200
+		Send {Enter}
 		Send {Raw}!openall
 		Send {Enter}
 	}
