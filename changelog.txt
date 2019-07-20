@@ -43,3 +43,5 @@
 2.5 : Added The World RPG
 
 2.6 : Added GOH Skills and Pet Options
+
+2.7 : Binds can now be saved
