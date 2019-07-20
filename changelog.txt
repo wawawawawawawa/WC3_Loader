@@ -42,3 +42,5 @@
 
 2.5 : Added The World RPG
       Added GOH Skills Options
+
+2.6 : Added GOH Pet Options
