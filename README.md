@@ -27,6 +27,9 @@ It allows you to load your characters in :
 - TKOK (The Kingdom of Kaliron) :
 
 ![TKOK](https://i.imgur.com/9ooQ2SD.png)
+- TW (The World RPG) :
+
+![TW](https://i.imgur.com/WiHYSm6.png)
 
 Cheers and have fun with it :)
 
