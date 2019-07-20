@@ -41,6 +41,5 @@
 2.4 : !refresh => !closeall then !openall
 
 2.5 : Added The World RPG
-      Added GOH Skills Options
 
-2.6 : Added GOH Pet Options
+2.6 : Added GOH Skills and Pet Options
