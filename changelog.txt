@@ -45,3 +45,7 @@
 2.6 : Added GOH Skills and Pet Options
 
 2.7 : Binds can now be saved
+
+2.8 : Pets for TBR 1.38
+
+2.9 : Added Kiryum RPG
