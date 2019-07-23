@@ -1,51 +1,20 @@
 1.0 : Created the Loader
-
 1.1 : Added Version Updater
-
 1.2 : Added Backup Tool
-      The WC3 RPG Loader.exe now returns 2/68 on virustotal...
-      Ah well, creating a backup is considered "stealing"...
-      At least the WC3 RPG Loader..ahk is still 0/68 :)
-      
-1.3 : Added Progress Bar and some bugfixes
-
+1.3 : Added Progress Bar
 1.4 : Added AutoInstaller
-      The AutoUpdater.exe shows 3/68 on totalvirus 
-      (same ones than from the backup version)...
-      The AutoUpdater.ahk shows 0/68 though (and only 10 lines of code :p)
-      You can check the code on the ahk, or just never use the .exe version :)
-      
 1.5 : Added TeveF RPG
-
 1.6 : Added Icon and Tray Icon
-
-1.7 : Added more Options
-      Added Self-Signed Certificate on the .exe
-      Added incentive to use the .ahk over the .exe
-      (btw only 1/68 from virustotal on each exe now :D)
-
+1.7 : Added Self-Signed Certificate on the .exe
 1.8 : Added Theme
-      Writting "-save" automatically refresh current opened loader
-
 1.9 : Added GoH RPG
-
 2.0 : Added Sort by Last Time Modified
-
 2.1 : Added Sort by Creation Date
-
-2.2 : Sort Option is now saved
-      Added new Options on load (GOH/HM)
-
+2.2 : Added new Options on load (GOH/HM)
 2.3 : Added TKOK
-
-2.4 : !refresh => !closeall then !openall
-
+2.4 : Added Commands
 2.5 : Added The World RPG
-
 2.6 : Added GOH Skills and Pet Options
-
 2.7 : Binds can now be saved
-
-2.8 : Pets for TBR 1.38
-
+2.8 : Added Pets for TBR 1.38
 2.9 : Added Kiryum RPG
